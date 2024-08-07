@@ -33,6 +33,8 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
     private val emptyTxt = binding.emptyTxt
     private var apps: List<PackageInfo> = emptyList()
 
+    private var isBottomSheetShowing = false
+
     private val packagesObserver = Observer<Resource<List<PackageInfo>>> {
         if (it.status == Status.SUCCESS) {
             it.data?.let { d ->
@@ -108,10 +110,13 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
 
     private fun showAppsGroupBottomSheet(context: Context) {
         CreateGroupBottomSheetDialogFragment().apply {
-            updateData(apps)
-            setCallback(object : GroupBottomSheetCallback {
+            this.updateData(apps)
+            this.setCallback(object : GroupBottomSheetCallback {
                 override fun onDone(groupName: String, pks: Set<String>) {
                     ShizukuSettings.savePksByGroupName(groupName, pks)
+                    ShizukuSettings.saveGroupLockedApps(groupName)
+                    this@apply.dismiss()
+                    showAppsBottomSheet(context)
                 }
             })
             this.show(
@@ -122,18 +127,28 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
     }
 
     private fun showAppsBottomSheet(context: Context) {
+        if (isBottomSheetShowing) return
+        isBottomSheetShowing = true
         AppsBottomSheetDialogFragment().apply {
-            updateData(apps)
-            setCallback(object : BottomSheetCallback {
+            this.clearData()
+            this.updateGroupData(ShizukuSettings.getGroupLockedAppsAsSet())
+            this.updateData(context, apps)
+            this.setCallback(object : BottomSheetCallback {
                 override fun onDone(pks: Set<String>) {
-                    ShizukuSettings.saveLockedApp(pks)
-                    this@LockAppsViewHolder.updateData(apps)
+                    if (pks.isEmpty()) {
+                        ShizukuSettings.saveLockedApp(pks)
+                        this@LockAppsViewHolder.updateData(apps)
+                    }
                     this@apply.dismiss()
                 }
 
                 override fun onCreateGroup() {
                     this@apply.dismiss()
                     showAppsGroupBottomSheet(context)
+                }
+
+                override fun onClosed() {
+                    isBottomSheetShowing = false
                 }
             })
             this.show(

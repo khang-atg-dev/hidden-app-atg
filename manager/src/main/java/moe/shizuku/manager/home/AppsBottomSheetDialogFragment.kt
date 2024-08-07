@@ -1,7 +1,10 @@
 package moe.shizuku.manager.home
 
+import android.content.Context
 import android.content.pm.PackageInfo
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +14,7 @@ import android.widget.TextView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
+import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.utils.BaseAdapter
@@ -27,6 +31,11 @@ class AppsBottomSheetDialogFragment : BottomSheetDialogFragment(), ItemBottomShe
 
     fun setCallback(callback: BottomSheetCallback) {
         this.callback = callback
+    }
+
+    override fun onDetach() {
+        callback?.onClosed()
+        super.onDetach()
     }
 
     override fun onCreateView(
@@ -59,17 +68,50 @@ class AppsBottomSheetDialogFragment : BottomSheetDialogFragment(), ItemBottomShe
         }
     }
 
-    fun updateData(data: List<PackageInfo>) {
+    fun clearData() {
+        this.data = emptyList()
+    }
+
+    fun updateData(context: Context, data: List<PackageInfo>) {
+        selectedPkgs = ShizukuSettings.getListLockedAppsAsSet()
+        context.packageManager?.let { pm ->
+            val dataSet = data.map {
+                val ai = it.applicationInfo
+                AppBottomSheet(
+                    icon = ai.loadIcon(pm),
+                    pkg = ai.packageName,
+                    name = ai.loadLabel(pm).toString(),
+                    isChecked = selectedPkgs.contains(it.applicationInfo.packageName)
+                )
+            }
+
+            this.data = this.data.plus(dataSet)
+        }
+    }
+
+    fun updateGroupData(data: Set<String>) {
         selectedPkgs = ShizukuSettings.getListLockedAppsAsSet()
         val dataSet = data.map {
-            AppBottomSheet(it, selectedPkgs.contains(it.applicationInfo.packageName))
+            val pksSet = ShizukuSettings.getPksByGroupName(it)
+            val pksStr = if (pksSet.size == 1) {
+                pksSet.iterator().next();
+            } else {
+                pksSet.joinToString(",")
+            }
+            AppBottomSheet(
+                icon = null,
+                pkg = pksStr.replace(",", ", "),
+                name = it.substringAfterLast("."),
+                isChecked = selectedPkgs.contains(it)
+            )
         }
-        this.data = dataSet
+
+        this.data = this.data.plus(dataSet)
     }
 
     override fun onSelected(pk: String, position: Int) {
         val updateData = data.map {
-            if (it.appInfo.applicationInfo.packageName == pk) {
+            if (it.pkg == pk) {
                 it.copy(isChecked = true)
             } else {
                 it
@@ -77,20 +119,20 @@ class AppsBottomSheetDialogFragment : BottomSheetDialogFragment(), ItemBottomShe
         }
         this.data = updateData
         this.selectedPkgs = this.selectedPkgs.plus(pk)
-        adapter.updateItem(position, data.find { it.appInfo.applicationInfo.packageName == pk })
+        adapter.updateItem(position, updateData.find { it.pkg == pk })
     }
 
     override fun onUnselected(pk: String, position: Int) {
         val updateData = data.map {
-            if (it.appInfo.applicationInfo.packageName == pk) {
+            if (it.pkg == pk) {
                 it.copy(isChecked = false)
             } else {
                 it
             }
         }
         this.data = updateData
+        adapter.updateItem(position, updateData.find { it.pkg == pk })
         this.selectedPkgs = this.selectedPkgs.minus(pk)
-        adapter.updateItem(position, data.find { it.appInfo.applicationInfo.packageName == pk })
     }
 }
 
@@ -108,17 +150,17 @@ class AppsBottomAdapter(inflater: LayoutInflater, private val listener: ItemBott
             val name = itemView.findViewById<TextView>(R.id.app_name)
             val pkg = itemView.findViewById<TextView>(R.id.package_name)
             val checkBox = itemView.findViewById<MaterialCheckBox>(R.id.checkbox)
-            val pm = itemView.context.packageManager
-            val ai = data.appInfo.applicationInfo
-            icon.setImageDrawable(ai.loadIcon(pm))
-            name.text = ai.loadLabel(pm)
-            pkg.text = ai.packageName
+            icon.setImageDrawable(
+                data.icon ?: itemView.context.getDrawable(R.drawable.baseline_apps_24)
+            )
+            name.text = data.name
+            pkg.text = data.pkg
             checkBox.isChecked = data.isChecked
             checkBox.setOnClickListener {
                 if (checkBox.isChecked)
-                    listener.onSelected(data.appInfo.applicationInfo.packageName, position)
+                    listener.onSelected(data.pkg, position)
                 else
-                    listener.onUnselected(data.appInfo.applicationInfo.packageName, position)
+                    listener.onUnselected(data.pkg, position)
             }
         }
     }
@@ -130,11 +172,14 @@ interface ItemBottomSheetCallback {
 }
 
 data class AppBottomSheet(
-    val appInfo: PackageInfo,
+    val icon: Drawable?,
+    val pkg: String,
+    val name: String,
     var isChecked: Boolean
 )
 
 interface BottomSheetCallback {
     fun onDone(pks: Set<String>)
     fun onCreateGroup()
+    fun onClosed()
 }

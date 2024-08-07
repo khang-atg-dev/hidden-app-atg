@@ -13,17 +13,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import java.lang.annotation.Retention;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
 
 import moe.shizuku.manager.utils.EmptySharedPreferencesImpl;
 import moe.shizuku.manager.utils.EnvironmentUtils;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
+import static moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX;
 
 public class ShizukuSettings {
 
@@ -134,21 +137,30 @@ public class ShizukuSettings {
         return new HashSet<>(Arrays.asList(pkgStr.split(",")));
     }
 
-    public static void saveGroupLockedApp(Set<String> pkgs) {
+    public static void saveGroupLockedApps(String groupName) {
+        List<String> pkgs = new ArrayList<>(getGroupLockedAppsAsSet());
+        pkgs.add(GROUP_PKG_PREFIX + groupName);
+        String pkgsStr = String.join(",", pkgs);
+        getPreferences().edit().putString(GROUP_LOCK_APPS, pkgsStr).apply();
+    }
+
+    public static void appendGroupLockedApp(String groupName) {
+        List<String> pkgs = new ArrayList<>(getListLockedAppsAsSet());
+        pkgs.add(GROUP_PKG_PREFIX + groupName);
         String pkgsStr;
         if (pkgs.size() == 1) {
             pkgsStr = pkgs.iterator().next();
         } else {
             pkgsStr = String.join(",", pkgs);
         }
-        getPreferences().edit().putString(GROUP_LOCK_APPS, pkgsStr).apply();
+        getPreferences().edit().putString(LOCK_APPS, pkgsStr).apply();
     }
 
     public static void removeGroupLockedApp(String pkg) {
         Set<String> packages = getGroupLockedAppsAsSet();
         packages.remove(pkg);
         String pkgsStr = String.join(",", packages);
-        getPreferences().edit().putString(LOCK_APPS, pkgsStr).apply();
+        getPreferences().edit().putString(GROUP_LOCK_APPS, pkgsStr).apply();
     }
 
     public static Set<String> getPksByGroupName(String name) {
@@ -156,6 +168,6 @@ public class ShizukuSettings {
     }
 
     public static void savePksByGroupName(String name, Set<String> pkgs) {
-        getPreferences().edit().putStringSet(name, pkgs).apply();
+        getPreferences().edit().putStringSet(GROUP_PKG_PREFIX + name, pkgs).apply();
     }
 }

@@ -11,4 +11,5 @@ public class AppConstants {
 
     private static final String PACKAGE = "moe.shizuku.manager";
     public static final String EXTRA = PACKAGE + ".extra";
+    public static final String GROUP_PKG_PREFIX = "hidden.group.";
 }
