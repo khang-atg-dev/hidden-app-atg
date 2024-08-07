@@ -39,6 +39,8 @@ public class ShizukuSettings {
     public static final String HIDE_APPS = "hide_apps";
     public static final String LOCK_APPS = "lock_apps";
     public static final String GROUP_LOCK_APPS = "group_lock_apps";
+    public static final String ENABLE_PASSWORD = "enable_password";
+    public static final String AUTO_LOCK_TIMEOUT = "auto_lock_timeout";
 
     private static SharedPreferences sPreferences;
 
@@ -199,5 +201,21 @@ public class ShizukuSettings {
 
     public static void savePksByGroupName(String name, Set<String> pkgs) {
         getPreferences().edit().putStringSet(GROUP_PKG_PREFIX + name, pkgs).apply();
+    }
+
+    public static boolean getEnablePassword() {
+        return getPreferences().getBoolean(ENABLE_PASSWORD, false);
+    }
+
+    public static void setEnablePassword(boolean value) {
+        getPreferences().edit().putBoolean(ENABLE_PASSWORD, value).apply();
+    }
+
+    public static int getAutoLockTimeout() {
+        return getPreferences().getInt(AUTO_LOCK_TIMEOUT, 0);
+    }
+
+    public static void setAutoLockTimeout(int value) {
+        getPreferences().edit().putInt(AUTO_LOCK_TIMEOUT, value).apply();
     }
 }
