@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import com.google.android.material.chip.Chip
+import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
+import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
 import moe.shizuku.manager.databinding.LockAppsLayoutBinding
@@ -96,6 +98,23 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
                 )
             }
         }
+        lockedPkgs.filter { it.startsWith(GROUP_PKG_PREFIX) }.forEach {
+            chipGroup.addView(
+                Chip(context).apply {
+                    setCloseIconVisible(true)
+                    text = it.substringAfterLast(".")
+                    chipIcon = context.getDrawable(R.drawable.baseline_apps_24)
+                    setOnCloseIconClickListener { _ ->
+                        chipGroup.removeView(this)
+                        if (chipGroup.childCount == 1) {
+                            emptyTxt.visibility = View.VISIBLE
+                            chipGroup.visibility = View.GONE
+                        }
+                        ShizukuSettings.removeLockedApp(it)
+                    }
+                }
+            )
+        }
         chipGroup.addView(
             Chip(context).apply {
                 text = "Add"
@@ -135,7 +154,7 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
             this.updateData(context, apps)
             this.setCallback(object : BottomSheetCallback {
                 override fun onDone(pks: Set<String>) {
-                    if (pks.isEmpty()) {
+                    if (pks.isNotEmpty()) {
                         ShizukuSettings.saveLockedApp(pks)
                         this@LockAppsViewHolder.updateData(apps)
                     }

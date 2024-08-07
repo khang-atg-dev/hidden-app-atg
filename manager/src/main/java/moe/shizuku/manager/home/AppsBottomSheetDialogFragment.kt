@@ -101,7 +101,7 @@ class AppsBottomSheetDialogFragment : BottomSheetDialogFragment(), ItemBottomShe
             AppBottomSheet(
                 icon = null,
                 pkg = pksStr.replace(",", ", "),
-                name = it.substringAfterLast("."),
+                name = it,
                 isChecked = selectedPkgs.contains(it)
             )
         }
@@ -109,30 +109,20 @@ class AppsBottomSheetDialogFragment : BottomSheetDialogFragment(), ItemBottomShe
         this.data = this.data.plus(dataSet)
     }
 
-    override fun onSelected(pk: String, position: Int) {
-        val updateData = data.map {
-            if (it.pkg == pk) {
-                it.copy(isChecked = true)
+    override fun onChangeCheckbox(value: Boolean, position: Int) {
+        val data = this.data[position]
+        val updateData = this.data.mapIndexed { index, it ->
+            if (index == position) {
+                it.copy(isChecked = value)
             } else {
                 it
             }
         }
         this.data = updateData
-        this.selectedPkgs = this.selectedPkgs.plus(pk)
-        adapter.updateItem(position, updateData.find { it.pkg == pk })
-    }
-
-    override fun onUnselected(pk: String, position: Int) {
-        val updateData = data.map {
-            if (it.pkg == pk) {
-                it.copy(isChecked = false)
-            } else {
-                it
-            }
-        }
-        this.data = updateData
-        adapter.updateItem(position, updateData.find { it.pkg == pk })
-        this.selectedPkgs = this.selectedPkgs.minus(pk)
+        this.selectedPkgs = this.selectedPkgs.plus(
+            data.pkg.takeIf { !data.name.startsWith(GROUP_PKG_PREFIX) } ?: data.name
+        )
+        adapter.updateItem(position, updateData.find { it.pkg == data.pkg })
     }
 }
 
@@ -153,22 +143,19 @@ class AppsBottomAdapter(inflater: LayoutInflater, private val listener: ItemBott
             icon.setImageDrawable(
                 data.icon ?: itemView.context.getDrawable(R.drawable.baseline_apps_24)
             )
-            name.text = data.name
+            name.text = data.name.takeIf { !data.name.startsWith(GROUP_PKG_PREFIX) }
+                ?: data.name.substringAfterLast(".")
             pkg.text = data.pkg
             checkBox.isChecked = data.isChecked
             checkBox.setOnClickListener {
-                if (checkBox.isChecked)
-                    listener.onSelected(data.pkg, position)
-                else
-                    listener.onUnselected(data.pkg, position)
+                listener.onChangeCheckbox(checkBox.isChecked, position)
             }
         }
     }
 }
 
 interface ItemBottomSheetCallback {
-    fun onSelected(pk: String, position: Int)
-    fun onUnselected(pk: String, position: Int)
+    fun onChangeCheckbox(value: Boolean, position: Int)
 }
 
 data class AppBottomSheet(
