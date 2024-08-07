@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.PackageInfo
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -43,7 +42,6 @@ class AppsBottomSheetDialogFragment : BottomSheetDialogFragment(), ItemBottomShe
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        selectedPkgs = ShizukuSettings.getListLockedAppsAsSet()
         adapter = AppsBottomAdapter(inflater, this)
         return inflater.inflate(R.layout.bottom_sheet_layout, container, false)
     }
@@ -68,12 +66,15 @@ class AppsBottomSheetDialogFragment : BottomSheetDialogFragment(), ItemBottomShe
         }
     }
 
+    fun updateSelectedApps(pgkSet: Set<String>) {
+        selectedPkgs = pgkSet
+    }
+
     fun clearData() {
         this.data = emptyList()
     }
 
     fun updateData(context: Context, data: List<PackageInfo>) {
-        selectedPkgs = ShizukuSettings.getListLockedAppsAsSet()
         context.packageManager?.let { pm ->
             val dataSet = data.map {
                 val ai = it.applicationInfo
@@ -90,7 +91,6 @@ class AppsBottomSheetDialogFragment : BottomSheetDialogFragment(), ItemBottomShe
     }
 
     fun updateGroupData(data: Set<String>) {
-        selectedPkgs = ShizukuSettings.getListLockedAppsAsSet()
         val dataSet = data.map {
             val pksSet = ShizukuSettings.getPksByGroupName(it)
             val pksStr = if (pksSet.size == 1) {

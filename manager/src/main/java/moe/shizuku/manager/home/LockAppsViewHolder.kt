@@ -150,6 +150,7 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
         isBottomSheetShowing = true
         AppsBottomSheetDialogFragment().apply {
             this.clearData()
+            this.updateSelectedApps(ShizukuSettings.getListLockedAppsAsSet())
             this.updateGroupData(ShizukuSettings.getGroupLockedAppsAsSet())
             this.updateData(context, apps)
             this.setCallback(object : BottomSheetCallback {
