@@ -12,8 +12,8 @@ import com.google.android.material.chip.Chip
 import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
+import moe.shizuku.manager.databinding.HideAppsLayoutBinding
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
-import moe.shizuku.manager.databinding.LockAppsLayoutBinding
 import moe.shizuku.manager.management.AppsViewModel
 import rikka.core.content.asActivity
 import rikka.lifecycle.Resource
@@ -21,12 +21,12 @@ import rikka.lifecycle.Status
 import rikka.recyclerview.BaseViewHolder
 import rikka.recyclerview.BaseViewHolder.Creator
 
-class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewHolder<Any?>(root) {
+class HideAppsViewHolder(binding: HideAppsLayoutBinding, root: View) : BaseViewHolder<Any?>(root) {
     companion object {
         val CREATOR = Creator<Any> { inflater: LayoutInflater, parent: ViewGroup? ->
             val outer = HomeItemContainerBinding.inflate(inflater, parent, false)
-            val inner = LockAppsLayoutBinding.inflate(inflater, outer.root, true)
-            LockAppsViewHolder(inner, outer.root)
+            val inner = HideAppsLayoutBinding.inflate(inflater, outer.root, true)
+            HideAppsViewHolder(inner, outer.root)
         }
     }
 
@@ -48,21 +48,21 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
 
     init {
         binding.actionBtn.let {
-            if (!ShizukuSettings.isLockEnabled()) {
-                it.text = "Unlock"
-                it.icon = context.getDrawable(R.drawable.baseline_lock_open_24)
+            if (!ShizukuSettings.isHideEnabled()) {
+                it.text = "Show"
+                it.icon = context.getDrawable(R.drawable.baseline_remove_red_eye_24)
             } else {
-                it.text = "Lock"
-                it.icon = context.getDrawable(R.drawable.baseline_lock_outline_24)
+                it.text = "Hide"
+                it.icon = context.getDrawable(R.drawable.baseline_visibility_off_24)
             }
             binding.actionBtn.setOnClickListener { _ ->
-                ShizukuSettings.setLockApp(!ShizukuSettings.isLockEnabled())
-                if (!ShizukuSettings.isLockEnabled()) {
-                    it.text = "Unlock"
-                    it.icon = context.getDrawable(R.drawable.baseline_lock_open_24)
+                ShizukuSettings.setHideApp(!ShizukuSettings.isHideEnabled())
+                if (!ShizukuSettings.isHideEnabled()) {
+                    it.text = "Show"
+                    it.icon = context.getDrawable(R.drawable.baseline_remove_red_eye_24)
                 } else {
-                    it.text = "Lock"
-                    it.icon = context.getDrawable(R.drawable.baseline_lock_outline_24)
+                    it.text = "Hide"
+                    it.icon = context.getDrawable(R.drawable.baseline_visibility_off_24)
                 }
             }
         }
@@ -84,7 +84,7 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
     }
 
     private fun updateData(data: List<PackageInfo>) {
-        val lockedPkgs = ShizukuSettings.getListLockedAppsAsSet()
+        val lockedPkgs = ShizukuSettings.getListHiddenAppsAsSet()
         chipGroup.removeAllViews()
         if (data.isEmpty() || lockedPkgs.isEmpty()) {
             emptyTxt.visibility = View.VISIBLE
@@ -108,7 +108,7 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
                                 emptyTxt.visibility = View.VISIBLE
                                 chipGroup.visibility = View.GONE
                             }
-                            ShizukuSettings.removeLockedApp(it.applicationInfo.packageName)
+                            ShizukuSettings.removeHiddenApp(it.applicationInfo.packageName)
                         }
                     }
                 )
@@ -126,7 +126,7 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
                             emptyTxt.visibility = View.VISIBLE
                             chipGroup.visibility = View.GONE
                         }
-                        ShizukuSettings.removeLockedApp(it)
+                        ShizukuSettings.removeHiddenApp(it)
                     }
                 }
             )
@@ -166,14 +166,14 @@ class LockAppsViewHolder(binding: LockAppsLayoutBinding, root: View) : BaseViewH
         isBottomSheetShowing = true
         AppsBottomSheetDialogFragment().apply {
             this.clearData()
-            this.updateSelectedApps(ShizukuSettings.getListLockedAppsAsSet())
+            this.updateSelectedApps(ShizukuSettings.getListHiddenAppsAsSet())
             this.updateGroupData(ShizukuSettings.getGroupLockedAppsAsSet())
             this.updateData(context, apps)
             this.setCallback(object : BottomSheetCallback {
                 override fun onDone(pks: Set<String>) {
                     if (pks.isNotEmpty()) {
-                        ShizukuSettings.saveLockedApp(pks)
-                        this@LockAppsViewHolder.updateData(apps)
+                        ShizukuSettings.saveHiddenApp(pks)
+                        this@HideAppsViewHolder.updateData(apps)
                     }
                     this@apply.dismiss()
                 }

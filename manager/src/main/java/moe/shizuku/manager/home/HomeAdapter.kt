@@ -15,6 +15,7 @@ class HomeAdapter(private val homeModel: HomeViewModel, private val appsModel: A
     companion object {
 
         private const val ID_LOCK = 0L
+        private const val ID_HIDE = 1L
     }
 
     override fun onCreateCreatorPool(): IndexCreatorPool {
@@ -24,6 +25,7 @@ class HomeAdapter(private val homeModel: HomeViewModel, private val appsModel: A
     fun updateData() {
         clear()
         addItem(LockAppsViewHolder.CREATOR, null , ID_LOCK)
+        addItem(HideAppsViewHolder.CREATOR, null , ID_HIDE)
         notifyDataSetChanged()
     }
 }

@@ -34,6 +34,9 @@ public class ShizukuSettings {
     public static final String NIGHT_MODE = "night_mode";
     public static final String LANGUAGE = "language";
     public static final String KEEP_START_ON_BOOT = "start_on_boot";
+    public static final String ENABLE_HIDE_APP = "enable_hide_app";
+    public static final String ENABLE_LOCK_APP = "enable_lock_app";
+    public static final String HIDE_APPS = "hide_apps";
     public static final String LOCK_APPS = "lock_apps";
     public static final String GROUP_LOCK_APPS = "group_lock_apps";
 
@@ -108,6 +111,45 @@ public class ShizukuSettings {
         return Locale.forLanguageTag(tag);
     }
 
+    public static Boolean isHideEnabled() {
+        return getPreferences().getBoolean(ENABLE_HIDE_APP, false);
+    }
+
+    public static void setHideApp(boolean value) {
+        getPreferences().edit().putBoolean(ENABLE_HIDE_APP, value).apply();
+    }
+
+    public static Boolean isLockEnabled() {
+        return getPreferences().getBoolean(ENABLE_LOCK_APP, false);
+    }
+
+    public static void setLockApp(boolean value) {
+        getPreferences().edit().putBoolean(ENABLE_LOCK_APP, value).apply();
+    }
+
+    public static Set<String> getListHiddenAppsAsSet() {
+        String pkgStr = getPreferences().getString(HIDE_APPS, null);
+        if (pkgStr == null || pkgStr.isEmpty()) return Collections.emptySet();
+        return new HashSet<>(Arrays.asList(pkgStr.split(",")));
+    }
+
+    public static void saveHiddenApp(Set<String> pkgs) {
+        String pkgsStr;
+        if (pkgs.size() == 1) {
+            pkgsStr = pkgs.iterator().next();
+        } else {
+            pkgsStr = String.join(",", pkgs);
+        }
+        getPreferences().edit().putString(HIDE_APPS, pkgsStr).apply();
+    }
+
+    public static void removeHiddenApp(String pkg) {
+        Set<String> packages = getListHiddenAppsAsSet();
+        packages.remove(pkg);
+        String pkgsStr = String.join(",", packages);
+        getPreferences().edit().putString(HIDE_APPS, pkgsStr).apply();
+    }
+
     public static Set<String> getListLockedAppsAsSet() {
         String pkgStr = getPreferences().getString(LOCK_APPS, null);
         if (pkgStr == null || pkgStr.isEmpty()) return Collections.emptySet();
@@ -142,18 +184,6 @@ public class ShizukuSettings {
         pkgs.add(GROUP_PKG_PREFIX + groupName);
         String pkgsStr = String.join(",", pkgs);
         getPreferences().edit().putString(GROUP_LOCK_APPS, pkgsStr).apply();
-    }
-
-    public static void appendGroupLockedApp(String groupName) {
-        List<String> pkgs = new ArrayList<>(getListLockedAppsAsSet());
-        pkgs.add(GROUP_PKG_PREFIX + groupName);
-        String pkgsStr;
-        if (pkgs.size() == 1) {
-            pkgsStr = pkgs.iterator().next();
-        } else {
-            pkgsStr = String.join(",", pkgs);
-        }
-        getPreferences().edit().putString(LOCK_APPS, pkgsStr).apply();
     }
 
     public static void removeGroupLockedApp(String pkg) {
