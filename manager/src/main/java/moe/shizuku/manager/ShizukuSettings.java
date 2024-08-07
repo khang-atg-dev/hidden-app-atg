@@ -41,6 +41,11 @@ public class ShizukuSettings {
     public static final String GROUP_LOCK_APPS = "group_lock_apps";
     public static final String ENABLE_PASSWORD = "enable_password";
     public static final String AUTO_LOCK_TIMEOUT = "auto_lock_timeout";
+    public static final String LOCK_PASSWORD = "LOCK_PASSWORD";
+    public static final String IS_LOCKED = "IS_LOCKED";
+    public static final String IS_CHANNING_PASSWORD = "IS_CHANNING_PASSWORD";
+    public static final String IS_OPEN_OTHER_ACTIVITY = "IS_OPEN_OTHER_ACTIVITY";
+
 
     private static SharedPreferences sPreferences;
 
@@ -204,7 +209,7 @@ public class ShizukuSettings {
     }
 
     public static boolean getEnablePassword() {
-        return getPreferences().getBoolean(ENABLE_PASSWORD, false);
+        return getPreferences().getBoolean(ENABLE_PASSWORD, true);
     }
 
     public static void setEnablePassword(boolean value) {
@@ -217,5 +222,37 @@ public class ShizukuSettings {
 
     public static void setAutoLockTimeout(int value) {
         getPreferences().edit().putInt(AUTO_LOCK_TIMEOUT, value).apply();
+    }
+
+    public static String getLockPassword() {
+        return getPreferences().getString(LOCK_PASSWORD, "");
+    }
+
+    public static void setLockPassword(String value) {
+        getPreferences().edit().putString(LOCK_PASSWORD, value).apply();
+    }
+
+    public static boolean getIsLocked() {
+        return getPreferences().getBoolean(IS_LOCKED, true);
+    }
+
+    public static void setIsLocked(boolean value) {
+        getPreferences().edit().putBoolean(IS_LOCKED, value).apply();
+    }
+
+    public static void setIsChanningPassword(boolean value) {
+        getPreferences().edit().putBoolean(IS_CHANNING_PASSWORD, value).apply();
+    }
+
+    public static boolean getIsChanningPassword() {
+        return getPreferences().getBoolean(IS_CHANNING_PASSWORD, false);
+    }
+
+    public static boolean getIsOpenOtherActivity() {
+        return getPreferences().getBoolean(IS_OPEN_OTHER_ACTIVITY, false);
+    }
+
+    public static void setIsOpenOtherActivity(boolean value) {
+        getPreferences().edit().putBoolean(IS_OPEN_OTHER_ACTIVITY, value).apply();
     }
 }

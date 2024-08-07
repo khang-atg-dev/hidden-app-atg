@@ -97,6 +97,7 @@ abstract class HomeActivity : AppBarActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
+                ShizukuSettings.setIsOpenOtherActivity(true)
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }

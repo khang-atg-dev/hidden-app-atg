@@ -3,6 +3,7 @@ package moe.shizuku.manager.settings
 import android.content.res.Resources
 import android.os.Bundle
 import moe.shizuku.manager.R
+import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.app.AppBarFragmentActivity
 
 class SettingsActivity : AppBarFragmentActivity() {
@@ -22,5 +23,11 @@ class SettingsActivity : AppBarFragmentActivity() {
                     .replace(R.id.fragment_container, SettingsFragment())
                     .commit()
         }
+    }
+
+    override fun onStop() {
+        ShizukuSettings.setIsOpenOtherActivity(false)
+        this.finish()
+        super.onStop()
     }
 }
