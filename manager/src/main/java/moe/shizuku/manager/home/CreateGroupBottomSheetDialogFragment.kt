@@ -15,8 +15,10 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
+import moe.shizuku.manager.model.GroupApps
 import moe.shizuku.manager.utils.BaseAdapter
 import moe.shizuku.manager.utils.BaseHolder
 import rikka.recyclerview.addEdgeSpacing
@@ -25,14 +27,14 @@ import rikka.widget.borderview.BorderRecyclerView
 
 class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
     ItemGroupBottomSheetCallback {
-    private var data: List<AppGroupBottomSheet> = emptyList()
     private lateinit var adapter: AppsGroupBottomAdapter
-    private var selectedPkgs: Set<String> = emptySet()
-    private var callback: GroupBottomSheetCallback? = null
-
     private lateinit var edtName: TextInputEditText
     private lateinit var edtLayout: TextInputLayout
 
+    private var data: List<AppGroupBottomSheet> = emptyList()
+    private var selectedPkgs: Set<String> = emptySet()
+    private var callback: GroupBottomSheetCallback? = null
+    private var editGroup: GroupApps? = null
 
     fun setCallback(callback: GroupBottomSheetCallback) {
         this.callback = callback
@@ -58,18 +60,38 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
             setOnClickListener {
                 when {
                     edtName.text.toString().isEmpty() -> edtLayout.error = "Name cannot be empty"
-                    ShizukuSettings.getPksByGroupName(edtName.text.toString()) != null -> edtLayout.error = "Group name already exists! Please use another name."
+                    editGroup != null &&
+                            editGroup?.groupName != edtName.text.toString() &&
+                            ShizukuSettings.getPksByGroupName(GROUP_PKG_PREFIX + edtName.text.toString()) != null -> {
+                        edtLayout.error = "Group name already exists! Please use another name."
+                    }
+
+                    editGroup == null && ShizukuSettings.getPksByGroupName(GROUP_PKG_PREFIX + edtName.text.toString()) != null -> {
+                        edtLayout.error =
+                            "Group name already exists! Please use another name."
+                    }
+
                     selectedPkgs.isEmpty() -> Toast.makeText(
                         context,
                         "Please select at least one app!",
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    else -> callback?.onDone(edtName.text.toString(), selectedPkgs)
+                    else -> {
+                        editGroup?.let {
+                            callback?.onEditDone(
+                                it.groupName,
+                                edtName.text.toString(),
+                                selectedPkgs
+                            )
+                        } ?: callback?.onDone(edtName.text.toString(), selectedPkgs)
+                        dismiss()
+                    }
                 }
             }
         }
         edtName = view.findViewById<TextInputEditText>(R.id.edt_name).apply {
+            editGroup?.let { this.setText(it.groupName) }
             addTextChangedListener {
                 edtLayout.error = null
             }
@@ -77,9 +99,13 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
         edtLayout = view.findViewById(R.id.edit_layout)
     }
 
-    fun updateData(data: List<PackageInfo>) {
+    fun updateData(data: List<PackageInfo>, editGroup: GroupApps? = null) {
+        editGroup?.let {
+            this.editGroup = it
+            this.selectedPkgs = it.pkgs
+        }
         val dataSet = data.map {
-            AppGroupBottomSheet(it, false)
+            AppGroupBottomSheet(it, this.selectedPkgs.contains(it.packageName))
         }
         this.data = dataSet
     }
@@ -159,4 +185,5 @@ data class AppGroupBottomSheet(
 
 interface GroupBottomSheetCallback {
     fun onDone(groupName: String, pks: Set<String>)
+    fun onEditDone(editGroupName: String, newGroupName: String, pkgs: Set<String>)
 }

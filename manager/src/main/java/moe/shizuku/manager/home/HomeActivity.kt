@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.app.AppBarActivity
@@ -27,19 +28,8 @@ import rikka.lifecycle.viewModels
 import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
-import rikka.shizuku.Shizuku
 
 abstract class HomeActivity : AppBarActivity() {
-
-    private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
-        checkServerStatus()
-        appsModel.load()
-    }
-
-    private val binderDeadListener = Shizuku.OnBinderDeadListener {
-        checkServerStatus()
-    }
-
     private val homeModel by viewModels { HomeViewModel() }
     private val appsModel by appsViewModel()
     private val adapter by unsafeLazy { HomeAdapter() }
@@ -49,11 +39,7 @@ abstract class HomeActivity : AppBarActivity() {
         override fun onClickAddGroup() {
             CreateGroupBottomSheetDialogFragment().apply {
                 this.updateData(apps)
-                this.setCallback(object : GroupBottomSheetCallback {
-                    override fun onDone(groupName: String, pks: Set<String>) {
-
-                    }
-                })
+                this.setCallback(homeModel)
                 this.show(
                     supportFragmentManager,
                     "GroupAppsBottomSheet"
@@ -61,6 +47,32 @@ abstract class HomeActivity : AppBarActivity() {
             }
         }
 
+        override fun onClickGroup(groupName: String) {
+            CreateGroupBottomSheetDialogFragment().apply {
+                this.updateData(
+                    apps,
+                    ShizukuSettings.getPksByGroupName(GROUP_PKG_PREFIX + groupName)
+                )
+                this.setCallback(homeModel)
+                this.show(
+                    supportFragmentManager,
+                    "GroupAppsBottomSheet"
+                )
+            }
+        }
+
+        override fun onDeleteGroup(groupName: String) {
+            MaterialAlertDialogBuilder(this@HomeActivity)
+                .setTitle("Do you want to delete this group?")
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    ShizukuSettings.removeGroupLockedApp(GROUP_PKG_PREFIX + groupName)
+                    ShizukuSettings.removeDataByGroupName(groupName)
+                    homeModel.reloadGroupApps()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
+                .show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,11 +83,9 @@ abstract class HomeActivity : AppBarActivity() {
         val binding = HomeActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        homeModel.serviceStatus.observe(this) {
+        homeModel.groupApps.observe(this) {
             if (it.status == Status.SUCCESS) {
-                val status = homeModel.serviceStatus.value?.data ?: return@observe
-                adapter.updateData()
-                ShizukuSettings.setLastLaunchMode(if (status.uid == 0) ShizukuSettings.LaunchMethod.ROOT else ShizukuSettings.LaunchMethod.ADB)
+                adapter.updateData(it.data)
             }
         }
 
@@ -87,6 +97,10 @@ abstract class HomeActivity : AppBarActivity() {
 
         if (appsModel.packages.value == null) {
             appsModel.loadApps(this)
+        }
+
+        if (homeModel.groupApps.value == null) {
+            homeModel.reloadGroupApps()
         }
 
         val recyclerView = binding.list
@@ -101,25 +115,7 @@ abstract class HomeActivity : AppBarActivity() {
             unit = TypedValue.COMPLEX_UNIT_DIP
         )
 
-        Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
-        Shizuku.addBinderDeadListener(binderDeadListener)
-
         adapter.listener = callback
-    }
-
-    override fun onResume() {
-        super.onResume()
-        checkServerStatus()
-    }
-
-    private fun checkServerStatus() {
-        homeModel.reload()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Shizuku.removeBinderReceivedListener(binderReceivedListener)
-        Shizuku.removeBinderDeadListener(binderDeadListener)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

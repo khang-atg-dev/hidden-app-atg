@@ -31,15 +31,19 @@ class GroupAppsViewHolder(
     private val btnLock get() = binding.btnLock
     private val btnHide get() = binding.btnHide
     private val btnTimeout get() = binding.btnTimeout
+    private val btnClose get() = binding.closeBtn
 
     override fun onBind() {
         data?.let {
             txtGroupName.text = it.groupName
             txtNumberApps.text = "${it.pkgs.size} Apps"
+            btnClose.setOnClickListener {
+                (adapter?.listener as HomeCallback).onDeleteGroup(data.groupName)
+            }
         }
     }
 
     override fun onClick(v: View) {
-
+        (adapter?.listener as HomeCallback).onClickGroup(data.groupName)
     }
 }

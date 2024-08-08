@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class GroupApps(
     val groupName: String,
     val pkgs: Set<String>,
-    val isLocked: Boolean,
-    val isHidden: Boolean,
-    val timeOut: Int,
+    val isLocked: Boolean = false,
+    val isHidden: Boolean = false,
+    val timeOut: Int = 0,
 )

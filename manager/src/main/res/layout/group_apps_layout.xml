@@ -5,17 +5,32 @@
     android:layout_width="match_parent"
     android:layout_height="200dp">
 
-    <TextView
-        android:id="@+id/group_name"
-        style="@style/CardTitle"
+    <LinearLayout
+        android:id="@+id/top_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Text"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:orientation="horizontal"
+        android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/group_name"
+            style="@style/CardTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Text"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/close_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_close_24" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/number_apps"
@@ -29,7 +44,7 @@
         app:layout_constraintBottom_toTopOf="@id/btn_lock"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/group_name" />
+        app:layout_constraintTop_toBottomOf="@id/top_view" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_lock"

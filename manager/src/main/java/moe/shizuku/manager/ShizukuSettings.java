@@ -133,11 +133,11 @@ public class ShizukuSettings {
         getPreferences().edit().putString(GROUP_LOCK_APPS, pkgsStr).apply();
     }
 
-    public static void removeGroupLockedApp(String pkg) {
-        Set<String> packages = getGroupLockedAppsAsSet();
-        packages.remove(pkg);
-        String pkgsStr = String.join(",", packages);
-        getPreferences().edit().putString(GROUP_LOCK_APPS, pkgsStr).apply();
+    public static void removeGroupLockedApp(String name) {
+        Set<String> names = getGroupLockedAppsAsSet();
+        names.remove(GROUP_PKG_PREFIX + name);
+        String namesStr = String.join(",", names);
+        getPreferences().edit().putString(GROUP_LOCK_APPS, namesStr).apply();
     }
 
     @Nullable

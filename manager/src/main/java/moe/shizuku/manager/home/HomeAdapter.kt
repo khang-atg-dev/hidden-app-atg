@@ -7,7 +7,7 @@ import rikka.recyclerview.IndexCreatorPool
 class HomeAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
 
     init {
-        updateData()
+        updateData(null)
         setHasStableIds(true)
     }
 
@@ -20,19 +20,17 @@ class HomeAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
         return IndexCreatorPool()
     }
 
-    fun updateData() {
+    fun updateData(data: List<GroupApps>?) {
         clear()
-        addItem(
-            GroupAppsViewHolder.CREATOR,
-            GroupApps(
-                groupName = "Nell Burris",
-                pkgs = setOf(),
-                isLocked = false,
-                isHidden = false,
-                timeOut = 5797
-            ),
-            ID_GROUP
-        )
+        if (!data.isNullOrEmpty()) {
+            data.forEach {
+                addItem(
+                    GroupAppsViewHolder.CREATOR,
+                    it,
+                    ID_GROUP + it.groupName.hashCode()
+                )
+            }
+        }
         addItem(
             AddGroupViewHolder.CREATOR,
             null,
@@ -42,6 +40,8 @@ class HomeAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
     }
 }
 
-interface HomeCallback{
+interface HomeCallback {
     fun onClickAddGroup()
+    fun onClickGroup(groupName: String)
+    fun onDeleteGroup(groupName: String)
 }
