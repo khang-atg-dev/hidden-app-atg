@@ -1,6 +1,7 @@
 package moe.shizuku.manager.home
 
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
@@ -41,7 +42,26 @@ abstract class HomeActivity : AppBarActivity() {
 
     private val homeModel by viewModels { HomeViewModel() }
     private val appsModel by appsViewModel()
-    private val adapter by unsafeLazy { HomeAdapter(homeModel, appsModel) }
+    private val adapter by unsafeLazy { HomeAdapter() }
+    private val apps = mutableListOf<PackageInfo>()
+
+    private val callback = object : HomeCallback {
+        override fun onClickAddGroup() {
+            CreateGroupBottomSheetDialogFragment().apply {
+                this.updateData(apps)
+                this.setCallback(object : GroupBottomSheetCallback {
+                    override fun onDone(groupName: String, pks: Set<String>) {
+
+                    }
+                })
+                this.show(
+                    supportFragmentManager,
+                    "GroupAppsBottomSheet"
+                )
+            }
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,20 +78,33 @@ abstract class HomeActivity : AppBarActivity() {
                 ShizukuSettings.setLastLaunchMode(if (status.uid == 0) ShizukuSettings.LaunchMethod.ROOT else ShizukuSettings.LaunchMethod.ADB)
             }
         }
-        appsModel.grantedCount.observe(this) {
-            if (it.status == Status.SUCCESS) {
-                adapter.updateData()
+
+        appsModel.packages.observe(this) {
+            if (it.status == Status.SUCCESS && !it.data.isNullOrEmpty()) {
+                apps.addAll(it.data ?: emptyList())
             }
+        }
+
+        if (appsModel.packages.value == null) {
+            appsModel.loadApps(this)
         }
 
         val recyclerView = binding.list
         recyclerView.adapter = adapter
         recyclerView.fixEdgeEffect()
         recyclerView.addItemSpacing(top = 4f, bottom = 4f, unit = TypedValue.COMPLEX_UNIT_DIP)
-        recyclerView.addEdgeSpacing(top = 4f, bottom = 4f, left = 16f, right = 16f, unit = TypedValue.COMPLEX_UNIT_DIP)
+        recyclerView.addEdgeSpacing(
+            top = 4f,
+            bottom = 4f,
+            left = 16f,
+            right = 16f,
+            unit = TypedValue.COMPLEX_UNIT_DIP
+        )
 
         Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
         Shizuku.addBinderDeadListener(binderDeadListener)
+
+        adapter.listener = callback
     }
 
     override fun onResume() {
@@ -101,6 +134,7 @@ abstract class HomeActivity : AppBarActivity() {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }

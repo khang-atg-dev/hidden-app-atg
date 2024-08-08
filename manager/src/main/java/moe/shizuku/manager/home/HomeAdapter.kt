@@ -1,11 +1,10 @@
 package moe.shizuku.manager.home
 
-import moe.shizuku.manager.management.AppsViewModel
+import moe.shizuku.manager.model.GroupApps
 import rikka.recyclerview.IdBasedRecyclerViewAdapter
 import rikka.recyclerview.IndexCreatorPool
 
-class HomeAdapter(private val homeModel: HomeViewModel, private val appsModel: AppsViewModel) :
-    IdBasedRecyclerViewAdapter(ArrayList()) {
+class HomeAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
 
     init {
         updateData()
@@ -13,9 +12,8 @@ class HomeAdapter(private val homeModel: HomeViewModel, private val appsModel: A
     }
 
     companion object {
-
-        private const val ID_LOCK = 0L
-        private const val ID_HIDE = 1L
+        private const val ID_GROUP = 2L
+        private const val ID_ADD_GROUP = 2L
     }
 
     override fun onCreateCreatorPool(): IndexCreatorPool {
@@ -24,8 +22,26 @@ class HomeAdapter(private val homeModel: HomeViewModel, private val appsModel: A
 
     fun updateData() {
         clear()
-        addItem(LockAppsViewHolder.CREATOR, null , ID_LOCK)
-        addItem(HideAppsViewHolder.CREATOR, null , ID_HIDE)
+        addItem(
+            GroupAppsViewHolder.CREATOR,
+            GroupApps(
+                groupName = "Nell Burris",
+                pkgs = setOf(),
+                isLocked = false,
+                isHidden = false,
+                timeOut = 5797
+            ),
+            ID_GROUP
+        )
+        addItem(
+            AddGroupViewHolder.CREATOR,
+            null,
+            ID_ADD_GROUP
+        )
         notifyDataSetChanged()
     }
+}
+
+interface HomeCallback{
+    fun onClickAddGroup()
 }
