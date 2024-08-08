@@ -52,6 +52,38 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
         reloadGroupApps()
     }
 
+    fun hideGroup(groupName: String) {
+        ShizukuSettings.getPksByGroupName(groupName)?.let {
+            ShizukuSettings.saveDataByGroupName(
+                groupName,
+                GroupApps(
+                    groupName = it.groupName,
+                    pkgs = it.pkgs,
+                    isLocked = it.isLocked,
+                    isHidden = !it.isHidden,
+                    timeOut = it.timeOut,
+                )
+            )
+        }
+        reloadGroupApps()
+    }
+
+    fun lockGroup(groupName: String) {
+        ShizukuSettings.getPksByGroupName(groupName)?.let {
+            ShizukuSettings.saveDataByGroupName(
+                groupName,
+                GroupApps(
+                    groupName = it.groupName,
+                    pkgs = it.pkgs,
+                    isLocked = !it.isLocked,
+                    isHidden = it.isHidden,
+                    timeOut = it.timeOut,
+                )
+            )
+        }
+        reloadGroupApps()
+    }
+
     override fun onDone(groupName: String, pks: Set<String>) {
         ShizukuSettings.saveGroupLockedApps(groupName)
         ShizukuSettings.saveDataByGroupName(

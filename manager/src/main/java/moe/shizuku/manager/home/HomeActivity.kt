@@ -133,6 +133,14 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
             .show()
     }
 
+    override fun onHide(groupName: String) {
+        homeModel.hideGroup(groupName)
+    }
+
+    override fun onLock(groupName: String) {
+        homeModel.lockGroup(groupName)
+    }
+
     override fun onEditTimeout(groupName: String) {
         val data = ShizukuSettings.getPksByGroupName(groupName)
         data?.let {

@@ -45,4 +45,6 @@ interface HomeCallback {
     fun onClickGroup(groupName: String)
     fun onDeleteGroup(groupName: String)
     fun onEditTimeout(groupName: String)
+    fun onHide(groupName: String)
+    fun onLock(groupName: String)
 }

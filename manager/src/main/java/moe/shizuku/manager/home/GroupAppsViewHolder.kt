@@ -3,6 +3,7 @@ package moe.shizuku.manager.home
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.GroupAppsLayoutBinding
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
 import moe.shizuku.manager.model.GroupApps
@@ -48,10 +49,25 @@ class GroupAppsViewHolder(
             btnClose.setOnClickListener {
                 listener.onDeleteGroup(data.groupName)
             }
-
             btnTimeout.text = mapTimeout[data.timeOut]
             btnTimeout.setOnClickListener {
                 listener.onEditTimeout(data.groupName)
+            }
+            btnHide.text = "Unhide".takeIf { data.isHidden } ?: "Hide"
+            btnHide.icon = context.getDrawable(
+                R.drawable.baseline_remove_red_eye_24.takeIf { data.isHidden }
+                    ?: R.drawable.baseline_visibility_off_24
+            )
+            btnHide.setOnClickListener {
+                listener.onHide(data.groupName)
+            }
+            btnLock.text = "Unlock".takeIf { data.isLocked } ?: "Lock"
+            btnLock.icon = context.getDrawable(
+                R.drawable.baseline_lock_open_24.takeIf { data.isLocked }
+                    ?: R.drawable.baseline_lock_outline_24
+            )
+            btnLock.setOnClickListener {
+                listener.onLock(data.groupName)
             }
         }
     }
