@@ -1,6 +1,7 @@
 package moe.shizuku.manager.home
 
 import moe.shizuku.manager.model.GroupApps
+import moe.shizuku.manager.shiruku.AddGroupViewHolder
 import rikka.recyclerview.IdBasedRecyclerViewAdapter
 import rikka.recyclerview.IndexCreatorPool
 

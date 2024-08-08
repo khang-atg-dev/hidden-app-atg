@@ -1,4 +1,4 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.shiruku
 
 import android.app.Dialog
 import android.os.Bundle

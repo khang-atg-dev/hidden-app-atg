@@ -21,6 +21,7 @@ import moe.shizuku.manager.app.AppBarActivity
 import moe.shizuku.manager.databinding.HomeActivityBinding
 import moe.shizuku.manager.management.appsViewModel
 import moe.shizuku.manager.settings.SettingsActivity
+import moe.shizuku.manager.shiruku.ShirukuActivity
 import moe.shizuku.manager.starter.Starter
 import moe.shizuku.manager.utils.isAccessibilityServiceEnabled
 import moe.shizuku.manager.utils.isCanDrawOverlays
@@ -142,7 +143,9 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     }
 
     override fun onHide(groupName: String) {
-        homeModel.hideGroup(groupName)
+//        homeModel.hideGroup(groupName)
+        ShizukuSettings.setIsOpenOtherActivity(true)
+        startActivity(Intent(this, ShirukuActivity::class.java))
     }
 
     override fun onLock(groupName: String) {

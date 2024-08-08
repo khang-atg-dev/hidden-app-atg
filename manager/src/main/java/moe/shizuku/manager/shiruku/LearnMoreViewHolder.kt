@@ -1,26 +1,26 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.shiruku
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import moe.shizuku.manager.Helps
-import moe.shizuku.manager.databinding.HomeExtraStepRequiredBinding
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
+import moe.shizuku.manager.databinding.HomeLearnMoreBinding
 import moe.shizuku.manager.utils.CustomTabsHelper
 import rikka.recyclerview.BaseViewHolder
 import rikka.recyclerview.BaseViewHolder.Creator
 
-class AdbPermissionLimitedViewHolder(binding: HomeExtraStepRequiredBinding, root: View) : BaseViewHolder<Any?>(root) {
+class LearnMoreViewHolder(binding: HomeLearnMoreBinding, root: View) : BaseViewHolder<Any?>(root) {
 
     companion object {
         val CREATOR = Creator<Any> { inflater: LayoutInflater, parent: ViewGroup? ->
             val outer = HomeItemContainerBinding.inflate(inflater, parent, false)
-            val inner = HomeExtraStepRequiredBinding.inflate(inflater, outer.root, true)
-            AdbPermissionLimitedViewHolder(inner, outer.root)
+            val inner = HomeLearnMoreBinding.inflate(inflater, outer.root, true)
+            LearnMoreViewHolder(inner, outer.root)
         }
     }
 
     init {
-        binding.button1.setOnClickListener { v: View -> CustomTabsHelper.launchUrlOrCopy(v.context, Helps.ADB_PERMISSION.get()) }
+        root.setOnClickListener { v: View -> CustomTabsHelper.launchUrlOrCopy(v.context, Helps.HOME.get()) }
     }
 }

@@ -1,9 +1,8 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.shiruku
 
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.os.SystemProperties
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
@@ -16,6 +15,8 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.adb.AdbPairingTutorialActivity
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
 import moe.shizuku.manager.databinding.HomeStartWirelessAdbBinding
+import moe.shizuku.manager.shiruku.AdbDialogFragment
+import moe.shizuku.manager.shiruku.AdbPairDialogFragment
 import moe.shizuku.manager.ktx.toHtml
 import moe.shizuku.manager.starter.StarterActivity
 import moe.shizuku.manager.utils.CustomTabsHelper
@@ -24,7 +25,6 @@ import rikka.core.content.asActivity
 import rikka.html.text.HtmlCompat
 import rikka.recyclerview.BaseViewHolder
 import rikka.recyclerview.BaseViewHolder.Creator
-import java.net.Inet4Address
 
 class StartWirelessAdbViewHolder(binding: HomeStartWirelessAdbBinding, root: View) :
     BaseViewHolder<Any?>(root) {

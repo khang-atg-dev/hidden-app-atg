@@ -1,10 +1,11 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.shiruku
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import moe.shizuku.manager.databinding.AddGroupLayoutBinding
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
+import moe.shizuku.manager.home.HomeCallback
 import rikka.recyclerview.BaseViewHolder
 import rikka.recyclerview.BaseViewHolder.Creator
 
