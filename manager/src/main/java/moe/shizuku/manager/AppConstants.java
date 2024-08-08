@@ -14,4 +14,7 @@ public class AppConstants {
     public static final String GROUP_PKG_PREFIX = "hidden.group.";
     public static final int PASSWORD_LENGTH = 4;
 
+    public static final String RELOAD_PACKAGES_FOR_LOCK = "RELOAD_PACKAGES_FOR_LOCK";
+
+
 }

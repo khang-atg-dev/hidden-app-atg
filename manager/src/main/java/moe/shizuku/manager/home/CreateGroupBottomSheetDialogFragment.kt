@@ -57,15 +57,16 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
         adapter.dataSource = data
         view.findViewById<MaterialButton>(R.id.action_btn)?.apply {
             setOnClickListener {
+                val newName = edtName.text.toString().trim()
                 when {
-                    edtName.text.toString().isEmpty() -> edtLayout.error = "Name cannot be empty"
+                    newName.isEmpty() -> edtLayout.error = "Name cannot be empty"
                     editGroup != null &&
-                            editGroup?.groupName != edtName.text.toString() &&
-                            ShizukuSettings.getPksByGroupName(edtName.text.toString()) != null -> {
+                            editGroup?.groupName != newName &&
+                            ShizukuSettings.getPksByGroupName(newName) != null -> {
                         edtLayout.error = "Group name already exists! Please use another name."
                     }
 
-                    editGroup == null && ShizukuSettings.getPksByGroupName(edtName.text.toString()) != null -> {
+                    editGroup == null && ShizukuSettings.getPksByGroupName(newName) != null -> {
                         edtLayout.error =
                             "Group name already exists! Please use another name."
                     }
@@ -80,10 +81,10 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
                         editGroup?.let {
                             callback?.onEditDone(
                                 it.groupName,
-                                edtName.text.toString(),
+                                newName,
                                 selectedPkgs
                             )
-                        } ?: callback?.onDone(edtName.text.toString(), selectedPkgs)
+                        } ?: callback?.onDone(newName, selectedPkgs)
                         dismiss()
                     }
                 }

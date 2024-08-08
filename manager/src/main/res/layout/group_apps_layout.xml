@@ -9,8 +9,8 @@
         android:id="@+id/top_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -18,12 +18,34 @@
         <TextView
             android:id="@+id/group_name"
             style="@style/CardTitle"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:hint="Text"
             android:textSize="24sp"
             android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/hidden_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:visibility="gone"
+            android:src="@drawable/baseline_visibility_off_24"
+            android:tint="@color/material_red_400" />
+
+        <ImageView
+            android:id="@+id/locked_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:visibility="gone"
+            android:src="@drawable/baseline_lock_24"
+            android:tint="@color/material_red_400" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ImageView
             android:id="@+id/close_btn"
@@ -51,7 +73,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Lock"
-        app:icon="@drawable/baseline_lock_open_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -59,8 +80,7 @@
         android:id="@+id/btn_hide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Lock"
-        app:icon="@drawable/baseline_remove_red_eye_24"
+        android:text="Hide"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btn_timeout"
         app:layout_constraintStart_toEndOf="@id/btn_lock" />

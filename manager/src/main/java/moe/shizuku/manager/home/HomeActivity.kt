@@ -22,6 +22,8 @@ import moe.shizuku.manager.databinding.HomeActivityBinding
 import moe.shizuku.manager.management.appsViewModel
 import moe.shizuku.manager.settings.SettingsActivity
 import moe.shizuku.manager.starter.Starter
+import moe.shizuku.manager.utils.isAccessibilityServiceEnabled
+import moe.shizuku.manager.utils.isCanDrawOverlays
 import rikka.core.ktx.unsafeLazy
 import rikka.lifecycle.Status
 import rikka.lifecycle.viewModels
@@ -34,6 +36,12 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     private val appsModel by appsViewModel()
     private val adapter by unsafeLazy { HomeAdapter() }
     private val apps = mutableListOf<PackageInfo>()
+    private val lockPermissionDialogFragment = LockPermissionDialogFragment()
+
+    override fun onResume() {
+        super.onResume()
+        homeModel.reloadGroupApps()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -138,7 +146,11 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     }
 
     override fun onLock(groupName: String) {
-        homeModel.lockGroup(groupName)
+        if (this.isCanDrawOverlays() && this.isAccessibilityServiceEnabled()) {
+            homeModel.lockGroup(this, groupName)
+        } else {
+            lockPermissionDialogFragment.show(supportFragmentManager, "LockPermission")
+        }
     }
 
     override fun onEditTimeout(groupName: String) {

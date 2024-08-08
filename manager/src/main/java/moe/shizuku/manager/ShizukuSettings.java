@@ -123,20 +123,20 @@ public class ShizukuSettings {
     public static Set<String> getGroupLockedAppsAsSet() {
         String pkgStr = getPreferences().getString(GROUP_LOCK_APPS, null);
         if (pkgStr == null || pkgStr.isEmpty()) return Collections.emptySet();
-        return new HashSet<>(Arrays.asList(pkgStr.split(",")));
+        return new HashSet<>(Arrays.asList(pkgStr.split("/-/")));
     }
 
     public static void saveGroupLockedApps(String groupName) {
         List<String> pkgs = new ArrayList<>(getGroupLockedAppsAsSet());
         pkgs.add(GROUP_PKG_PREFIX + groupName);
-        String pkgsStr = String.join(",", pkgs);
+        String pkgsStr = String.join("/-/", pkgs);
         getPreferences().edit().putString(GROUP_LOCK_APPS, pkgsStr).apply();
     }
 
     public static void removeGroupLockedApp(String name) {
         Set<String> names = getGroupLockedAppsAsSet();
         names.remove(GROUP_PKG_PREFIX + name);
-        String namesStr = String.join(",", names);
+        String namesStr = String.join("/-/", names);
         getPreferences().edit().putString(GROUP_LOCK_APPS, namesStr).apply();
     }
 

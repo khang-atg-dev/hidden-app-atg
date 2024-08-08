@@ -8,6 +8,7 @@ import androidx.fragment.app.DialogFragment;
 import moe.shizuku.manager.home.CreateGroupBottomSheetDialogFragment;
 import moe.shizuku.manager.home.HomeActivity;
 import moe.shizuku.manager.lock.LockFragment;
+import moe.shizuku.manager.utils.ExtensionsKt;
 
 public class MainActivity extends HomeActivity {
 
@@ -15,11 +16,13 @@ public class MainActivity extends HomeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ExtensionsKt.checkOverlayPermission(this);
         super.onCreate(savedInstanceState);
     }
 
     @Override
     protected void onResume() {
+        ExtensionsKt.checkOverlayPermission(this);
         if (ShizukuSettings.getEnablePassword() && ShizukuSettings.getIsLocked() && !ShizukuSettings.getIsOpenOtherActivity()) {
             lockFragment.show(getSupportFragmentManager(), "my_dialog");
         }
@@ -35,5 +38,11 @@ public class MainActivity extends HomeActivity {
     protected void onStop() {
         ShizukuSettings.setIsLocked(true);
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        ShizukuSettings.setIsOpenOtherActivity(false);
+        super.onDestroy();
     }
 }

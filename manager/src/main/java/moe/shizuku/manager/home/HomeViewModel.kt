@@ -1,11 +1,14 @@
 package moe.shizuku.manager.home
 
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.AppConstants.RELOAD_PACKAGES_FOR_LOCK
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
 import rikka.lifecycle.Resource
@@ -24,7 +27,9 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
                 } else {
                     val list = mutableListOf<GroupApps>()
                     groupApps.forEach {
-                        ShizukuSettings.getPksByGroupName(it.substringAfterLast("."))?.let { groupApps ->
+                        ShizukuSettings.getPksByGroupName(
+                            it.substringAfterLast(".")
+                        )?.let { groupApps ->
                             list.add(groupApps)
                         }
                     }
@@ -68,7 +73,7 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
         reloadGroupApps()
     }
 
-    fun lockGroup(groupName: String) {
+    fun lockGroup(context: Context, groupName: String) {
         ShizukuSettings.getPksByGroupName(groupName)?.let {
             ShizukuSettings.saveDataByGroupName(
                 groupName,
@@ -82,6 +87,7 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
             )
         }
         reloadGroupApps()
+        context.sendBroadcast(Intent(RELOAD_PACKAGES_FOR_LOCK).setPackage(context.packageName))
     }
 
     override fun onDone(groupName: String, pks: Set<String>) {
@@ -97,7 +103,20 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
     }
 
     override fun onEditDone(editGroupName: String, newGroupName: String, pkgs: Set<String>) {
-        ShizukuSettings.removeDataByGroupName(editGroupName)
-        onDone(newGroupName, pkgs)
+        ShizukuSettings.getPksByGroupName(editGroupName)?.let {
+            ShizukuSettings.saveGroupLockedApps(newGroupName)
+            ShizukuSettings.saveDataByGroupName(
+                newGroupName,
+                GroupApps(
+                    groupName = newGroupName,
+                    pkgs = pkgs,
+                    isLocked = it.isLocked,
+                    isHidden = it.isHidden,
+                    timeOut = it.timeOut,
+                )
+            )
+        }
+        if (editGroupName != newGroupName) ShizukuSettings.removeDataByGroupName(editGroupName)
+        reloadGroupApps()
     }
 }
