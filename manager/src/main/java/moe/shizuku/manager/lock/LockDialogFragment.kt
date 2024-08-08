@@ -12,7 +12,7 @@ import moe.shizuku.manager.AppConstants.PASSWORD_LENGTH
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 
-class LockFragment : DialogFragment() {
+class LockDialogFragment : DialogFragment() {
 
     private var passwordState = PasswordState.Idle
     private var password = ""
@@ -60,7 +60,7 @@ class LockFragment : DialogFragment() {
             if (passwordState == PasswordState.Changing) {
                 visibility = View.VISIBLE
                 setOnClickListener {
-                    this@LockFragment.dismiss()
+                    this@LockDialogFragment.dismiss()
                 }
             } else {
                 visibility = View.GONE
@@ -129,7 +129,7 @@ class LockFragment : DialogFragment() {
             when (passwordState) {
                 PasswordState.Locked -> {
                     if (password == ShizukuSettings.getLockPassword()) {
-                        this@LockFragment.dismiss()
+                        this@LockDialogFragment.dismiss()
                     } else {
                         txtError.text = "Your password incorrect!"
                     }
@@ -164,7 +164,7 @@ class LockFragment : DialogFragment() {
                     if (verifiedPassword == password) {
                         ShizukuSettings.setLockPassword(password)
                         ShizukuSettings.setIsLocked(false)
-                        this@LockFragment.dismiss()
+                        this@LockDialogFragment.dismiss()
                     } else {
                         txtError.text = "Your password does not match!"
                     }

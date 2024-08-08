@@ -12,14 +12,14 @@ import androidx.preference.SwitchPreference
 import androidx.recyclerview.widget.RecyclerView
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
-import moe.shizuku.manager.lock.LockFragment
+import moe.shizuku.manager.lock.LockDialogFragment
 import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.fixEdgeEffect
 import rikka.widget.borderview.BorderRecyclerView
 
 class SettingsFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
-    private val lockFragment = LockFragment()
+    private val lockDialogFragment = LockDialogFragment()
 
     override fun onResume() {
         super.onResume()
@@ -39,7 +39,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
         findPreference<Preference>("change_password")?.setOnPreferenceClickListener {
             ShizukuSettings.setIsChanningPassword(true)
-            lockFragment.show(parentFragmentManager, "my_dialog")
+            lockDialogFragment.show(parentFragmentManager, "my_dialog")
             true
         }
 

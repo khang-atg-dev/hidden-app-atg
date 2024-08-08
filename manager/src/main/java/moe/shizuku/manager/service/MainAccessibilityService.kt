@@ -12,11 +12,14 @@ import android.view.accessibility.AccessibilityEvent
 import androidx.annotation.RequiresApi
 import moe.shizuku.manager.AppConstants.RELOAD_PACKAGES_FOR_LOCK
 import moe.shizuku.manager.ShizukuSettings
+import moe.shizuku.manager.home.LockScreenManage
 import moe.shizuku.manager.utils.getPackageLauncher
 
 class MainAccessibilityService : AccessibilityService() {
 
     private var packageLauncher: String = ""
+    private val lockManager = LockScreenManage()
+    private var prevEventTime = 0L
 
     private val _broadcastReceiver: BroadcastReceiver = (object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -24,7 +27,7 @@ class MainAccessibilityService : AccessibilityService() {
                 RELOAD_PACKAGES_FOR_LOCK -> {
                     packageLauncher = context?.getPackageLauncher() ?: ""
                     val groups = ShizukuSettings.getGroupLockedAppsAsSet()
-                    val pkgsSet = mutableSetOf<String>()
+                    val pkgsSet = mutableSetOf(packageLauncher)
                     groups.forEach {
                         val groupApps =
                             ShizukuSettings.getPksByGroupName(it.substringAfterLast("."))
@@ -32,11 +35,15 @@ class MainAccessibilityService : AccessibilityService() {
                             if (d.isLocked) pkgsSet.addAll(d.pkgs)
                         }
                     }
+                    if (pkgsSet.size == 1) {
+                        pkgsSet.clear()
+                        pkgsSet.add(baseContext.packageName)
+                    }
                     this@MainAccessibilityService.serviceInfo =
                         AccessibilityServiceInfo().apply {
                             eventTypes = AccessibilityEvent.TYPES_ALL_MASK
                             feedbackType = AccessibilityServiceInfo.FEEDBACK_ALL_MASK
-                            packageNames = pkgsSet.toTypedArray() + packageLauncher
+                            packageNames = pkgsSet.toTypedArray()
                             notificationTimeout = 300
                         }
                 }
@@ -76,8 +83,18 @@ class MainAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event?.let {
+            if (it.packageName == baseContext.packageName) return
             when (it.eventType) {
                 AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                    prevEventTime = if (prevEventTime == 0L) {
+                        event.eventTime
+                    } else {
+                        if (event.eventTime - prevEventTime < 500) {
+                            return
+                        } else {
+                            event.eventTime
+                        }
+                    }
                     checkAppIsLocked(it.packageName.toString())
                 }
 
@@ -99,10 +116,21 @@ class MainAccessibilityService : AccessibilityService() {
         this@MainAccessibilityService.serviceInfo = AccessibilityServiceInfo().apply {
             eventTypes = AccessibilityEvent.TYPES_ALL_MASK
             feedbackType = AccessibilityServiceInfo.FEEDBACK_ALL_MASK
+            packageNames = arrayOf(baseContext.packageName)
         }
     }
 
     private fun checkAppIsLocked(pkName: String) {
-
+        if (packageLauncher == pkName) {
+            lockManager.hideLockScreen()
+            lockManager.resetSkipEvent()
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            lockManager.showLockScreen(context = baseContext)
+        } else {
+            lockManager.hideLockScreen()
+            lockManager.resetSkipEvent()
+        }
     }
 }
