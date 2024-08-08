@@ -6,7 +6,6 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
@@ -34,9 +33,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.settings, null)
-
-        findPreference<ListPreference>("auto_lock_timeout")?.value =
-            ShizukuSettings.getAutoLockTimeout().toString()
 
         findPreference<SwitchPreference>("enable_lock")?.isChecked =
             ShizukuSettings.getEnablePassword()
@@ -75,10 +71,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
             if (key == "enable_lock") {
                 val selectedValue = it.getBoolean(key, false)
                 ShizukuSettings.setEnablePassword(selectedValue)
-            }
-            if (key == "auto_lock_timeout") {
-                val selectedValue = it.getString(key, "0") ?: "0"
-                ShizukuSettings.setAutoLockTimeout(selectedValue.toInt())
             }
         }
     }

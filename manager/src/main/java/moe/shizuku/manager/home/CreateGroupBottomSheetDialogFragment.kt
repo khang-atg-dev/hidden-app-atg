@@ -58,7 +58,7 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
             setOnClickListener {
                 when {
                     edtName.text.toString().isEmpty() -> edtLayout.error = "Name cannot be empty"
-                    !ShizukuSettings.getPksByGroupName(edtName.text.toString()).isNullOrEmpty() -> edtLayout.error = "Group name already exists! Please use another name."
+                    ShizukuSettings.getPksByGroupName(edtName.text.toString()) != null -> edtLayout.error = "Group name already exists! Please use another name."
                     selectedPkgs.isEmpty() -> Toast.makeText(
                         context,
                         "Please select at least one app!",

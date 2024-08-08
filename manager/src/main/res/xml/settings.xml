@@ -10,15 +10,6 @@
             android:summary="Require password when opening App"
             android:title="Enable password" />
 
-        <ListPreference
-            android:dependency="enable_lock"
-            android:entries="@array/auto_lock_timeout_entries"
-            android:entryValues="@array/auto_lock_timeout_values"
-            android:key="auto_lock_timeout"
-            android:summary="%s"
-            android:title="Auto-Lock Timeout"
-            app:defaultValue="0" />
-
         <Preference
             android:key="change_password"
             android:title="ChangePassword" />
