@@ -24,7 +24,7 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
                 } else {
                     val list = mutableListOf<GroupApps>()
                     groupApps.forEach {
-                        ShizukuSettings.getPksByGroupName(it)?.let { groupApps ->
+                        ShizukuSettings.getPksByGroupName(it.substringAfterLast("."))?.let { groupApps ->
                             list.add(groupApps)
                         }
                     }
@@ -34,6 +34,22 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
                 _groupApps.postValue(Resource.error(e, emptyList()))
             }
         }
+    }
+
+    fun changeTimeout(groupName: String, timeout: Long) {
+        ShizukuSettings.getPksByGroupName(groupName)?.let {
+            ShizukuSettings.saveDataByGroupName(
+                groupName,
+                GroupApps(
+                    groupName = it.groupName,
+                    pkgs = it.pkgs,
+                    isLocked = it.isLocked,
+                    isHidden = it.isHidden,
+                    timeOut = timeout,
+                )
+            )
+        }
+        reloadGroupApps()
     }
 
     override fun onDone(groupName: String, pks: Set<String>) {

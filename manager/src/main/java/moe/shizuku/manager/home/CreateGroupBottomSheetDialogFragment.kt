@@ -15,7 +15,6 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
@@ -62,11 +61,11 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
                     edtName.text.toString().isEmpty() -> edtLayout.error = "Name cannot be empty"
                     editGroup != null &&
                             editGroup?.groupName != edtName.text.toString() &&
-                            ShizukuSettings.getPksByGroupName(GROUP_PKG_PREFIX + edtName.text.toString()) != null -> {
+                            ShizukuSettings.getPksByGroupName(edtName.text.toString()) != null -> {
                         edtLayout.error = "Group name already exists! Please use another name."
                     }
 
-                    editGroup == null && ShizukuSettings.getPksByGroupName(GROUP_PKG_PREFIX + edtName.text.toString()) != null -> {
+                    editGroup == null && ShizukuSettings.getPksByGroupName(edtName.text.toString()) != null -> {
                         edtLayout.error =
                             "Group name already exists! Please use another name."
                     }

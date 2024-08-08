@@ -29,51 +29,11 @@ import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 
-abstract class HomeActivity : AppBarActivity() {
+abstract class HomeActivity : AppBarActivity(), HomeCallback {
     private val homeModel by viewModels { HomeViewModel() }
     private val appsModel by appsViewModel()
     private val adapter by unsafeLazy { HomeAdapter() }
     private val apps = mutableListOf<PackageInfo>()
-
-    private val callback = object : HomeCallback {
-        override fun onClickAddGroup() {
-            CreateGroupBottomSheetDialogFragment().apply {
-                this.updateData(apps)
-                this.setCallback(homeModel)
-                this.show(
-                    supportFragmentManager,
-                    "GroupAppsBottomSheet"
-                )
-            }
-        }
-
-        override fun onClickGroup(groupName: String) {
-            CreateGroupBottomSheetDialogFragment().apply {
-                this.updateData(
-                    apps,
-                    ShizukuSettings.getPksByGroupName(GROUP_PKG_PREFIX + groupName)
-                )
-                this.setCallback(homeModel)
-                this.show(
-                    supportFragmentManager,
-                    "GroupAppsBottomSheet"
-                )
-            }
-        }
-
-        override fun onDeleteGroup(groupName: String) {
-            MaterialAlertDialogBuilder(this@HomeActivity)
-                .setTitle("Do you want to delete this group?")
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    ShizukuSettings.removeGroupLockedApp(GROUP_PKG_PREFIX + groupName)
-                    ShizukuSettings.removeDataByGroupName(groupName)
-                    homeModel.reloadGroupApps()
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .create()
-                .show()
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,7 +75,7 @@ abstract class HomeActivity : AppBarActivity() {
             unit = TypedValue.COMPLEX_UNIT_DIP
         )
 
-        adapter.listener = callback
+        adapter.listener = this
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -132,6 +92,65 @@ abstract class HomeActivity : AppBarActivity() {
             }
 
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onClickAddGroup() {
+        CreateGroupBottomSheetDialogFragment().apply {
+            this.updateData(apps)
+            this.setCallback(homeModel)
+            this.show(
+                supportFragmentManager,
+                "GroupAppsBottomSheet"
+            )
+        }
+    }
+
+    override fun onClickGroup(groupName: String) {
+        CreateGroupBottomSheetDialogFragment().apply {
+            this.updateData(
+                apps,
+                ShizukuSettings.getPksByGroupName(groupName)
+            )
+            this.setCallback(homeModel)
+            this.show(
+                supportFragmentManager,
+                "GroupAppsBottomSheet"
+            )
+        }
+    }
+
+    override fun onDeleteGroup(groupName: String) {
+        MaterialAlertDialogBuilder(this@HomeActivity)
+            .setTitle("Do you want to delete this group?")
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                ShizukuSettings.removeGroupLockedApp(GROUP_PKG_PREFIX + groupName)
+                ShizukuSettings.removeDataByGroupName(groupName)
+                homeModel.reloadGroupApps()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+            .show()
+    }
+
+    override fun onEditTimeout(groupName: String) {
+        val data = ShizukuSettings.getPksByGroupName(groupName)
+        data?.let {
+            val indexSelected = resources.getStringArray(R.array.auto_lock_timeout_values)
+                .indexOf(it.timeOut.toString())
+            MaterialAlertDialogBuilder(this@HomeActivity)
+                .setTitle("Auto-Lock Timeout")
+                .setSingleChoiceItems(
+                    resources.getStringArray(R.array.auto_lock_timeout_entries),
+                    indexSelected
+                ) { d, which ->
+                    val timeout =
+                        resources.getStringArray(R.array.auto_lock_timeout_values)[which].toLong()
+                    homeModel.changeTimeout(groupName, timeout)
+                    d.dismiss()
+                }
+                .create()
+                .show()
         }
     }
 

@@ -142,7 +142,7 @@ public class ShizukuSettings {
 
     @Nullable
     public static GroupApps getPksByGroupName(String name) {
-        String objStr = getPreferences().getString(name, "");
+        String objStr = getPreferences().getString(GROUP_PKG_PREFIX + name, "");
         if (objStr.isEmpty()) return null;
         try {
             return gson.fromJson(objStr, GroupApps.class);

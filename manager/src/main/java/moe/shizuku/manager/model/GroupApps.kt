@@ -8,5 +8,5 @@ data class GroupApps(
     val pkgs: Set<String>,
     val isLocked: Boolean = false,
     val isHidden: Boolean = false,
-    val timeOut: Int = 0,
+    val timeOut: Long = 0,
 )
