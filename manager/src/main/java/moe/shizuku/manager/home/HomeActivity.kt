@@ -173,8 +173,10 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
         MaterialAlertDialogBuilder(this@HomeActivity)
             .setTitle("Do you want to delete this group?")
             .setPositiveButton(android.R.string.ok) { _, _ ->
+                homeModel.onDeleteGroup(groupName)
                 ShizukuSettings.removeGroupLockedApp(GROUP_PKG_PREFIX + groupName)
                 ShizukuSettings.removeDataByGroupName(groupName)
+                homeModel.reloadPkgLock()
                 homeModel.reloadGroupApps()
             }
             .setNegativeButton(android.R.string.cancel, null)

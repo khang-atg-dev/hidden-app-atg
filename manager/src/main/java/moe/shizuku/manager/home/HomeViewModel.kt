@@ -122,6 +122,21 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         }
     }
 
+    fun onDeleteGroup(groupName: String) {
+        ShizukuSettings.getPksByGroupName(groupName)?.let {
+            if (it.isHidden) {
+                ShizukuSettings.removeAppsIsHidden(it.pkgs)
+                this@HomeViewModel.appHider.show(it.pkgs)
+            }
+        }
+    }
+
+    fun reloadPkgLock() {
+        viewModelScope.launch {
+            _events.send(HomeEvents.RefreshLock)
+        }
+    }
+
     override fun onDone(groupName: String, pks: Set<String>) {
         ShizukuSettings.saveGroupLockedApps(groupName)
         ShizukuSettings.saveDataByGroupName(
