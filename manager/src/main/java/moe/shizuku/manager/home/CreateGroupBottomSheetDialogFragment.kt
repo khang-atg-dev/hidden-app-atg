@@ -1,6 +1,8 @@
 package moe.shizuku.manager.home
 
+import android.content.Context
 import android.content.pm.PackageInfo
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -20,6 +22,8 @@ import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
 import moe.shizuku.manager.utils.BaseAdapter
 import moe.shizuku.manager.utils.BaseHolder
+import moe.shizuku.manager.utils.getAppLabel
+import moe.shizuku.manager.utils.getApplicationIcon
 import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.fixEdgeEffect
 import rikka.widget.borderview.BorderRecyclerView
@@ -99,20 +103,36 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
         edtLayout = view.findViewById(R.id.edit_layout)
     }
 
-    fun updateData(data: List<PackageInfo>, editGroup: GroupApps? = null) {
+    fun updateData(context: Context, data: List<PackageInfo>, editGroup: GroupApps? = null) {
         editGroup?.let {
             this.editGroup = it
             this.selectedPkgs = it.pkgs
         }
+        val pm = context.packageManager
         val dataSet = data.map {
-            AppGroupBottomSheet(it, this.selectedPkgs.contains(it.packageName))
+            AppGroupBottomSheet(
+                pkName = it.packageName,
+                name = it.applicationInfo.loadLabel(pm).toString(),
+                icon = context.getApplicationIcon(it.packageName),
+                isChecked = this.selectedPkgs.contains(it.packageName)
+            )
+        }
+        ShizukuSettings.getAppsIsHidden().forEach {
+            dataSet.plus(
+                AppGroupBottomSheet(
+                    pkName = it,
+                    isChecked = this.selectedPkgs.contains(it),
+                    name = context.getAppLabel(it),
+                    icon = context.getApplicationIcon(it)
+                )
+            )
         }
         this.data = dataSet
     }
 
     override fun onSelected(pk: String, position: Int) {
         val updateData = data.map {
-            if (it.appInfo.applicationInfo.packageName == pk) {
+            if (it.pkName == pk) {
                 it.copy(isChecked = true)
             } else {
                 it
@@ -120,12 +140,12 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
         }
         this.data = updateData
         this.selectedPkgs = this.selectedPkgs.plus(pk)
-        adapter.updateItem(position, data.find { it.appInfo.applicationInfo.packageName == pk })
+        adapter.updateItem(position, data.find { it.pkName == pk })
     }
 
     override fun onUnselected(pk: String, position: Int) {
         val updateData = data.map {
-            if (it.appInfo.applicationInfo.packageName == pk) {
+            if (it.pkName == pk) {
                 it.copy(isChecked = false)
             } else {
                 it
@@ -133,7 +153,7 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
         }
         this.data = updateData
         this.selectedPkgs = this.selectedPkgs.minus(pk)
-        adapter.updateItem(position, data.find { it.appInfo.applicationInfo.packageName == pk })
+        adapter.updateItem(position, data.find { it.pkName == pk })
     }
 }
 
@@ -157,17 +177,17 @@ class AppsGroupBottomAdapter(
             val name = itemView.findViewById<TextView>(R.id.app_name)
             val pkg = itemView.findViewById<TextView>(R.id.package_name)
             val checkBox = itemView.findViewById<MaterialCheckBox>(R.id.checkbox)
-            val pm = itemView.context.packageManager
-            val ai = data.appInfo.applicationInfo
-            icon.setImageDrawable(ai.loadIcon(pm))
-            name.text = ai.loadLabel(pm)
-            pkg.text = ai.packageName
+            icon.setImageDrawable(
+                data.icon ?: itemView.context.getDrawable(R.drawable.ic_system_icon)
+            )
+            name.text = data.name
+            pkg.text = data.pkName
             checkBox.isChecked = data.isChecked
             checkBox.setOnClickListener {
                 if (checkBox.isChecked)
-                    listener.onSelected(data.appInfo.applicationInfo.packageName, position)
+                    listener.onSelected(data.pkName, position)
                 else
-                    listener.onUnselected(data.appInfo.applicationInfo.packageName, position)
+                    listener.onUnselected(data.pkName, position)
             }
         }
     }
@@ -179,8 +199,10 @@ interface ItemGroupBottomSheetCallback {
 }
 
 data class AppGroupBottomSheet(
-    val appInfo: PackageInfo,
-    var isChecked: Boolean
+    val pkName: String,
+    val name: String,
+    val icon: Drawable?,
+    val isChecked: Boolean,
 )
 
 interface GroupBottomSheetCallback {

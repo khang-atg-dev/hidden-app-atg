@@ -1,4 +1,4 @@
-package moe.shizuku.manager.shiruku
+package moe.shizuku.manager.shizuku
 
 import android.content.pm.PackageManager
 import androidx.lifecycle.LiveData
@@ -16,7 +16,7 @@ import moe.shizuku.manager.utils.ShizukuSystemApis
 import rikka.lifecycle.Resource
 import rikka.shizuku.Shizuku
 
-class ShirukuViewModel: ViewModel() {
+class ShizukuViewModel: ViewModel() {
     private val _serviceStatus = MutableLiveData<Resource<ServiceStatus>>()
     val serviceStatus = _serviceStatus as LiveData<Resource<ServiceStatus>>
 

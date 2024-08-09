@@ -1,4 +1,4 @@
-package moe.shizuku.manager.shiruku
+package moe.shizuku.manager.shizuku
 
 import android.os.Build
 import moe.shizuku.manager.management.AppsViewModel
@@ -7,8 +7,8 @@ import moe.shizuku.manager.utils.UserHandleCompat
 import rikka.recyclerview.IdBasedRecyclerViewAdapter
 import rikka.recyclerview.IndexCreatorPool
 
-class ShirukuAdapter(
-    private val shirukuModel: ShirukuViewModel,
+class ShizukuAdapter(
+    private val shirukuModel: ShizukuViewModel,
     private val appsModel: AppsViewModel
 ) :
     IdBasedRecyclerViewAdapter(ArrayList()) {
@@ -60,7 +60,6 @@ class ShirukuAdapter(
             } else {
                 addItem(StartAdbViewHolder.CREATOR, null, ID_START_ADB)
             }
-            addItem(StartAdbViewHolder.CREATOR, null, ID_START_ADB)
             if (root) {
                 addItem(StartRootViewHolder.CREATOR, rootRestart, ID_START_ROOT)
             }

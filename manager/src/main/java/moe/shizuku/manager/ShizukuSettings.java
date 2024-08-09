@@ -46,6 +46,7 @@ public class ShizukuSettings {
     public static final String IS_LOCKED = "IS_LOCKED";
     public static final String IS_CHANNING_PASSWORD = "IS_CHANNING_PASSWORD";
     public static final String IS_OPEN_OTHER_ACTIVITY = "IS_OPEN_OTHER_ACTIVITY";
+    public static final String GROUP_APPS_IS_HIDDEN = "GROUP_APPS_IS_HIDDEN";
 
 
     private static SharedPreferences sPreferences;
@@ -197,5 +198,21 @@ public class ShizukuSettings {
 
     public static void setIsOpenOtherActivity(boolean value) {
         getPreferences().edit().putBoolean(IS_OPEN_OTHER_ACTIVITY, value).apply();
+    }
+
+    public static void saveAppsIsHidden(Set<String> pkg) {
+        List<String> existPkgs = new ArrayList<>(getAppsIsHidden());
+        existPkgs.addAll(pkg);
+        getPreferences().edit().putStringSet(GROUP_APPS_IS_HIDDEN, new HashSet<>(existPkgs)).apply();
+    }
+
+    public static Set<String> getAppsIsHidden() {
+        return getPreferences().getStringSet(GROUP_APPS_IS_HIDDEN, Collections.emptySet());
+    }
+
+    public static void removeAppsIsHidden(Set<String> pkg) {
+        List<String> existPkgs = new ArrayList<>(getAppsIsHidden());
+        existPkgs.removeAll(pkg);
+        getPreferences().edit().putStringSet(GROUP_APPS_IS_HIDDEN, new HashSet<>(existPkgs)).apply();
     }
 }

@@ -49,7 +49,17 @@ class AppsViewModel(context: Context) : ViewModel() {
                     packageManager.queryIntentActivities(mainIntent, 0)
                 }
             resolvedInfo.forEach {
-                listAppInfo.add(packageManager.getPackageInfo(it.activityInfo.packageName, 0))
+                if (it.activityInfo.packageName != context.packageName) {
+                    val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        packageManager.getPackageInfo(
+                            it.activityInfo.packageName,
+                            PackageManager.PackageInfoFlags.of(0)
+                        )
+                    } else {
+                        packageManager.getPackageInfo(it.activityInfo.packageName, 0)
+                    }
+                    listAppInfo.add(packageInfo)
+                }
             }
             _packages.postValue(Resource.success(listAppInfo))
         }

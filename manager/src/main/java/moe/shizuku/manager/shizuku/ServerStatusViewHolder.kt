@@ -1,4 +1,4 @@
-package moe.shizuku.manager.shiruku
+package moe.shizuku.manager.shizuku
 
 import android.text.TextUtils
 import android.view.LayoutInflater

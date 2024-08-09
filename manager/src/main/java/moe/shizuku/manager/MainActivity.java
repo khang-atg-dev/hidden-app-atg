@@ -14,13 +14,13 @@ public class MainActivity extends HomeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ExtensionsKt.checkOverlayPermission(this);
         super.onCreate(savedInstanceState);
     }
 
     @Override
     protected void onResume() {
-        ExtensionsKt.checkOverlayPermission(this);
+        ExtensionsKt.checkLockAppsPermission(this);
+        ExtensionsKt.checkHideAppsPermission();
         if (ShizukuSettings.getEnablePassword() && ShizukuSettings.getIsLocked() && !ShizukuSettings.getIsOpenOtherActivity()) {
             if (!lockFragment.isVisible()) lockFragment.show(getSupportFragmentManager(), "my_dialog");
         }

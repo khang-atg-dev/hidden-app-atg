@@ -1,4 +1,4 @@
-package moe.shizuku.manager.shiruku
+package moe.shizuku.manager.shizuku
 
 import android.os.Bundle
 import android.util.TypedValue
@@ -14,7 +14,7 @@ import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 import rikka.shizuku.Shizuku
 
-class ShirukuActivity : AppBarActivity() {
+class ShizukuActivity : AppBarActivity() {
     private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
         checkServerStatus()
         appsModel.load()
@@ -24,9 +24,9 @@ class ShirukuActivity : AppBarActivity() {
         checkServerStatus()
     }
 
-    private val shirukuViewModel by viewModels { ShirukuViewModel() }
+    private val shizukuViewModel by viewModels { ShizukuViewModel() }
     private val appsModel by appsViewModel()
-    private val adapter by unsafeLazy { ShirukuAdapter(shirukuViewModel, appsModel) }
+    private val adapter by unsafeLazy { ShizukuAdapter(shizukuViewModel, appsModel) }
 
     override fun onStart() {
         super.onStart()
@@ -41,9 +41,9 @@ class ShirukuActivity : AppBarActivity() {
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        shirukuViewModel.serviceStatus.observe(this) {
+        shizukuViewModel.serviceStatus.observe(this) {
             if (it.status == Status.SUCCESS) {
-                val status = shirukuViewModel.serviceStatus.value?.data ?: return@observe
+                val status = shizukuViewModel.serviceStatus.value?.data ?: return@observe
                 adapter.updateData()
                 ShizukuSettings.setLastLaunchMode(if (status.uid == 0) ShizukuSettings.LaunchMethod.ROOT else ShizukuSettings.LaunchMethod.ADB)
             }
@@ -76,7 +76,7 @@ class ShirukuActivity : AppBarActivity() {
     }
 
     private fun checkServerStatus() {
-        shirukuViewModel.reload()
+        shizukuViewModel.reload()
     }
 
     override fun onDestroy() {

@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
@@ -12,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
+import rikka.shizuku.Shizuku
 
 fun Context.isAccessibilityServiceEnabled(): Boolean {
     val am = this.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -40,19 +42,19 @@ fun Context.getPackageLauncher(): String? {
     return resolveInfo?.activityInfo?.packageName
 }
 
-fun Context.checkOverlayPermission() {
+fun Context.checkLockAppsPermission() {
     CoroutineScope(Dispatchers.IO).launch {
         try {
-            val groupApps = ShizukuSettings.getGroupLockedAppsAsSet()
-            if (groupApps.isNotEmpty()) {
-                groupApps.forEach {
-                    ShizukuSettings.getPksByGroupName(
-                        it.substringAfterLast(".")
-                    )?.let { groupApps ->
-                        if (groupApps.isLocked) {
-                            val isAllowed =
-                                this@checkOverlayPermission.isAccessibilityServiceEnabled() && this@checkOverlayPermission.isCanDrawOverlays()
-                            if (!isAllowed) {
+            val isAllowed =
+                this@checkLockAppsPermission.isAccessibilityServiceEnabled() && this@checkLockAppsPermission.isCanDrawOverlays()
+            if (!isAllowed) {
+                val groupApps = ShizukuSettings.getGroupLockedAppsAsSet()
+                if (groupApps.isNotEmpty()) {
+                    groupApps.forEach {
+                        ShizukuSettings.getPksByGroupName(
+                            it.substringAfterLast(".")
+                        )?.let { groupApps ->
+                            if (groupApps.isLocked) {
                                 ShizukuSettings.saveDataByGroupName(
                                     groupApps.groupName, GroupApps(
                                         groupName = groupApps.groupName,
@@ -70,6 +72,59 @@ fun Context.checkOverlayPermission() {
         } catch (e: Throwable) {
             e.printStackTrace()
         }
+    }
+}
+
+fun checkHideAppsPermission() {
+    try {
+        if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+            val groupApps = ShizukuSettings.getGroupLockedAppsAsSet()
+            if (groupApps.isNotEmpty()) {
+                groupApps.forEach {
+                    ShizukuSettings.getPksByGroupName(
+                        it.substringAfterLast(".")
+                    )?.let { groupApps ->
+                        if (groupApps.isHidden) {
+                            ShizukuSettings.saveDataByGroupName(
+                                groupApps.groupName, GroupApps(
+                                    groupName = groupApps.groupName,
+                                    pkgs = groupApps.pkgs,
+                                    isLocked = groupApps.isLocked,
+                                    isHidden = false,
+                                    timeOut = groupApps.timeOut,
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun Context.getApplicationIcon(pkName: String): Drawable? = try {
+    this.packageManager.getApplicationIcon(pkName)
+} catch (e: Exception) {
+    null
+}
+
+fun Context.getAppLabel(packageName: String): String {
+    return try {
+        val packageManager = this.packageManager
+        val applicationInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            packageManager.getApplicationInfo(
+                packageName,
+                PackageManager.ApplicationInfoFlags.of(0)
+            )
+        } else {
+            packageManager.getApplicationInfo(packageName, 0)
+        }
+        packageManager.getApplicationLabel(applicationInfo).toString()
+    } catch (e: Exception) {
+        // Handle the case where the package is not found
+        packageName
     }
 }
 

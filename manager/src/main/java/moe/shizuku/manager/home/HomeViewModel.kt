@@ -75,9 +75,11 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
                     ShizukuSettings.getPksByGroupName(groupName)?.let {
                         if (it.pkgs.isNotEmpty()) {
                             if (!it.isHidden) {
+                                ShizukuSettings.saveAppsIsHidden(it.pkgs)
                                 this@HomeViewModel.appHider.hide(it.pkgs)
                             } else {
                                 this@HomeViewModel.appHider.show(it.pkgs)
+                                ShizukuSettings.removeAppsIsHidden(it.pkgs)
                             }
                         }
                         ShizukuSettings.saveDataByGroupName(
@@ -150,13 +152,13 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
                     _events.send(HomeEvents.RefreshLock)
                 }
             }
-            if (it.isHidden) actionHideGroupWithoutUpdateData(newGroupName)
+            if (it.isHidden) reloadHideApps(it.pkgs, pkgs)
         }
         if (editGroupName != newGroupName) ShizukuSettings.removeDataByGroupName(editGroupName)
         reloadGroupApps()
     }
 
-    private fun actionHideGroupWithoutUpdateData(groupName: String) {
+    private fun reloadHideApps(oldPks: Set<String>, newPks: Set<String>) {
         appHider.tryToActive(object : ActivationCallbackListener {
             override fun <T : moe.shizuku.manager.apphider.BaseAppHider> onActivationSuccess(
                 appHider: Class<T>,
@@ -164,15 +166,8 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
                 msg: String
             ) {
                 if (success) {
-                    ShizukuSettings.getPksByGroupName(groupName)?.let {
-                        if (it.pkgs.isNotEmpty()) {
-                            if (!it.isHidden) {
-                                this@HomeViewModel.appHider.hide(it.pkgs)
-                            } else {
-                                this@HomeViewModel.appHider.show(it.pkgs)
-                            }
-                        }
-                    }
+                    this@HomeViewModel.appHider.show(oldPks)
+                    this@HomeViewModel.appHider.hide(newPks)
                 } else {
                     viewModelScope.launch {
                         _events.send(HomeEvents.ShowShirukuAlert(msg))

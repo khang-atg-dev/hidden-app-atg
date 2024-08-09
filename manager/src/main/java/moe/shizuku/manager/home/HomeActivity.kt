@@ -25,7 +25,7 @@ import moe.shizuku.manager.app.AppBarActivity
 import moe.shizuku.manager.databinding.HomeActivityBinding
 import moe.shizuku.manager.management.appsViewModel
 import moe.shizuku.manager.settings.SettingsActivity
-import moe.shizuku.manager.shiruku.ShirukuActivity
+import moe.shizuku.manager.shizuku.ShizukuActivity
 import moe.shizuku.manager.starter.Starter
 import moe.shizuku.manager.utils.isAccessibilityServiceEnabled
 import moe.shizuku.manager.utils.isCanDrawOverlays
@@ -71,7 +71,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
                                     this@HomeActivity.startActivity(
                                         Intent(
                                             this@HomeActivity,
-                                            ShirukuActivity::class.java
+                                            ShizukuActivity::class.java
                                         )
                                     )
                                 }
@@ -145,7 +145,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
 
     override fun onClickAddGroup() {
         CreateGroupBottomSheetDialogFragment().apply {
-            this.updateData(apps)
+            this.updateData(this@HomeActivity, apps)
             this.setCallback(homeModel)
             this.show(
                 supportFragmentManager,
@@ -157,6 +157,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     override fun onClickGroup(groupName: String) {
         CreateGroupBottomSheetDialogFragment().apply {
             this.updateData(
+                this@HomeActivity,
                 apps,
                 ShizukuSettings.getPksByGroupName(groupName)
             )

@@ -71,7 +71,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".shiruku.ShirukuActivity"
+            android:name=".shizuku.ShizukuActivity"
             android:label="Shirulu" />
         <activity
             android:name=".management.ApplicationManagementActivity"

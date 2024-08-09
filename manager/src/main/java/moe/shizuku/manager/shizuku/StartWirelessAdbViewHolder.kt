@@ -1,4 +1,4 @@
-package moe.shizuku.manager.shiruku
+package moe.shizuku.manager.shizuku
 
 import android.content.Context
 import android.content.Intent
@@ -15,8 +15,6 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.adb.AdbPairingTutorialActivity
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
 import moe.shizuku.manager.databinding.HomeStartWirelessAdbBinding
-import moe.shizuku.manager.shiruku.AdbDialogFragment
-import moe.shizuku.manager.shiruku.AdbPairDialogFragment
 import moe.shizuku.manager.ktx.toHtml
 import moe.shizuku.manager.starter.StarterActivity
 import moe.shizuku.manager.utils.CustomTabsHelper
