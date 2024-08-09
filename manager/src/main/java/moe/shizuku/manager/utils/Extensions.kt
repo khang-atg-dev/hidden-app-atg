@@ -104,10 +104,17 @@ fun checkHideAppsPermission() {
     }
 }
 
-fun Context.getApplicationIcon(pkName: String): Drawable? = try {
-    this.packageManager.getApplicationIcon(pkName)
-} catch (e: Exception) {
-    null
+fun Context.getApplicationIcon(pkName: String): Drawable? {
+    val packageManager = this.packageManager
+    val applicationInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        packageManager.getApplicationInfo(
+            pkName,
+            PackageManager.ApplicationInfoFlags.of(0)
+        )
+    } else {
+        packageManager.getApplicationInfo(pkName, 0)
+    }
+    return applicationInfo.loadIcon(packageManager)
 }
 
 fun Context.getAppLabel(packageName: String): String {

@@ -47,6 +47,7 @@ public class ShizukuSettings {
     public static final String IS_CHANNING_PASSWORD = "IS_CHANNING_PASSWORD";
     public static final String IS_OPEN_OTHER_ACTIVITY = "IS_OPEN_OTHER_ACTIVITY";
     public static final String GROUP_APPS_IS_HIDDEN = "GROUP_APPS_IS_HIDDEN";
+    public static final String IS_SHOW_AUTO_START_NOTICE = "IS_SHOW_AUTO_START_NOTICE";
 
 
     private static SharedPreferences sPreferences;
@@ -214,5 +215,13 @@ public class ShizukuSettings {
         List<String> existPkgs = new ArrayList<>(getAppsIsHidden());
         existPkgs.removeAll(pkg);
         getPreferences().edit().putStringSet(GROUP_APPS_IS_HIDDEN, new HashSet<>(existPkgs)).apply();
+    }
+
+    public static void setIsShowAutoStartNotice(boolean value) {
+        getPreferences().edit().putBoolean(IS_SHOW_AUTO_START_NOTICE, value).apply();
+    }
+
+    public static boolean getIsShowAutoStartNotice() {
+        return getPreferences().getBoolean(IS_SHOW_AUTO_START_NOTICE, false);
     }
 }

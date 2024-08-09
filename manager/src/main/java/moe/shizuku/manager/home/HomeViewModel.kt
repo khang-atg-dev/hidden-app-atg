@@ -1,21 +1,36 @@
 package moe.shizuku.manager.home
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.PowerManager
+import androidx.appcompat.app.AppCompatActivity.POWER_SERVICE
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.BuildConfig
+import moe.shizuku.manager.Manifest
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.apphider.ActivationCallbackListener
 import moe.shizuku.manager.apphider.ShizukuAppHider
 import moe.shizuku.manager.model.GroupApps
+import moe.shizuku.manager.model.ServiceStatus
+import moe.shizuku.manager.utils.Logger.LOGGER
+import moe.shizuku.manager.utils.ShizukuSystemApis
 import rikka.lifecycle.Resource
+import rikka.shizuku.Shizuku
+import java.util.concurrent.CancellationException
 
 class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
+
+    private val _serviceStatus = MutableLiveData<Resource<ServiceStatus>>()
+    val serviceStatus = _serviceStatus as LiveData<Resource<ServiceStatus>>
 
     private val _groupApps = MutableLiveData<Resource<List<GroupApps>>>()
     val groupApps = _groupApps as LiveData<Resource<List<GroupApps>>>
@@ -24,6 +39,48 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
     val events = _events.receiveAsFlow()
 
     private val appHider = ShizukuAppHider(context)
+
+    private fun load(): ServiceStatus {
+        if (!Shizuku.pingBinder()) {
+            return ServiceStatus()
+        }
+
+        val uid = Shizuku.getUid()
+        val apiVersion = Shizuku.getVersion()
+        val patchVersion = Shizuku.getServerPatchVersion().let { if (it < 0) 0 else it }
+        val seContext = if (apiVersion >= 6) {
+            try {
+                Shizuku.getSELinuxContext()
+            } catch (tr: Throwable) {
+                LOGGER.w(tr, "getSELinuxContext")
+                null
+            }
+        } else null
+        val permissionTest =
+            Shizuku.checkRemotePermission("android.permission.GRANT_RUNTIME_PERMISSIONS") == PackageManager.PERMISSION_GRANTED
+
+        // Before a526d6bb, server will not exit on uninstall, manager installed later will get not permission
+        // Run a random remote transaction here, report no permission as not running
+        ShizukuSystemApis.checkPermission(
+            Manifest.permission.API_V23,
+            BuildConfig.APPLICATION_ID,
+            0
+        )
+        return ServiceStatus(uid, apiVersion, patchVersion, seContext, permissionTest)
+    }
+
+    fun reloadServiceStatus() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val status = load()
+                _serviceStatus.postValue(Resource.success(status))
+            } catch (_: CancellationException) {
+
+            } catch (e: Throwable) {
+                _serviceStatus.postValue(Resource.error(e, ServiceStatus()))
+            }
+        }
+    }
 
     fun reloadGroupApps() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -64,13 +121,23 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         reloadGroupApps()
     }
 
-    fun actionHideGroup(groupName: String) {
+    private fun actionHideGroup(groupName: String) {
+        if (serviceStatus.value?.data?.isRunning != true) {
+            viewModelScope.launch {
+                _events.send(HomeEvents.ShowShirukuAlert("Shizuku: Service unavailable. Have you activated Shizuku on your device? Please activate it and try again."))
+            }
+            return
+        }
         appHider.tryToActive(object : ActivationCallbackListener {
             override fun <T : moe.shizuku.manager.apphider.BaseAppHider> onActivationSuccess(
                 appHider: Class<T>,
                 success: Boolean,
                 msg: String
             ) {
+                viewModelScope.launch {
+                    delay(1000)
+                    ShizukuSettings.setIsOpenOtherActivity(false)
+                }
                 if (success) {
                     ShizukuSettings.getPksByGroupName(groupName)?.let {
                         if (it.pkgs.isNotEmpty()) {
@@ -137,6 +204,33 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         }
     }
 
+    fun checkBatteryOptimizationRemoval(context: Context): Boolean {
+        if (!Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)) {
+            return true
+        }
+        val packageName = context.packageName
+        val pm = context.getSystemService(POWER_SERVICE) as PowerManager
+        if (pm.isIgnoringBatteryOptimizations(packageName)) {
+            return true
+        }
+        viewModelScope.launch {
+            _events.send(HomeEvents.RequestIgnoreBatteryOptimizations)
+        }
+        return false
+    }
+
+    fun checkAutoStart(groupName: String) {
+        if (ShizukuSettings.getIsShowAutoStartNotice() ||
+            !Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
+        ) {
+            actionHideGroup(groupName)
+        } else {
+            viewModelScope.launch {
+                _events.send(HomeEvents.ShowAutoStartNotice)
+            }
+        }
+    }
+
     override fun onDone(groupName: String, pks: Set<String>) {
         ShizukuSettings.saveGroupLockedApps(groupName)
         ShizukuSettings.saveDataByGroupName(
@@ -197,4 +291,6 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
 sealed class HomeEvents {
     data class ShowShirukuAlert(val message: String) : HomeEvents()
     object RefreshLock : HomeEvents()
+    object RequestIgnoreBatteryOptimizations : HomeEvents()
+    object ShowAutoStartNotice : HomeEvents()
 }

@@ -6,13 +6,19 @@ import android.content.pm.PackageManager
 import android.os.IBinder
 import android.system.Os
 import android.util.Log
+import moe.shizuku.manager.ShizukuSettings
 import rikka.shizuku.Shizuku
 import rikka.shizuku.ShizukuBinderWrapper
+import rikka.shizuku.ShizukuProvider
 import rikka.shizuku.SystemServiceHelper
 import java.lang.reflect.Method
 
 class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
     private val shizukuRequestCode = 1001
+
+    init {
+        ShizukuProvider.enableMultiProcessSupport(false)
+    }
 
     override fun hide(pkgNames: Set<String>) {
         if (!Shizuku.pingBinder()) {
@@ -108,8 +114,7 @@ class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
             }
             Shizuku.addRequestPermissionResultListener(permissionListener)
             Shizuku.requestPermission(shizukuRequestCode)
-
-
+            ShizukuSettings.setIsOpenOtherActivity(true)
         } catch (e: Exception) {
             Log.e(getName(), "tryToActive error: ${e.message}")
             listener.onActivationSuccess(

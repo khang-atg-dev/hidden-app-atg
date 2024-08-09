@@ -37,7 +37,7 @@ class AppsViewModel(context: Context) : ViewModel() {
     fun loadApps(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             val packageManager = context.packageManager
-            val listAppInfo = mutableListOf<PackageInfo>()
+            val listAppInfo = mutableSetOf<PackageInfo>()
             val mainIntent = Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER)
             val resolvedInfo =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -49,7 +49,8 @@ class AppsViewModel(context: Context) : ViewModel() {
                     packageManager.queryIntentActivities(mainIntent, 0)
                 }
             resolvedInfo.forEach {
-                if (it.activityInfo.packageName != context.packageName) {
+                val existed = listAppInfo.find { app -> app.packageName == it.activityInfo.packageName }
+                if (it.activityInfo.packageName != context.packageName && existed == null) {
                     val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         packageManager.getPackageInfo(
                             it.activityInfo.packageName,
@@ -61,7 +62,7 @@ class AppsViewModel(context: Context) : ViewModel() {
                     listAppInfo.add(packageInfo)
                 }
             }
-            _packages.postValue(Resource.success(listAppInfo))
+            _packages.postValue(Resource.success(listAppInfo.toList()))
         }
     }
 
