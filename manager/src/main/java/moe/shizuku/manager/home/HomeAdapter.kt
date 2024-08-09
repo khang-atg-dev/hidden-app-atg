@@ -1,7 +1,6 @@
 package moe.shizuku.manager.home
 
 import moe.shizuku.manager.model.GroupApps
-import moe.shizuku.manager.shiruku.AddGroupViewHolder
 import rikka.recyclerview.IdBasedRecyclerViewAdapter
 import rikka.recyclerview.IndexCreatorPool
 
@@ -46,6 +45,6 @@ interface HomeCallback {
     fun onClickGroup(groupName: String)
     fun onDeleteGroup(groupName: String)
     fun onEditTimeout(groupName: String)
-    fun onHide(groupName: String)
-    fun onLock(groupName: String)
+    fun onActionHide(groupName: String)
+    fun onActionLock(groupName: String)
 }

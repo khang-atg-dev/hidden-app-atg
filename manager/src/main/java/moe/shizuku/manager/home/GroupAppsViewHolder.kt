@@ -54,11 +54,11 @@ class GroupAppsViewHolder(
             }
             btnHide.text = "Unhide".takeIf { data.isHidden } ?: "Hide"
             btnHide.setOnClickListener {
-                listener.onHide(data.groupName)
+                listener.onActionHide(data.groupName)
             }
             btnLock.text = "Unlock".takeIf { data.isLocked } ?: "Lock"
             btnLock.setOnClickListener {
-                listener.onLock(data.groupName)
+                listener.onActionLock(data.groupName)
             }
             binding.lockedIcon.visibility = if (it.isLocked) View.VISIBLE else View.GONE
             binding.hiddenIcon.visibility = if (it.isHidden) View.VISIBLE else View.GONE

@@ -14,7 +14,7 @@ import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 import rikka.shizuku.Shizuku
 
-class ShirukuActivity: AppBarActivity() {
+class ShirukuActivity : AppBarActivity() {
     private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
         checkServerStatus()
         appsModel.load()
@@ -27,6 +27,11 @@ class ShirukuActivity: AppBarActivity() {
     private val shirukuViewModel by viewModels { ShirukuViewModel() }
     private val appsModel by appsViewModel()
     private val adapter by unsafeLazy { ShirukuAdapter(shirukuViewModel, appsModel) }
+
+    override fun onStart() {
+        super.onStart()
+        ShizukuSettings.setIsOpenOtherActivity(true)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +58,13 @@ class ShirukuActivity: AppBarActivity() {
         recyclerView.adapter = adapter
         recyclerView.fixEdgeEffect()
         recyclerView.addItemSpacing(top = 4f, bottom = 4f, unit = TypedValue.COMPLEX_UNIT_DIP)
-        recyclerView.addEdgeSpacing(top = 4f, bottom = 4f, left = 16f, right = 16f, unit = TypedValue.COMPLEX_UNIT_DIP)
+        recyclerView.addEdgeSpacing(
+            top = 4f,
+            bottom = 4f,
+            left = 16f,
+            right = 16f,
+            unit = TypedValue.COMPLEX_UNIT_DIP
+        )
 
         Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
         Shizuku.addBinderDeadListener(binderDeadListener)

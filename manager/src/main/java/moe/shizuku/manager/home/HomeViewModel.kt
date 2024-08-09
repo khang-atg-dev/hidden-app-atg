@@ -1,22 +1,29 @@
 package moe.shizuku.manager.home
 
 import android.content.Context
-import android.content.Intent
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import moe.shizuku.manager.AppConstants.RELOAD_PACKAGES_FOR_LOCK
 import moe.shizuku.manager.ShizukuSettings
+import moe.shizuku.manager.apphider.ActivationCallbackListener
+import moe.shizuku.manager.apphider.ShizukuAppHider
 import moe.shizuku.manager.model.GroupApps
 import rikka.lifecycle.Resource
 
-class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
+class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
 
     private val _groupApps = MutableLiveData<Resource<List<GroupApps>>>()
     val groupApps = _groupApps as LiveData<Resource<List<GroupApps>>>
+
+    private val _events = Channel<HomeEvents>()
+    val events = _events.receiveAsFlow()
+
+    private val appHider = ShizukuAppHider(context)
 
     fun reloadGroupApps() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -57,23 +64,44 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
         reloadGroupApps()
     }
 
-    fun hideGroup(groupName: String) {
-        ShizukuSettings.getPksByGroupName(groupName)?.let {
-            ShizukuSettings.saveDataByGroupName(
-                groupName,
-                GroupApps(
-                    groupName = it.groupName,
-                    pkgs = it.pkgs,
-                    isLocked = it.isLocked,
-                    isHidden = !it.isHidden,
-                    timeOut = it.timeOut,
-                )
-            )
-        }
-        reloadGroupApps()
+    fun actionHideGroup(groupName: String) {
+        appHider.tryToActive(object : ActivationCallbackListener {
+            override fun <T : moe.shizuku.manager.apphider.BaseAppHider> onActivationSuccess(
+                appHider: Class<T>,
+                success: Boolean,
+                msg: String
+            ) {
+                if (success) {
+                    ShizukuSettings.getPksByGroupName(groupName)?.let {
+                        if (it.pkgs.isNotEmpty()) {
+                            if (!it.isHidden) {
+                                this@HomeViewModel.appHider.hide(it.pkgs)
+                            } else {
+                                this@HomeViewModel.appHider.show(it.pkgs)
+                            }
+                        }
+                        ShizukuSettings.saveDataByGroupName(
+                            groupName,
+                            GroupApps(
+                                groupName = it.groupName,
+                                pkgs = it.pkgs,
+                                isLocked = it.isLocked,
+                                isHidden = !it.isHidden,
+                                timeOut = it.timeOut,
+                            )
+                        )
+                        reloadGroupApps()
+                    }
+                } else {
+                    viewModelScope.launch {
+                        _events.send(HomeEvents.ShowShirukuAlert(msg))
+                    }
+                }
+            }
+        })
     }
 
-    fun lockGroup(context: Context, groupName: String) {
+    fun actionLockGroup(groupName: String) {
         ShizukuSettings.getPksByGroupName(groupName)?.let {
             ShizukuSettings.saveDataByGroupName(
                 groupName,
@@ -87,7 +115,9 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
             )
         }
         reloadGroupApps()
-        context.sendBroadcast(Intent(RELOAD_PACKAGES_FOR_LOCK).setPackage(context.packageName))
+        viewModelScope.launch {
+            _events.send(HomeEvents.RefreshLock)
+        }
     }
 
     override fun onDone(groupName: String, pks: Set<String>) {
@@ -115,8 +145,46 @@ class HomeViewModel : ViewModel(), GroupBottomSheetCallback {
                     timeOut = it.timeOut,
                 )
             )
+            if (it.isLocked) {
+                viewModelScope.launch {
+                    _events.send(HomeEvents.RefreshLock)
+                }
+            }
+            if (it.isHidden) actionHideGroupWithoutUpdateData(newGroupName)
         }
         if (editGroupName != newGroupName) ShizukuSettings.removeDataByGroupName(editGroupName)
         reloadGroupApps()
     }
+
+    private fun actionHideGroupWithoutUpdateData(groupName: String) {
+        appHider.tryToActive(object : ActivationCallbackListener {
+            override fun <T : moe.shizuku.manager.apphider.BaseAppHider> onActivationSuccess(
+                appHider: Class<T>,
+                success: Boolean,
+                msg: String
+            ) {
+                if (success) {
+                    ShizukuSettings.getPksByGroupName(groupName)?.let {
+                        if (it.pkgs.isNotEmpty()) {
+                            if (!it.isHidden) {
+                                this@HomeViewModel.appHider.hide(it.pkgs)
+                            } else {
+                                this@HomeViewModel.appHider.show(it.pkgs)
+                            }
+                        }
+                    }
+                } else {
+                    viewModelScope.launch {
+                        _events.send(HomeEvents.ShowShirukuAlert(msg))
+                    }
+                }
+            }
+        })
+    }
+
+}
+
+sealed class HomeEvents {
+    data class ShowShirukuAlert(val message: String) : HomeEvents()
+    object RefreshLock : HomeEvents()
 }

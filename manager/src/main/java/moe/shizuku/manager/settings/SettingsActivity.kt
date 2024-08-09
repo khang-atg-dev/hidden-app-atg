@@ -13,6 +13,11 @@ class SettingsActivity : AppBarFragmentActivity() {
         theme.applyStyle(R.style.ThemeOverlay_Rikka_Material3_Preference, true)
     }
 
+    override fun onStart() {
+        super.onStart()
+        ShizukuSettings.setIsOpenOtherActivity(true)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -20,8 +25,8 @@ class SettingsActivity : AppBarFragmentActivity() {
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, SettingsFragment())
-                    .commit()
+                .replace(R.id.fragment_container, SettingsFragment())
+                .commit()
         }
     }
 

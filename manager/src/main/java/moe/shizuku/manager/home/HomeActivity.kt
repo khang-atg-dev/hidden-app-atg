@@ -9,12 +9,16 @@ import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
+import moe.shizuku.manager.AppConstants.RELOAD_PACKAGES_FOR_LOCK
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.app.AppBarActivity
@@ -33,7 +37,7 @@ import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 
 abstract class HomeActivity : AppBarActivity(), HomeCallback {
-    private val homeModel by viewModels { HomeViewModel() }
+    private val homeModel by viewModels { HomeViewModel(this) }
     private val appsModel by appsViewModel()
     private val adapter by unsafeLazy { HomeAdapter() }
     private val apps = mutableListOf<PackageInfo>()
@@ -51,6 +55,42 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
 
         val binding = HomeActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        lifecycleScope.launch {
+            homeModel.events.flowWithLifecycle(
+                this@HomeActivity.lifecycle,
+                Lifecycle.State.STARTED
+            ).collectLatest {
+                when (it) {
+                    is HomeEvents.ShowShirukuAlert -> {
+                        withContext(Dispatchers.Main) {
+                            MaterialAlertDialogBuilder(this@HomeActivity)
+                                .setTitle("Shiruku inactive")
+                                .setMessage(it.message)
+                                .setPositiveButton("Go to settings") { _, _ ->
+                                    this@HomeActivity.startActivity(
+                                        Intent(
+                                            this@HomeActivity,
+                                            ShirukuActivity::class.java
+                                        )
+                                    )
+                                }
+                                .setNegativeButton(android.R.string.cancel, null)
+                                .create()
+                                .show()
+                        }
+                    }
+
+                    HomeEvents.RefreshLock -> {
+                        this@HomeActivity.sendBroadcast(
+                            Intent(RELOAD_PACKAGES_FOR_LOCK).setPackage(
+                                this@HomeActivity.packageName
+                            )
+                        )
+                    }
+                }
+            }
+        }
 
         homeModel.groupApps.observe(this) {
             if (it.status == Status.SUCCESS) {
@@ -95,7 +135,6 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
-                ShizukuSettings.setIsOpenOtherActivity(true)
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
@@ -142,15 +181,14 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
             .show()
     }
 
-    override fun onHide(groupName: String) {
-//        homeModel.hideGroup(groupName)
-        ShizukuSettings.setIsOpenOtherActivity(true)
-        startActivity(Intent(this, ShirukuActivity::class.java))
+    override fun onActionHide(groupName: String) {
+        homeModel.actionHideGroup(groupName)
     }
 
-    override fun onLock(groupName: String) {
+
+    override fun onActionLock(groupName: String) {
         if (this.isCanDrawOverlays() && this.isAccessibilityServiceEnabled()) {
-            homeModel.lockGroup(this, groupName)
+            homeModel.actionLockGroup(groupName)
         } else {
             lockPermissionDialogFragment.show(supportFragmentManager, "LockPermission")
         }

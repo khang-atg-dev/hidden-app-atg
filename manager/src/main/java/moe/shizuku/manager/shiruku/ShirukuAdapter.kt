@@ -60,6 +60,7 @@ class ShirukuAdapter(
             } else {
                 addItem(StartAdbViewHolder.CREATOR, null, ID_START_ADB)
             }
+            addItem(StartAdbViewHolder.CREATOR, null, ID_START_ADB)
             if (root) {
                 addItem(StartRootViewHolder.CREATOR, rootRestart, ID_START_ROOT)
             }
