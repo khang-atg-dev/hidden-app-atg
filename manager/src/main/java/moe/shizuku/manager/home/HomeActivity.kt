@@ -1,26 +1,19 @@
 package moe.shizuku.manager.home
 
-import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.graphics.Typeface
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,7 +24,6 @@ import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.app.AppBarActivity
 import moe.shizuku.manager.databinding.HomeActivityBinding
 import moe.shizuku.manager.management.appsViewModel
-import moe.shizuku.manager.service.MainForegroundService
 import moe.shizuku.manager.settings.SettingsActivity
 import moe.shizuku.manager.shizuku.ShizukuActivity
 import moe.shizuku.manager.starter.Starter
@@ -51,23 +43,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     private val apps = mutableListOf<PackageInfo>()
     private val lockPermissionDialogFragment = LockPermissionDialogFragment()
     private val createGroupBottomSheet = CreateGroupBottomSheetDialogFragment()
-
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        lifecycleScope.launch(Dispatchers.IO) {
-            delay(1000)
-            ShizukuSettings.setIsOpenOtherActivity(false)
-        }
-        if (isGranted) {
-            val serviceIntent = Intent(this, MainForegroundService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent)
-            } else {
-                startService(serviceIntent)
-            }
-        }
-    }
+    private val requiredPermissionDialogFragment = RequiredPermissionDialogFragment()
 
     override fun onResume() {
         super.onResume()
@@ -84,6 +60,8 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
         setContentView(binding.root)
 
         createGroupBottomSheet.setCallback(homeModel)
+
+        requiredPermissionDialogFragment.show(supportFragmentManager, "RequiredPermission")
 
         lifecycleScope.launch {
             homeModel.events.flowWithLifecycle(
@@ -102,41 +80,6 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
                                         ShizukuActivity::class.java
                                     )
                                 )
-                            }
-                            .setNegativeButton(android.R.string.cancel, null)
-                            .create()
-                            .show()
-                    }
-
-                    HomeEvents.ShowAutoStartNotice -> {
-                        MaterialAlertDialogBuilder(this@HomeActivity)
-                            .setTitle("Auto-Start Permission")
-                            .setMessage("Please enable auto-start for this app to ensure it functions correctly.")
-                            .setCancelable(false)
-                            .setPositiveButton("Ok") { _, _ ->
-                                if (Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)) {
-                                    ShizukuSettings.setIsShowAutoStartNotice(true)
-                                    val intent = Intent("miui.intent.action.OP_AUTO_START").apply {
-                                        addCategory(Intent.CATEGORY_DEFAULT)
-                                        putExtra("package_name", packageName)
-                                    }
-                                    startActivity(intent)
-                                }
-                            }
-                            .create()
-                            .show()
-                    }
-
-                    HomeEvents.RequestIgnoreBatteryOptimizations -> {
-                        MaterialAlertDialogBuilder(this@HomeActivity)
-                            .setTitle("Battery optimization")
-                            .setMessage("Please allow Shiruku to ignore battery optimization")
-                            .setPositiveButton("Allow") { _, _ ->
-                                val intent = Intent().apply {
-                                    action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                                    data = Uri.parse("package:$packageName")
-                                }
-                                this@HomeActivity.startActivity(intent)
                             }
                             .setNegativeButton(android.R.string.cancel, null)
                             .create()
@@ -252,28 +195,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     }
 
     override fun onActionHide(groupName: String) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val notificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (notificationManager.areNotificationsEnabled()) {
-                val serviceIntent = Intent(this, MainForegroundService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(serviceIntent)
-                } else {
-                    startService(serviceIntent)
-                }
-                if (homeModel.checkBatteryOptimizationRemoval(this)) {
-                    homeModel.checkAutoStart(groupName)
-                }
-            } else {
-                ShizukuSettings.setIsOpenOtherActivity(true)
-                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-            }
-            return
-        }
-        if (homeModel.checkBatteryOptimizationRemoval(this)) {
-            homeModel.checkAutoStart(groupName)
-        }
+        homeModel.actionHideGroup(groupName)
     }
 
 

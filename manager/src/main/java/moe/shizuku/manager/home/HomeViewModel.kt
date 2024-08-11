@@ -2,9 +2,6 @@ package moe.shizuku.manager.home
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
-import android.os.PowerManager
-import androidx.appcompat.app.AppCompatActivity.POWER_SERVICE
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -121,7 +118,7 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         reloadGroupApps()
     }
 
-    private fun actionHideGroup(groupName: String) {
+    fun actionHideGroup(groupName: String) {
         if (serviceStatus.value?.data?.isRunning != true) {
             viewModelScope.launch {
                 _events.send(HomeEvents.ShowShirukuAlert("Shizuku: Service unavailable. Have you activated Shizuku on your device? Please activate it and try again."))
@@ -204,33 +201,6 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         }
     }
 
-    fun checkBatteryOptimizationRemoval(context: Context): Boolean {
-        if (!Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)) {
-            return true
-        }
-        val packageName = context.packageName
-        val pm = context.getSystemService(POWER_SERVICE) as PowerManager
-        if (pm.isIgnoringBatteryOptimizations(packageName)) {
-            return true
-        }
-        viewModelScope.launch {
-            _events.send(HomeEvents.RequestIgnoreBatteryOptimizations)
-        }
-        return false
-    }
-
-    fun checkAutoStart(groupName: String) {
-        if (ShizukuSettings.getIsShowAutoStartNotice() ||
-            !Build.MANUFACTURER.equals("Xiaomi", ignoreCase = true)
-        ) {
-            actionHideGroup(groupName)
-        } else {
-            viewModelScope.launch {
-                _events.send(HomeEvents.ShowAutoStartNotice)
-            }
-        }
-    }
-
     override fun onDone(groupName: String, pks: Set<String>) {
         ShizukuSettings.saveGroupLockedApps(groupName)
         ShizukuSettings.saveDataByGroupName(
@@ -291,6 +261,4 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
 sealed class HomeEvents {
     data class ShowShirukuAlert(val message: String) : HomeEvents()
     object RefreshLock : HomeEvents()
-    object RequestIgnoreBatteryOptimizations : HomeEvents()
-    object ShowAutoStartNotice : HomeEvents()
 }

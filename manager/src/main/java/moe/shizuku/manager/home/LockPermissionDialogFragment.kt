@@ -50,7 +50,7 @@ class LockPermissionDialogFragment : DialogFragment() {
         binding = LockPermissionDialogFragementBinding.inflate(layoutInflater)
 
         val builder = MaterialAlertDialogBuilder(context).apply {
-            setTitle("Permission Required")
+            setTitle("Permissions Required")
             setView(binding.root)
             setNegativeButton(android.R.string.cancel, null)
         }

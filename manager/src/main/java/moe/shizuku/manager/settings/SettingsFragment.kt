@@ -1,5 +1,6 @@
 package moe.shizuku.manager.settings
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.TypedValue
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.lock.LockDialogFragment
+import moe.shizuku.manager.shizuku.ShizukuActivity
 import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.fixEdgeEffect
 import rikka.widget.borderview.BorderRecyclerView
@@ -42,7 +44,15 @@ class SettingsFragment : PreferenceFragmentCompat(),
             lockDialogFragment.show(parentFragmentManager, "my_dialog")
             true
         }
+    }
 
+    override fun onPreferenceTreeClick(preference: Preference): Boolean {
+        if (preference.key == "shizuku_setting") {
+            val intent = Intent(requireContext(), ShizukuActivity::class.java)
+            startActivity(intent)
+            return true
+        }
+        return super.onPreferenceTreeClick(preference)
     }
 
     override fun onCreateRecyclerView(

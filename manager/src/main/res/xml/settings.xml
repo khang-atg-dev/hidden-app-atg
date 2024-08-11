@@ -12,7 +12,11 @@
 
         <Preference
             android:key="change_password"
-            android:title="ChangePassword" />
+            android:title="Change Password" />
+
+        <Preference
+            android:key="shizuku_setting"
+            android:title="Shizuku Settings" />
 
     </PreferenceCategory>
 

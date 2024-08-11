@@ -7,7 +7,7 @@
     android:paddingEnd="?android:dialogPreferredPadding">
 
     <TextView
-        android:id="@+id/txt_overlay"
+        android:id="@+id/txt_autostart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Show Over Other Apps"
@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/txt_overlay_summary"
+        android:id="@+id/txt_autostart_summary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Allow lock screen to show over other apps."
@@ -26,7 +26,7 @@
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txt_overlay" />
+        app:layout_constraintTop_toBottomOf="@id/txt_autostart" />
 
     <LinearLayout
         android:id="@+id/container_permit_overlay"
@@ -35,7 +35,7 @@
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txt_overlay_summary">
+        app:layout_constraintTop_toBottomOf="@id/txt_autostart_summary">
 
         <Space
             android:layout_width="0dp"
