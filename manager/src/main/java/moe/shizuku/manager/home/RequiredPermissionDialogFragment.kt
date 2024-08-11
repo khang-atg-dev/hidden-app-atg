@@ -19,8 +19,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.RequiredPermissionDialogFragmentBinding
-import moe.shizuku.manager.utils.isAccessibilityServiceEnabled
-import moe.shizuku.manager.utils.isCanDrawOverlays
+import moe.shizuku.manager.utils.AutoStartPermissionHelper
+import moe.shizuku.manager.utils.hasBatteryOptimizationExemption
+import moe.shizuku.manager.utils.hasNotificationPermission
+
 
 class RequiredPermissionDialogFragment : DialogFragment() {
 
@@ -31,22 +33,26 @@ class RequiredPermissionDialogFragment : DialogFragment() {
             delay(1000)
             ShizukuSettings.setIsOpenOtherActivity(false)
         }
+        notificationPermit.isEnabled = !(context?.hasNotificationPermission() ?: false)
     }
 
-    private val request1 = registerForActivityResult(
+    private val requestSpecialPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
         lifecycleScope.launch(Dispatchers.IO) {
             delay(1000)
             ShizukuSettings.setIsOpenOtherActivity(false)
         }
+        batteryOptimizationPermit.isEnabled = !(context?.hasBatteryOptimizationExemption() ?: false)
     }
 
     private lateinit var binding: RequiredPermissionDialogFragmentBinding
     private lateinit var notificationPermit: MaterialButton
     private lateinit var batteryOptimizationPermit: MaterialButton
-    private lateinit var autoStartPermit: MaterialButton
+    private var autoStartPermit: MaterialButton? = null
     private lateinit var groupNotification: LinearLayout
+    private val autoStartPermissionHelper: AutoStartPermissionHelper = AutoStartPermissionHelper.instance
+
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context = requireContext()
@@ -70,10 +76,14 @@ class RequiredPermissionDialogFragment : DialogFragment() {
     override fun onResume() {
         super.onResume()
         context?.let {
-            if (it.isAccessibilityServiceEnabled() && it.isCanDrawOverlays()) {
-                dismiss()
-            }
+            val allPermissionsGranted =
+                it.hasNotificationPermission() &&
+                        it.hasBatteryOptimizationExemption() &&
+                        autoStartPermissionHelper.isAutoStartPermissionAvailable(it, false)
+            autoStartPermit?.isEnabled = !autoStartPermissionHelper.getAutoStartPermission(it, false, false)
+            if (allPermissionsGranted) dismiss()
         }
+
     }
 
     private fun onDialogShown(dialog: DialogInterface) {
@@ -82,6 +92,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
                 groupNotification = binding.groupNotification
                 groupNotification.visibility = View.VISIBLE
                 notificationPermit = binding.notificationPermit.apply {
+                    isEnabled = !(context.hasNotificationPermission())
                     setOnClickListener {
                         ShizukuSettings.setIsOpenOtherActivity(true)
                         requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -90,24 +101,21 @@ class RequiredPermissionDialogFragment : DialogFragment() {
             }
 
             batteryOptimizationPermit = binding.batteryOptimizationPermit.apply {
+                isEnabled = !context.hasBatteryOptimizationExemption()
                 setOnClickListener {
                     ShizukuSettings.setIsOpenOtherActivity(true)
                     val intent = Intent().apply {
                         action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
                         data = Uri.parse("package:${c.packageName}")
                     }
-                    request1.launch(intent)
+                    requestSpecialPermissionLauncher.launch(intent)
                 }
             }
 
             autoStartPermit = binding.autostartPermit.apply {
+                isEnabled = !autoStartPermissionHelper.getAutoStartPermission(context, false, false)
                 setOnClickListener {
-                    ShizukuSettings.setIsOpenOtherActivity(true)
-                    val intent = Intent("miui.intent.action.OP_AUTO_START").apply {
-                        addCategory(Intent.CATEGORY_DEFAULT)
-                        putExtra("package_name", c.packageName)
-                    }
-                    request1.launch(intent)
+                    autoStartPermissionHelper.getAutoStartPermission(context, true, false)
                 }
             }
 

@@ -1,11 +1,13 @@
 package moe.shizuku.manager.utils
 
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import kotlinx.coroutines.CoroutineScope
@@ -135,3 +137,13 @@ fun Context.getAppLabel(packageName: String): String {
     }
 }
 
+fun Context.hasNotificationPermission(): Boolean {
+    val notificationManager =
+        this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    return notificationManager.areNotificationsEnabled()
+}
+
+fun Context.hasBatteryOptimizationExemption(): Boolean {
+    val powerManager = this.getSystemService(Context.POWER_SERVICE) as PowerManager
+    return powerManager.isIgnoringBatteryOptimizations(this.packageName)
+}
