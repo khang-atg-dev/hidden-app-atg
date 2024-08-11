@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
+import androidx.fragment.app.DialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -146,4 +147,8 @@ fun Context.hasNotificationPermission(): Boolean {
 fun Context.hasBatteryOptimizationExemption(): Boolean {
     val powerManager = this.getSystemService(Context.POWER_SERVICE) as PowerManager
     return powerManager.isIgnoringBatteryOptimizations(this.packageName)
+}
+
+fun DialogFragment.isDialogFragmentShowing(): Boolean {
+    return this.dialog?.isShowing == true && !this.isRemoving
 }

@@ -27,8 +27,6 @@ import moe.shizuku.manager.management.appsViewModel
 import moe.shizuku.manager.settings.SettingsActivity
 import moe.shizuku.manager.shizuku.ShizukuActivity
 import moe.shizuku.manager.starter.Starter
-import moe.shizuku.manager.utils.AutoStartPermissionHelper
-import moe.shizuku.manager.utils.hasNotificationPermission
 import moe.shizuku.manager.utils.isAccessibilityServiceEnabled
 import moe.shizuku.manager.utils.isCanDrawOverlays
 import rikka.core.ktx.unsafeLazy
@@ -45,8 +43,6 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     private val apps = mutableListOf<PackageInfo>()
     private val lockPermissionDialogFragment = LockPermissionDialogFragment()
     private val createGroupBottomSheet = CreateGroupBottomSheetDialogFragment()
-    private val requiredPermissionDialogFragment = RequiredPermissionDialogFragment()
-    private val autoStartPermissionHelper = AutoStartPermissionHelper.instance
 
     override fun onResume() {
         super.onResume()
@@ -63,13 +59,6 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
         setContentView(binding.root)
 
         createGroupBottomSheet.setCallback(homeModel)
-
-        if (
-            this.hasNotificationPermission() ||
-            autoStartPermissionHelper.isAutoStartPermissionAvailable(this, false)
-        ) {
-            requiredPermissionDialogFragment.show(supportFragmentManager, "RequiredPermission")
-        }
 
         lifecycleScope.launch {
             homeModel.events.flowWithLifecycle(

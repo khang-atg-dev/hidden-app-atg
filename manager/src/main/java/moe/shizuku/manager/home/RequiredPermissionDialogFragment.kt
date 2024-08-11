@@ -30,7 +30,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
         ActivityResultContracts.RequestPermission()
     ) { _: Boolean ->
         lifecycleScope.launch(Dispatchers.IO) {
-            delay(1000)
+            delay(800)
             ShizukuSettings.setIsOpenOtherActivity(false)
         }
         notificationPermit.isEnabled = !(context?.hasNotificationPermission() ?: false)
@@ -40,18 +40,22 @@ class RequiredPermissionDialogFragment : DialogFragment() {
         ActivityResultContracts.StartActivityForResult()
     ) {
         lifecycleScope.launch(Dispatchers.IO) {
-            delay(1000)
+            delay(800)
             ShizukuSettings.setIsOpenOtherActivity(false)
+            lifecycleScope.launch(Dispatchers.Main) {
+                batteryOptimizationPermit?.isEnabled =
+                    !(context?.hasBatteryOptimizationExemption() ?: false)
+            }
         }
-        batteryOptimizationPermit.isEnabled = !(context?.hasBatteryOptimizationExemption() ?: false)
     }
 
     private lateinit var binding: RequiredPermissionDialogFragmentBinding
     private lateinit var notificationPermit: MaterialButton
-    private lateinit var batteryOptimizationPermit: MaterialButton
+    private var batteryOptimizationPermit: MaterialButton? = null
     private var autoStartPermit: MaterialButton? = null
     private lateinit var groupNotification: LinearLayout
-    private val autoStartPermissionHelper: AutoStartPermissionHelper = AutoStartPermissionHelper.instance
+    private val autoStartPermissionHelper: AutoStartPermissionHelper =
+        AutoStartPermissionHelper.instance
 
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -75,15 +79,28 @@ class RequiredPermissionDialogFragment : DialogFragment() {
 
     override fun onResume() {
         super.onResume()
-        context?.let {
-            val allPermissionsGranted =
-                it.hasNotificationPermission() &&
-                        it.hasBatteryOptimizationExemption() &&
-                        autoStartPermissionHelper.isAutoStartPermissionAvailable(it, false)
-            autoStartPermit?.isEnabled = !autoStartPermissionHelper.getAutoStartPermission(it, false, false)
-            if (allPermissionsGranted) dismiss()
+        lifecycleScope.launch(Dispatchers.IO) {
+            delay(1000)
+            ShizukuSettings.setIsOpenOtherActivity(false)
+            context?.let {
+                val allPermissionsGranted =
+                    it.hasNotificationPermission() &&
+                            it.hasBatteryOptimizationExemption() &&
+                            autoStartPermissionHelper.getAutoStartPermission(it, false, false)
+                if (allPermissionsGranted) {
+                    dismiss()
+                } else {
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        autoStartPermit?.isEnabled =
+                            !autoStartPermissionHelper.getAutoStartPermission(
+                                context = it,
+                                open = false,
+                                newTask = false
+                            )
+                    }
+                }
+            }
         }
-
     }
 
     private fun onDialogShown(dialog: DialogInterface) {
@@ -92,7 +109,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
                 groupNotification = binding.groupNotification
                 groupNotification.visibility = View.VISIBLE
                 notificationPermit = binding.notificationPermit.apply {
-                    isEnabled = !(context.hasNotificationPermission())
+                    isEnabled = !(c.hasNotificationPermission())
                     setOnClickListener {
                         ShizukuSettings.setIsOpenOtherActivity(true)
                         requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -101,7 +118,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
             }
 
             batteryOptimizationPermit = binding.batteryOptimizationPermit.apply {
-                isEnabled = !context.hasBatteryOptimizationExemption()
+                isEnabled = !c.hasBatteryOptimizationExemption()
                 setOnClickListener {
                     ShizukuSettings.setIsOpenOtherActivity(true)
                     val intent = Intent().apply {
@@ -113,9 +130,10 @@ class RequiredPermissionDialogFragment : DialogFragment() {
             }
 
             autoStartPermit = binding.autostartPermit.apply {
-                isEnabled = !autoStartPermissionHelper.getAutoStartPermission(context, false, false)
+                isEnabled = !autoStartPermissionHelper.getAutoStartPermission(c, false, false)
                 setOnClickListener {
-                    autoStartPermissionHelper.getAutoStartPermission(context, true, false)
+                    ShizukuSettings.setIsOpenOtherActivity(true)
+                    autoStartPermissionHelper.getAutoStartPermission(c, true, false)
                 }
             }
 
