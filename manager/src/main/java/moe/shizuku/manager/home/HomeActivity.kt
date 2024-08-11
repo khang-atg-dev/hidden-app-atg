@@ -1,7 +1,6 @@
 package moe.shizuku.manager.home
 
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.graphics.Typeface
 import android.os.Bundle
 import android.util.Log
@@ -27,6 +26,7 @@ import moe.shizuku.manager.management.appsViewModel
 import moe.shizuku.manager.settings.SettingsActivity
 import moe.shizuku.manager.shizuku.ShizukuActivity
 import moe.shizuku.manager.starter.Starter
+import moe.shizuku.manager.utils.getApplicationIcon
 import moe.shizuku.manager.utils.isAccessibilityServiceEnabled
 import moe.shizuku.manager.utils.isCanDrawOverlays
 import rikka.core.ktx.unsafeLazy
@@ -40,7 +40,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     private val homeModel by viewModels { HomeViewModel(this) }
     private val appsModel by appsViewModel()
     private val adapter by unsafeLazy { HomeAdapter() }
-    private val apps = mutableListOf<PackageInfo>()
+    private val apps = mutableListOf<AppGroupBottomSheet>()
     private val lockPermissionDialogFragment = LockPermissionDialogFragment()
     private val createGroupBottomSheet = CreateGroupBottomSheetDialogFragment()
 
@@ -108,7 +108,17 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
 
         appsModel.packages.observe(this) {
             if (it.status == Status.SUCCESS && !it.data.isNullOrEmpty()) {
-                apps.addAll(it.data ?: emptyList())
+                val pm = this.packageManager
+                it.data?.forEach { d ->
+                    apps.add(
+                        AppGroupBottomSheet(
+                            pkName = d.packageName,
+                            name = d.applicationInfo.loadLabel(pm).toString(),
+                            icon = this.getApplicationIcon(d.packageName),
+                            isChecked = false
+                        )
+                    )
+                }
             }
         }
 
@@ -152,10 +162,10 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     }
 
     override fun onClickAddGroup() {
-        CreateGroupBottomSheetDialogFragment().apply {
-            this.updateData(this@HomeActivity, apps)
-            this.setCallback(homeModel)
-            this.show(
+        createGroupBottomSheet.let {
+            it.updateData(this@HomeActivity, apps)
+            it.setCallback(homeModel)
+            it.show(
                 supportFragmentManager,
                 "GroupAppsBottomSheet"
             )

@@ -1,7 +1,6 @@
 package moe.shizuku.manager.home
 
 import android.content.Context
-import android.content.pm.PackageInfo
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.TypedValue
@@ -103,18 +102,17 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
         edtLayout = view.findViewById(R.id.edit_layout)
     }
 
-    fun updateData(context: Context, data: List<PackageInfo>, editGroup: GroupApps? = null) {
+    fun updateData(context: Context, data: List<AppGroupBottomSheet>, editGroup: GroupApps? = null) {
         editGroup?.let {
             this.editGroup = it
             this.selectedPkgs = it.pkgs
         }
-        val pm = context.packageManager
         val dataSet = data.map {
             AppGroupBottomSheet(
-                pkName = it.packageName,
-                name = it.applicationInfo.loadLabel(pm).toString(),
-                icon = context.getApplicationIcon(it.packageName),
-                isChecked = this.selectedPkgs.contains(it.packageName)
+                pkName = it.pkName,
+                name = it.name,
+                icon = it.icon,
+                isChecked = this.selectedPkgs.contains(it.pkName)
             )
         }
         ShizukuSettings.getAppsIsHidden().forEach {

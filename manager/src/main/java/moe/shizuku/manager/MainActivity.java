@@ -21,7 +21,6 @@ public class MainActivity extends HomeActivity {
     private final RequiredPermissionDialogFragment requiredPermissionDialogFragment = new RequiredPermissionDialogFragment();
     private final AutoStartPermissionHelper autoStartPermissionHelper = AutoStartPermissionHelper.Companion.getInstance();
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,9 +31,9 @@ public class MainActivity extends HomeActivity {
         ExtensionsKt.checkLockAppsPermission(this);
         ExtensionsKt.checkHideAppsPermission();
         if (
-                hasNotificationPermission(this) ||
-                        hasBatteryOptimizationExemption(this) ||
-                        autoStartPermissionHelper.isAutoStartPermissionAvailable(this, false)
+                !hasNotificationPermission(this) ||
+                        !hasBatteryOptimizationExemption(this) ||
+                        !autoStartPermissionHelper.getAutoStartPermission(this, false, false)
         ) {
             if (!isDialogFragmentShowing(requiredPermissionDialogFragment)) {
                 requiredPermissionDialogFragment.show(getSupportFragmentManager(), "RequiredPermission");
