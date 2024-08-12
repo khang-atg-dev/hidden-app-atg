@@ -28,6 +28,7 @@ import moe.shizuku.manager.utils.EmptySharedPreferencesImpl;
 import moe.shizuku.manager.utils.EnvironmentUtils;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
+import static moe.shizuku.manager.AppConstants.DEFAULT_AUTO_LOCK_TIMEOUT;
 import static moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX;
 
 import com.google.gson.Gson;
@@ -153,6 +154,18 @@ public class ShizukuSettings {
         }
     }
 
+    public static Long findTimeoutOfPkg(String pkg) {
+        Set<String> groups = getGroupLockedAppsAsSet();
+        for (String group : groups) {
+            String groupName = group.substring(group.lastIndexOf(".") + 1);
+            GroupApps groupApps = getPksByGroupName(groupName);
+            if (groupApps != null && groupApps.getPkgs().contains(pkg)) {
+                return groupApps.getTimeOut();
+            }
+        }
+        return DEFAULT_AUTO_LOCK_TIMEOUT;
+    }
+
     public static void saveDataByGroupName(String name, GroupApps data) {
         getPreferences().edit().putString(GROUP_PKG_PREFIX + name, gson.toJson(data)).apply();
     }
@@ -223,5 +236,13 @@ public class ShizukuSettings {
 
     public static boolean getIsShowAutoStartNotice() {
         return getPreferences().getBoolean(IS_SHOW_AUTO_START_NOTICE, false);
+    }
+
+    public static void saveUnlockStatus(String pkg, boolean isUnlock) {
+        getPreferences().edit().putBoolean(pkg, isUnlock).apply();
+    }
+
+    public static boolean getUnlockStatus(String pkg) {
+        return getPreferences().getBoolean(pkg, false);
     }
 }

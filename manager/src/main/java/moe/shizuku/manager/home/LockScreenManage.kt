@@ -20,6 +20,7 @@ class LockScreenManage {
     private var windowManager: WindowManager? = null
     private var skipEvent: Boolean = false
     private var debounceTime = 0L
+    private var currentPkg = ""
 
     private var password = ""
     private lateinit var pin1: TextView
@@ -31,13 +32,20 @@ class LockScreenManage {
     private lateinit var btnBack: ImageView
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun showLockScreen(context: Context) {
-        if (overlayView != null || skipEvent) {
+    fun showLockScreen(context: Context, packageName: String) {
+        if (overlayView != null || windowManager != null || skipEvent) {
             skipEvent = false
             return // Already showing
         }
+        this.currentPkg = packageName
+        ShizukuSettings.findTimeoutOfPkg(packageName).let {
+            if (ShizukuSettings.getUnlockStatus(packageName) && debounceTime != 0L && System.currentTimeMillis() - debounceTime < it) {
+                debounceTime = System.currentTimeMillis()
+                return
+            }
+        }
 
-        debounceTime = System.currentTimeMillis()
+        ShizukuSettings.saveUnlockStatus(packageName, false)
 
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
@@ -109,6 +117,7 @@ class LockScreenManage {
 
     fun hideLockScreen() {
         if (overlayView != null) {
+            debounceTime = System.currentTimeMillis()
             windowManager?.removeView(overlayView)
             overlayView = null
             windowManager = null
@@ -129,6 +138,7 @@ class LockScreenManage {
         }
         if (password.length == PASSWORD_LENGTH) {
             if (password == ShizukuSettings.getLockPassword()) {
+                ShizukuSettings.saveUnlockStatus(currentPkg, true)
                 hideLockScreen()
                 skipEvent = true
             } else {
@@ -141,7 +151,7 @@ class LockScreenManage {
         skipEvent = false
     }
 
-    fun checkDebounceTime() : Boolean {
+    fun checkDebounceTime(): Boolean {
         return System.currentTimeMillis() - debounceTime > 300
     }
 

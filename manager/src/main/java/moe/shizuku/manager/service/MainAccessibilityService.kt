@@ -44,7 +44,7 @@ class MainAccessibilityService : AccessibilityService() {
                             eventTypes = AccessibilityEvent.TYPES_ALL_MASK
                             feedbackType = AccessibilityServiceInfo.FEEDBACK_ALL_MASK
                             packageNames = pkgsSet.toTypedArray()
-                            notificationTimeout = 300
+                            notificationTimeout = 100
                         }
                 }
 
@@ -127,7 +127,7 @@ class MainAccessibilityService : AccessibilityService() {
             return
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            lockManager.showLockScreen(context = baseContext)
+            lockManager.showLockScreen(context = baseContext, packageName = pkName)
         } else {
             lockManager.hideLockScreen()
             lockManager.resetSkipEvent()
