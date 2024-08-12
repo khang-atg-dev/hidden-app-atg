@@ -71,7 +71,7 @@
         android:id="@+id/btn_lock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Lock"
+        android:text="@string/lock"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -79,7 +79,7 @@
         android:id="@+id/btn_hide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hide"
+        android:text="@string/hide"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btn_timeout"
         app:layout_constraintStart_toEndOf="@id/btn_lock" />

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.IBinder
 import android.system.Os
 import android.util.Log
+import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import rikka.shizuku.Shizuku
 import rikka.shizuku.ShizukuBinderWrapper
@@ -50,7 +51,7 @@ class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
                 listener.onActivationSuccess(
                     appHider = this.javaClass,
                     success = false,
-                    msg = "Unsupported Shizuku version: Pre-v11. Please install Shizuku v11 or later."
+                    msg = context.getString(R.string.unsupported_shizuku_version)
                 )
                 return
             }
@@ -70,7 +71,7 @@ class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
                     listener.onActivationSuccess(
                         appHider = this.javaClass,
                         success = false,
-                        msg = "Shizuku: Service not running."
+                        msg = context.getString(R.string.shizuku_not_running)
                     )
                     return
                 }
@@ -82,7 +83,7 @@ class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
                 listener.onActivationSuccess(
                     appHider = this.javaClass,
                     success = false,
-                    msg = "Shizuku: Permission denied"
+                    msg = context.getString(R.string.shizuku_perrmission_denied)
                 )
                 return
             }
@@ -105,7 +106,7 @@ class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
                             listener.onActivationSuccess(
                                 appHider = this@ShizukuAppHider.javaClass,
                                 success = false,
-                                msg = "Shizuku: Permission denied"
+                                msg = context.getString(R.string.shizuku_perrmission_denied)
                             )
                         }
                     }
@@ -120,7 +121,7 @@ class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
             listener.onActivationSuccess(
                 appHider = this.javaClass,
                 success = false,
-                msg = "Shizuku: Service unavailable. Have you activated Shizuku on your device? Please activate it and try again."
+                msg = context.getString(R.string.shizuku_note)
             )
         }
     }

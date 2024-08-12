@@ -68,7 +68,7 @@ class LockDialogFragment : DialogFragment() {
         }
         txtError = view.findViewById(R.id.txt_error)
         txtTitle = view.findViewById<TextView?>(R.id.tvEnterCode).apply {
-            text = "Enter your password"
+            text = context.getString(R.string.enter_your_password)
         }
         pin1 = view.findViewById(R.id.pin1)
         pin2 = view.findViewById(R.id.pin2)
@@ -131,7 +131,7 @@ class LockDialogFragment : DialogFragment() {
                     if (password == ShizukuSettings.getLockPassword()) {
                         this@LockDialogFragment.dismiss()
                     } else {
-                        txtError.text = "Your password incorrect!"
+                        txtError.text = context?.getString(R.string.password_incorrect) ?: "Your password incorrect!"
                     }
                 }
                 PasswordState.Changing,
@@ -166,7 +166,7 @@ class LockDialogFragment : DialogFragment() {
                         ShizukuSettings.setIsLocked(false)
                         this@LockDialogFragment.dismiss()
                     } else {
-                        txtError.text = "Your password does not match!"
+                        txtError.text = context?.getString(R.string.password_not_match) ?: "Your password does not match!"
                     }
                 }
                 else -> {}
@@ -189,7 +189,7 @@ class LockDialogFragment : DialogFragment() {
         isReenterPass = false
         password = ""
         verifiedPassword = ""
-        txtTitle.text = "Enter your password"
+        txtTitle.text = context?.getString(R.string.enter_your_password) ?: "Enter your password"
         pin1.text = ""
         pin2.text = ""
         pin3.text = ""

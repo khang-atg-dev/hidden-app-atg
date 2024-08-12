@@ -62,21 +62,20 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
             setOnClickListener {
                 val newName = edtName.text.toString().trim()
                 when {
-                    newName.isEmpty() -> edtLayout.error = "Name cannot be empty"
+                    newName.isEmpty() -> edtLayout.error = context.getString(R.string.name_cannot_be_empty)
                     editGroup != null &&
                             editGroup?.groupName != newName &&
                             ShizukuSettings.getPksByGroupName(newName) != null -> {
-                        edtLayout.error = "Group name already exists! Please use another name."
+                        edtLayout.error = context.getString(R.string.group_name_exist)
                     }
 
                     editGroup == null && ShizukuSettings.getPksByGroupName(newName) != null -> {
-                        edtLayout.error =
-                            "Group name already exists! Please use another name."
+                        edtLayout.error = context.getString(R.string.group_name_exist)
                     }
 
                     selectedPkgs.isEmpty() -> Toast.makeText(
                         context,
-                        "Please select at least one app!",
+                        context.getString(R.string.please_select_one_app),
                         Toast.LENGTH_SHORT
                     ).show()
 

@@ -3,6 +3,7 @@ package moe.shizuku.manager.home
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.GroupAppsLayoutBinding
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
 import moe.shizuku.manager.model.GroupApps
@@ -52,11 +53,11 @@ class GroupAppsViewHolder(
             btnTimeout.setOnClickListener {
                 listener.onEditTimeout(data.groupName)
             }
-            btnHide.text = "Unhide".takeIf { data.isHidden } ?: "Hide"
+            btnHide.text = "Unhide".takeIf { data.isHidden } ?: context.getString(R.string.hide)
             btnHide.setOnClickListener {
                 listener.onActionHide(data.groupName)
             }
-            btnLock.text = "Unlock".takeIf { data.isLocked } ?: "Lock"
+            btnLock.text = "Unlock".takeIf { data.isLocked } ?: context.getString(R.string.lock)
             btnLock.setOnClickListener {
                 listener.onActionLock(data.groupName)
             }

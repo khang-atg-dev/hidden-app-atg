@@ -21,6 +21,7 @@ class LockScreenManage {
     private var skipEvent: Boolean = false
     private var debounceTime = 0L
     private var currentPkg = ""
+    private var context: Context? = null
 
     private var password = ""
     private lateinit var pin1: TextView
@@ -33,6 +34,7 @@ class LockScreenManage {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun showLockScreen(context: Context, packageName: String) {
+        this.context = context
         if (overlayView != null || windowManager != null || skipEvent) {
             skipEvent = false
             return // Already showing
@@ -59,7 +61,7 @@ class LockScreenManage {
             }
             txtError = it.findViewById(R.id.txt_error)
             txtTitle = it.findViewById<TextView?>(R.id.tvEnterCode).apply {
-                text = "Enter your password"
+                text = context.getString(R.string.enter_your_password)
             }
             pin1 = it.findViewById(R.id.pin1)
             pin2 = it.findViewById(R.id.pin2)
@@ -121,6 +123,7 @@ class LockScreenManage {
             windowManager?.removeView(overlayView)
             overlayView = null
             windowManager = null
+            context = null
             resetUI()
         }
     }
@@ -142,7 +145,7 @@ class LockScreenManage {
                 hideLockScreen()
                 skipEvent = true
             } else {
-                txtError.text = "Your password incorrect!"
+                txtError.text = context?.getString(R.string.password_incorrect) ?: "Your password incorrect!"
             }
         }
     }
@@ -158,7 +161,7 @@ class LockScreenManage {
     private fun resetUI() {
         txtError.text = ""
         password = ""
-        txtTitle.text = "Enter your password"
+        txtTitle.text = context?.getString(R.string.enter_your_password) ?: "Enter your password"
         pin1.text = ""
         pin2.text = ""
         pin3.text = ""

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.BuildConfig
 import moe.shizuku.manager.Manifest
+import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.apphider.ActivationCallbackListener
 import moe.shizuku.manager.apphider.ShizukuAppHider
@@ -119,10 +120,10 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         reloadGroupApps()
     }
 
-    fun actionHideGroup(groupName: String) {
+    fun actionHideGroup(groupName: String, context: Context) {
         if (serviceStatus.value?.data?.isRunning != true) {
             viewModelScope.launch {
-                _events.send(HomeEvents.ShowShirukuAlert("Shizuku: Service unavailable. Have you activated Shizuku on your device? Please activate it and try again."))
+                _events.send(HomeEvents.ShowShirukuAlert(context.getString(R.string.shizuku_note)))
             }
             return
         }

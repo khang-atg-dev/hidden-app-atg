@@ -2,21 +2,21 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory android:title="Password">
+    <PreferenceCategory android:title="@string/password">
 
         <SwitchPreference
             android:defaultValue="false"
             android:key="enable_lock"
-            android:summary="Require password when opening App"
-            android:title="Enable password" />
+            android:summary="@string/enable_password_summary"
+            android:title="@string/enable_password" />
 
         <Preference
             android:key="change_password"
-            android:title="Change Password" />
+            android:title="@string/change_password" />
 
         <Preference
             android:key="shizuku_setting"
-            android:title="Shizuku Settings" />
+            android:title="@string/shizuku_settings" />
 
     </PreferenceCategory>
 

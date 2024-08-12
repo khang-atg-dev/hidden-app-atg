@@ -25,13 +25,13 @@
                 android:id="@+id/txt_notification"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Notification permission"
+                android:text="@string/notification_permission"
                 android:textSize="16sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Allow this app to show notifications"
+                android:text="@string/notification_permission_summary"
                 android:textColor="#888888"
                 android:textSize="14sp" />
 
@@ -48,7 +48,7 @@
                 android:id="@+id/notification_permit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Permit" />
+                android:text="@string/permit" />
 
         </LinearLayout>
 
@@ -70,14 +70,13 @@
             android:id="@+id/txt_autostart"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Auto-start permission"
+            android:text="@string/auto_start_permission"
             android:textSize="16sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Allow this app to start automatically in the background"
+            android:text="@string/auto_start_summary"
             android:textColor="#888888"
             android:textSize="14sp" />
 
@@ -94,7 +93,7 @@
             android:id="@+id/autostart_permit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Permit" />
+            android:text="@string/permit" />
     </LinearLayout>
 
 
@@ -108,20 +107,19 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/txt_battery_optimization"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Unrestricted Battery Usage"
+            android:text="@string/unrestricted_battery_usage"
             android:textSize="16sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Let this app run without battery restrictions to ensure reliable performance"
+            android:text="@string/unrestricted_battery_summary"
             android:textColor="#888888"
             android:textSize="14sp" />
 
@@ -138,7 +136,7 @@
             android:id="@+id/battery_optimization_permit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Permit" />
+            android:text="@string/permit" />
 
     </LinearLayout>
 

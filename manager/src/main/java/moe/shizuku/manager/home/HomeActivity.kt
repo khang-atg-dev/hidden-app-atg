@@ -68,9 +68,9 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
                 when (it) {
                     is HomeEvents.ShowShirukuAlert -> {
                         MaterialAlertDialogBuilder(this@HomeActivity)
-                            .setTitle("Shiruku inactive")
+                            .setTitle(this@HomeActivity.getString(R.string.shizuku_inactive))
                             .setMessage(it.message)
-                            .setPositiveButton("Go to settings") { _, _ ->
+                            .setPositiveButton(this@HomeActivity.getString(R.string.go_to_settings)) { _, _ ->
                                 this@HomeActivity.startActivity(
                                     Intent(
                                         this@HomeActivity,
@@ -162,7 +162,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     }
 
     override fun onClickAddGroup() {
-        createGroupBottomSheet.let {
+        CreateGroupBottomSheetDialogFragment().let {
             it.updateData(this@HomeActivity, apps)
             it.setCallback(homeModel)
             it.show(
@@ -188,7 +188,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
 
     override fun onDeleteGroup(groupName: String) {
         MaterialAlertDialogBuilder(this@HomeActivity)
-            .setTitle("Do you want to delete this group?")
+            .setTitle(this@HomeActivity.getString(R.string.delete_group_msg))
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 homeModel.onDeleteGroup(groupName)
                 ShizukuSettings.removeGroupLockedApp(GROUP_PKG_PREFIX + groupName)
@@ -202,7 +202,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     }
 
     override fun onActionHide(groupName: String) {
-        homeModel.actionHideGroup(groupName)
+        homeModel.actionHideGroup(groupName, this)
     }
 
 

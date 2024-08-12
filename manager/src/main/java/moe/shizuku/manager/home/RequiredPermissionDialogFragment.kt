@@ -17,6 +17,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.RequiredPermissionDialogFragmentBinding
 import moe.shizuku.manager.utils.AutoStartPermissionHelper
@@ -63,7 +64,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
         binding = RequiredPermissionDialogFragmentBinding.inflate(layoutInflater)
 
         val builder = MaterialAlertDialogBuilder(context).apply {
-            setTitle("Permissions Required")
+            setTitle(context.getString(R.string.permissions_required))
             setView(binding.root)
             isCancelable = false
         }

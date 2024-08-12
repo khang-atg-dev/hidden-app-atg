@@ -10,7 +10,7 @@
         android:id="@+id/txt_autostart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Show Over Other Apps"
+        android:text="@string/show_over_other_apps"
         android:layout_marginTop="20dp"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,7 +21,7 @@
         android:id="@+id/txt_autostart_summary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Allow lock screen to show over other apps."
+        android:text="@string/over_apps_summary"
         android:textColor="#888888"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -46,7 +46,7 @@
             android:id="@+id/overlay_permit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Permit" />
+            android:text="@string/permit" />
 
     </LinearLayout>
 
@@ -66,7 +66,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Enable Accessibility Service"
+        android:text="@string/enable_accessibility_service"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,7 +76,7 @@
         android:id="@+id/txt_accessibility_summary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="This app requires accessibility service permission to function properly."
+        android:text="@string/accessibility_summary"
         android:textColor="#888888"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -101,7 +101,7 @@
             android:id="@+id/accessibility_permit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Permit" />
+            android:text="@string/permit" />
 
     </LinearLayout>
 
@@ -110,7 +110,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Permissions are required for the application to work properly and efficiently."
+        android:text="@string/permissions_note"
         android:textColor="#888888"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -14,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.LockPermissionDialogFragementBinding
 import moe.shizuku.manager.utils.isAccessibilityServiceEnabled
@@ -50,7 +51,7 @@ class LockPermissionDialogFragment : DialogFragment() {
         binding = LockPermissionDialogFragementBinding.inflate(layoutInflater)
 
         val builder = MaterialAlertDialogBuilder(context).apply {
-            setTitle("Permissions Required")
+            setTitle(context.getString(R.string.permissions_required))
             setView(binding.root)
             setNegativeButton(android.R.string.cancel, null)
         }
