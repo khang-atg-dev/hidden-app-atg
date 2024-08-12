@@ -165,7 +165,7 @@ class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
                     Log.d(getName(), "disabled: $it")
                 }
             } catch (e: Exception) {
-                Log.e(getName(), "disabled error: ${e.message}")
+                e.printStackTrace()
             }
         }
     }
@@ -203,7 +203,7 @@ class ShizukuAppHider(val context: Context) : BaseAppHider(context) {
                     )
                 }
             } catch (e: Exception) {
-                Log.e(getName(), "hidden error: ${e.message}")
+                e.printStackTrace()
             }
         }
     }
