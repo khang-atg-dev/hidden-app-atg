@@ -114,6 +114,7 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
                     timeOut = timeout,
                 )
             )
+            it.pkgs.forEach { pk -> ShizukuSettings.saveUnlockStatus(pk, false) }
         }
         reloadGroupApps()
     }

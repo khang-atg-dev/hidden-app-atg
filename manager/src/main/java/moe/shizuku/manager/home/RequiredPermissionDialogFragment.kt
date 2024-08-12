@@ -30,7 +30,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
         ActivityResultContracts.RequestPermission()
     ) { _: Boolean ->
         lifecycleScope.launch(Dispatchers.IO) {
-            delay(800)
+            delay(1000)
             ShizukuSettings.setIsOpenOtherActivity(false)
         }
         notificationPermit.isEnabled = !(context?.hasNotificationPermission() ?: false)
@@ -40,7 +40,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
         ActivityResultContracts.StartActivityForResult()
     ) {
         lifecycleScope.launch(Dispatchers.IO) {
-            delay(800)
+            delay(1000)
             ShizukuSettings.setIsOpenOtherActivity(false)
             lifecycleScope.launch(Dispatchers.Main) {
                 batteryOptimizationPermit?.isEnabled =
