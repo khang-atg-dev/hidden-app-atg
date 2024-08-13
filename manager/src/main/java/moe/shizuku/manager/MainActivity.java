@@ -33,7 +33,7 @@ public class MainActivity extends HomeActivity {
         if (
                 !hasNotificationPermission(this) ||
                         !hasBatteryOptimizationExemption(this) ||
-                        !autoStartPermissionHelper.getAutoStartPermission(this, false, false)
+                        !(!autoStartPermissionHelper.isAutoStartPermissionAvailable(this, false) || autoStartPermissionHelper.getAutoStartPermission(this, false, false))
         ) {
             if (!isDialogFragmentShowing(requiredPermissionDialogFragment)) {
                 requiredPermissionDialogFragment.show(getSupportFragmentManager(), "RequiredPermission");

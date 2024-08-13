@@ -87,7 +87,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
                 val allPermissionsGranted =
                     it.hasNotificationPermission() &&
                             it.hasBatteryOptimizationExemption() &&
-                            autoStartPermissionHelper.getAutoStartPermission(it, false, false)
+                            (!autoStartPermissionHelper.isAutoStartPermissionAvailable(it, false) || autoStartPermissionHelper.getAutoStartPermission(it, false, false))
                 if (allPermissionsGranted) {
                     dismiss()
                 } else {
@@ -97,7 +97,7 @@ class RequiredPermissionDialogFragment : DialogFragment() {
                                 context = it,
                                 open = false,
                                 newTask = false
-                            )
+                            ) && autoStartPermissionHelper.isAutoStartPermissionAvailable(it, false)
                     }
                 }
             }
@@ -131,7 +131,11 @@ class RequiredPermissionDialogFragment : DialogFragment() {
             }
 
             autoStartPermit = binding.autostartPermit.apply {
-                isEnabled = !autoStartPermissionHelper.getAutoStartPermission(c, false, false)
+                isEnabled = !autoStartPermissionHelper.getAutoStartPermission(
+                    c,
+                    false,
+                    false
+                ) && autoStartPermissionHelper.isAutoStartPermissionAvailable(c, false)
                 setOnClickListener {
                     ShizukuSettings.setIsOpenOtherActivity(true)
                     autoStartPermissionHelper.getAutoStartPermission(c, true, false)
