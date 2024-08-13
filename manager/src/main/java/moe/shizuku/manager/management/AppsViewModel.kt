@@ -1,7 +1,10 @@
 package moe.shizuku.manager.management
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
@@ -16,7 +19,6 @@ import moe.shizuku.manager.authorization.AuthorizationManager
 import rikka.lifecycle.Resource
 import rikka.lifecycle.activitySharedViewModels
 import rikka.lifecycle.sharedViewModels
-import java.util.*
 
 @MainThread
 fun ComponentActivity.appsViewModel() = sharedViewModels { AppsViewModel(this) }
@@ -32,6 +34,38 @@ class AppsViewModel(context: Context) : ViewModel() {
     private val _grantedCount = MutableLiveData<Resource<Int>>()
     val grantedCount = _grantedCount as LiveData<Resource<Int>>
 
+    fun loadApps(context: Context) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val packageManager = context.packageManager
+            val listAppInfo = mutableSetOf<PackageInfo>()
+            val mainIntent = Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER)
+            val resolvedInfo =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    packageManager.queryIntentActivities(
+                        mainIntent,
+                        PackageManager.ResolveInfoFlags.of(0)
+                    )
+                } else {
+                    packageManager.queryIntentActivities(mainIntent, 0)
+                }
+            resolvedInfo.forEach {
+                val existed = listAppInfo.find { app -> app.packageName == it.activityInfo.packageName }
+                if (it.activityInfo.packageName != context.packageName && existed == null) {
+                    val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        packageManager.getPackageInfo(
+                            it.activityInfo.packageName,
+                            PackageManager.PackageInfoFlags.of(0)
+                        )
+                    } else {
+                        packageManager.getPackageInfo(it.activityInfo.packageName, 0)
+                    }
+                    listAppInfo.add(packageInfo)
+                }
+            }
+            _packages.postValue(Resource.success(listAppInfo.toList()))
+        }
+    }
+
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -39,7 +73,11 @@ class AppsViewModel(context: Context) : ViewModel() {
                 var count = 0
                 for (pi in AuthorizationManager.getPackages()) {
                     list.add(pi)
-                    if (AuthorizationManager.granted(pi.packageName, pi.applicationInfo.uid)) count++
+                    if (AuthorizationManager.granted(
+                            pi.packageName,
+                            pi.applicationInfo.uid
+                        )
+                    ) count++
                 }
                 _packages.postValue(Resource.success(list))
                 _grantedCount.postValue(Resource.success(count))

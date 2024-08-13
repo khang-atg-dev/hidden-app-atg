@@ -1,18 +1,14 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.shizuku
 
 import android.content.Intent
-import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import moe.shizuku.manager.Helps
 import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
 import moe.shizuku.manager.databinding.HomeManageAppsItemBinding
-import moe.shizuku.manager.ktx.toHtml
 import moe.shizuku.manager.management.ApplicationManagementActivity
 import moe.shizuku.manager.model.ServiceStatus
-import rikka.html.text.HtmlCompat
 import rikka.recyclerview.BaseViewHolder
 import rikka.recyclerview.BaseViewHolder.Creator
 

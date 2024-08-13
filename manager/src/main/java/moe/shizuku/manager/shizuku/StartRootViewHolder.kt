@@ -1,4 +1,4 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.shizuku
 
 import android.content.Intent
 import android.text.method.LinkMovementMethod

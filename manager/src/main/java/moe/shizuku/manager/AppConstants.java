@@ -11,4 +11,11 @@ public class AppConstants {
 
     private static final String PACKAGE = "moe.shizuku.manager";
     public static final String EXTRA = PACKAGE + ".extra";
+    public static final String GROUP_PKG_PREFIX = "hidden.group.";
+    public static final int PASSWORD_LENGTH = 4;
+
+    public static final String RELOAD_PACKAGES_FOR_LOCK = "RELOAD_PACKAGES_FOR_LOCK";
+    public static final Long DEFAULT_AUTO_LOCK_TIMEOUT = 0L;
+
+
 }

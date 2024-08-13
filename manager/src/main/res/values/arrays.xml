@@ -13,4 +13,20 @@
         <item>-1</item>
     </integer-array>
 
+    <string-array name="auto_lock_timeout_entries">
+        <item>@string/immediately</item>
+        <item>@string/one_minute</item>
+        <item>@string/five_minutes</item>
+        <item>@string/thirty_minutes</item>
+        <item>@string/one_hour</item>
+    </string-array>
+
+    <string-array name="auto_lock_timeout_values">
+        <item>0</item>
+        <item>60000</item>
+        <item>300000</item>
+        <item>1800000</item>
+        <item>3600000</item>
+    </string-array>
+
 </resources>
