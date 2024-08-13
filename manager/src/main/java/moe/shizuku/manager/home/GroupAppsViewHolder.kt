@@ -53,11 +53,11 @@ class GroupAppsViewHolder(
             btnTimeout.setOnClickListener {
                 listener.onEditTimeout(data.groupName)
             }
-            btnHide.text = "Unhide".takeIf { data.isHidden } ?: context.getString(R.string.hide)
+            btnHide.text = context.getString(R.string.unhide).takeIf { data.isHidden } ?: context.getString(R.string.hide)
             btnHide.setOnClickListener {
                 listener.onActionHide(data.groupName)
             }
-            btnLock.text = "Unlock".takeIf { data.isLocked } ?: context.getString(R.string.lock)
+            btnLock.text = context.getString(R.string.unlock).takeIf { data.isLocked } ?: context.getString(R.string.lock)
             btnLock.setOnClickListener {
                 listener.onActionLock(data.groupName)
             }
