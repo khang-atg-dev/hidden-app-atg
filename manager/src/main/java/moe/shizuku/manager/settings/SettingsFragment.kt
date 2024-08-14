@@ -7,6 +7,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
@@ -43,6 +44,13 @@ class SettingsFragment : PreferenceFragmentCompat(),
             ShizukuSettings.setIsChanningPassword(true)
             lockDialogFragment.show(parentFragmentManager, "my_dialog")
             true
+        }
+
+        findPreference<ListPreference>("auto_lock_preference")?.let {
+            val value = ShizukuSettings.getTimeoutPassword()
+            val index = context?.resources?.getStringArray(R.array.auto_lock_timeout_values)
+                ?.indexOf(value.toString()) ?: 0
+            it.setValueIndex(index)
         }
     }
 
@@ -81,6 +89,20 @@ class SettingsFragment : PreferenceFragmentCompat(),
             if (key == "enable_lock") {
                 val selectedValue = it.getBoolean(key, false)
                 ShizukuSettings.setEnablePassword(selectedValue)
+                return
+            }
+            if (key == "auto_lock_preference") {
+                val listPreference = findPreference<ListPreference>(key)
+                if (listPreference != null) {
+                    val index = listPreference.findIndexOfValue(listPreference.value)
+                    if (index >= 0) {
+                        context?.let { c ->
+                            val value =
+                                c.resources.getStringArray(R.array.auto_lock_timeout_values)[index]
+                            ShizukuSettings.saveTimeoutPassword(value.toLong())
+                        }
+                    }
+                }
             }
         }
     }

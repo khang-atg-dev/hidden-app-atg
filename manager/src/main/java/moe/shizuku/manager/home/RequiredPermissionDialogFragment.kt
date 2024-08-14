@@ -87,11 +87,15 @@ class RequiredPermissionDialogFragment : DialogFragment() {
                 val allPermissionsGranted =
                     it.hasNotificationPermission() &&
                             it.hasBatteryOptimizationExemption() &&
-                            (!autoStartPermissionHelper.isAutoStartPermissionAvailable(it, false) || autoStartPermissionHelper.getAutoStartPermission(it, false, false))
-                if (allPermissionsGranted) {
-                    dismiss()
-                } else {
-                    lifecycleScope.launch(Dispatchers.Main) {
+                            (!autoStartPermissionHelper.isAutoStartPermissionAvailable(
+                                it,
+                                false
+                            ) || autoStartPermissionHelper.getAutoStartPermission(it, false, false))
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (allPermissionsGranted) {
+                        dismiss()
+                    } else {
+
                         autoStartPermit?.isEnabled =
                             !autoStartPermissionHelper.getAutoStartPermission(
                                 context = it,
