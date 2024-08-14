@@ -51,6 +51,7 @@ public class ShizukuSettings {
     public static final String IS_OPEN_OTHER_ACTIVITY = "IS_OPEN_OTHER_ACTIVITY";
     public static final String GROUP_APPS_IS_HIDDEN = "GROUP_APPS_IS_HIDDEN";
     public static final String IS_SHOW_AUTO_START_NOTICE = "IS_SHOW_AUTO_START_NOTICE";
+    public static final String DEFAULT_GROUP_INDEX = "DEFAULT_GROUP_INDEX";
 
 
     private static SharedPreferences sPreferences;
@@ -262,5 +263,13 @@ public class ShizukuSettings {
 
     public static void saveTimeoutLandmark(long value) {
         getPreferences().edit().putLong(TIME_OUT_LANDMARK, value).apply();
+    }
+
+    public static int getDefaultGroupIndex() {
+        return getPreferences().getInt(DEFAULT_GROUP_INDEX, 0);
+    }
+
+    public static void saveDefaultGroupIndex(int value) {
+        getPreferences().edit().putInt(DEFAULT_GROUP_INDEX, value).apply();
     }
 }
