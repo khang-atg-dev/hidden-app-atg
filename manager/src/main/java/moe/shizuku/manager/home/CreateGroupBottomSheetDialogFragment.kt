@@ -136,11 +136,15 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
                 edtLayout.error = null
             }
             setOnFocusChangeListener { _, hasFocus ->
-                if (hasFocus && editGroup == null) edtLayout.hint = context.getString(R.string.name)
+                if (hasFocus) edtLayout.hint = context.getString(R.string.name)
             }
         }
         edtLayout = view.findViewById<TextInputLayout?>(R.id.edit_layout).apply {
-            this.hint = defaultGroupName
+            if (editGroup != null) {
+                if (isDefaultGroup) this.hint = defaultGroupName
+            } else {
+                this.hint = defaultGroupName
+            }
         }
     }
 
