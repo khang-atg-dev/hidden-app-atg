@@ -97,10 +97,14 @@ class LockPermissionDialogFragment : DialogFragment() {
     }
 
     private fun checkOverlayPermission() {
-        overPermit.isEnabled = !(context?.isCanDrawOverlays() ?: true)
+        CoroutineScope(Dispatchers.Main).launch {
+            overPermit.isEnabled = !(context?.isCanDrawOverlays() ?: true)
+        }
     }
 
     private fun checkAccessibilityPermission() {
-        accessibilityPermit.isEnabled = !(context?.isAccessibilityServiceEnabled() ?: true)
+        CoroutineScope(Dispatchers.Main).launch {
+            accessibilityPermit.isEnabled = !(context?.isAccessibilityServiceEnabled() ?: true)
+        }
     }
 }

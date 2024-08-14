@@ -30,18 +30,23 @@ public class MainActivity extends HomeActivity {
     protected void onResume() {
         ExtensionsKt.checkLockAppsPermission(this);
         ExtensionsKt.checkHideAppsPermission();
-        if (
-                !hasNotificationPermission(this) ||
-                        !hasBatteryOptimizationExemption(this) ||
-                        !(!autoStartPermissionHelper.isAutoStartPermissionAvailable(this, false) || autoStartPermissionHelper.getAutoStartPermission(this, false, false))
+        if (!hasNotificationPermission(this) ||
+                !hasBatteryOptimizationExemption(this) ||
+                !(!autoStartPermissionHelper.isAutoStartPermissionAvailable(this, false) || autoStartPermissionHelper.getAutoStartPermission(this, false, false))
         ) {
             if (!isDialogFragmentShowing(requiredPermissionDialogFragment)) {
                 requiredPermissionDialogFragment.show(getSupportFragmentManager(), "RequiredPermission");
             }
         }
-        if (ShizukuSettings.getEnablePassword() && ShizukuSettings.getIsLocked() && !ShizukuSettings.getIsOpenOtherActivity()) {
+        if ((ShizukuSettings.getLockPassword().isEmpty() || ShizukuSettings.getEnablePassword()) && ShizukuSettings.getIsLocked() && !ShizukuSettings.getIsOpenOtherActivity()) {
+            long lastTime = ShizukuSettings.getTimeoutLandmark();
+            long timeout = ShizukuSettings.getTimeoutPassword();
+            if (lastTime != 0L && System.currentTimeMillis() - lastTime <= timeout) {
+                super.onResume();
+                return;
+            }
             if (!isDialogFragmentShowing(lockFragment)) {
-                lockFragment.show(getSupportFragmentManager(), "my_dialog");
+                lockFragment.show(getSupportFragmentManager(), "LockDialogFragment");
             }
         }
         super.onResume();
@@ -49,6 +54,9 @@ public class MainActivity extends HomeActivity {
 
     @Override
     protected void onPause() {
+        if (ShizukuSettings.getEnablePassword()) {
+            ShizukuSettings.saveTimeoutLandmark(System.currentTimeMillis());
+        }
         super.onPause();
     }
 

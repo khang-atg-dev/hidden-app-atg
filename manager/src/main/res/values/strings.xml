@@ -211,5 +211,8 @@ With %1$s, in any terminal app, you can connect to and interact with the shell r
     <string name="shizuku_not_running">Shizuku: Service not running</string>
     <string name="shizuku_perrmission_denied">Shizuku: Permission denied</string>
     <string name="unsupported_shizuku_version">Unsupported Shizuku version: Pre-v11. Please install Shizuku v11 or later.</string>
+    <string name="re_enter_password">Re-enter your password</string>
+    <string name="other_settings">Other</string>
+    <string name="auto_lock_timeout">Auto-Lock Timeout</string>
 
 </resources>

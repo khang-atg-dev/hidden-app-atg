@@ -14,6 +14,18 @@
             android:key="change_password"
             android:title="@string/change_password" />
 
+        <ListPreference
+            app:defaultValue="0"
+            app:entries="@array/auto_lock_timeout_entries"
+            app:entryValues="@array/auto_lock_timeout_values"
+            app:key="auto_lock_preference"
+            app:title="@string/auto_lock_timeout"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/other_settings">
+
         <Preference
             android:key="shizuku_setting"
             android:title="@string/shizuku_settings" />

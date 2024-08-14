@@ -177,7 +177,7 @@ class LockDialogFragment : DialogFragment() {
     private fun changeUI() {
         isReenterPass = true
         verifiedPassword = ""
-        txtTitle.text = "Re-enter your password"
+        txtTitle.text = context?.getString(R.string.re_enter_password) ?: "Re-enter your password"
         pin1.text = ""
         pin2.text = ""
         pin3.text = ""

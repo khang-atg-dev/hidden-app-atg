@@ -43,6 +43,8 @@ public class ShizukuSettings {
     //
     public static final String GROUP_LOCK_APPS = "group_lock_apps";
     public static final String ENABLE_PASSWORD = "enable_password";
+    public static final String TIME_OUT_PASSWORD = "time_out_password";
+    public static final String TIME_OUT_LANDMARK = "time_out_landmark";
     public static final String LOCK_PASSWORD = "LOCK_PASSWORD";
     public static final String IS_LOCKED = "IS_LOCKED";
     public static final String IS_CHANNING_PASSWORD = "IS_CHANNING_PASSWORD";
@@ -175,7 +177,7 @@ public class ShizukuSettings {
     }
 
     public static boolean getEnablePassword() {
-        return getPreferences().getBoolean(ENABLE_PASSWORD, true);
+        return getPreferences().getBoolean(ENABLE_PASSWORD, false);
     }
 
     public static void setEnablePassword(boolean value) {
@@ -244,5 +246,21 @@ public class ShizukuSettings {
 
     public static boolean getUnlockStatus(String pkg) {
         return getPreferences().getBoolean(pkg, false);
+    }
+
+    public static long getTimeoutPassword() {
+        return getPreferences().getLong(TIME_OUT_PASSWORD, 0L);
+    }
+
+    public static void saveTimeoutPassword(long value) {
+        getPreferences().edit().putLong(TIME_OUT_PASSWORD, value).apply();
+    }
+
+    public static long getTimeoutLandmark() {
+        return getPreferences().getLong(TIME_OUT_LANDMARK, 0L);
+    }
+
+    public static void saveTimeoutLandmark(long value) {
+        getPreferences().edit().putLong(TIME_OUT_LANDMARK, value).apply();
     }
 }

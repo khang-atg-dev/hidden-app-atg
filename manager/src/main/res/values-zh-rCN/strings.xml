@@ -173,4 +173,5 @@
     <string name="shizuku_not_running">Shizuku：服务未运行</string>
     <string name="shizuku_perrmission_denied">Shizuku：权限被拒绝</string>
     <string name="unsupported_shizuku_version">不支持的 Shizuku 版本：低于 v11。请安装 Shizuku v11 或更高版本</string>
+    <string name="re_enter_password">重新输入您的密码</string>
 </resources>
