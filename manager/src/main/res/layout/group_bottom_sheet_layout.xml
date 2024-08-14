@@ -37,6 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/name"
+        android:textColorHint="@color/material_grey_500"
         android:labelFor="@+id/edt_name"
         app:counterEnabled="true"
         app:counterMaxLength="20">

@@ -214,5 +214,6 @@ With %1$s, in any terminal app, you can connect to and interact with the shell r
     <string name="re_enter_password">Re-enter your password</string>
     <string name="other_settings">Other</string>
     <string name="auto_lock_timeout">Auto-Lock Timeout</string>
+    <string name="default_group_name">Group Apps #%1$s</string>
 
 </resources>

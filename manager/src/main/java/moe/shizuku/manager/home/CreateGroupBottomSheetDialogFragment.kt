@@ -16,6 +16,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import moe.shizuku.manager.AppConstants.DEFAULT_GROUP_NAME
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
@@ -37,9 +38,31 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
     private var selectedPkgs: Set<String> = emptySet()
     private var callback: GroupBottomSheetCallback? = null
     private var editGroup: GroupApps? = null
+    private var defaultGroupNameIndex = 0
+    private var defaultGroupName = ""
+    private var isDefaultGroup = false
 
     fun setCallback(callback: GroupBottomSheetCallback) {
         this.callback = callback
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        context?.let {
+            editGroup?.let { edt ->
+                if (edt.groupName.startsWith(DEFAULT_GROUP_NAME)) {
+                    this.isDefaultGroup = true
+                    this.defaultGroupNameIndex =
+                        edt.groupName.substringAfterLast(DEFAULT_GROUP_NAME).toInt()
+                    this.defaultGroupName =
+                        it.getString(R.string.default_group_name, defaultGroupNameIndex.toString())
+                    return
+                }
+            }
+            defaultGroupNameIndex = ShizukuSettings.getDefaultGroupIndex() + 1
+            defaultGroupName =
+                it.getString(R.string.default_group_name, defaultGroupNameIndex.toString())
+        }
     }
 
     override fun onCreateView(
@@ -60,9 +83,14 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
         adapter.dataSource = data
         view.findViewById<MaterialButton>(R.id.action_btn)?.apply {
             setOnClickListener {
-                val newName = edtName.text.toString().trim()
+                val editText = edtName.text?.toString()?.trim() ?: ""
+                val newName =
+                    (DEFAULT_GROUP_NAME + defaultGroupNameIndex).takeIf { editText.isEmpty() }
+                        ?: editText
                 when {
-                    newName.isEmpty() -> edtLayout.error = context.getString(R.string.name_cannot_be_empty)
+                    newName.isEmpty() -> edtLayout.error =
+                        context.getString(R.string.name_cannot_be_empty)
+
                     editGroup != null &&
                             editGroup?.groupName != newName &&
                             ShizukuSettings.getPksByGroupName(newName) != null -> {
@@ -86,22 +114,41 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
                                 newName,
                                 selectedPkgs
                             )
-                        } ?: callback?.onDone(newName, selectedPkgs)
+                            dismiss()
+                            return@setOnClickListener
+                        }
+                        if (editText.isEmpty()) ShizukuSettings.saveDefaultGroupIndex(
+                            ShizukuSettings.getDefaultGroupIndex() + 1
+                        )
+                        callback?.onDone(newName, selectedPkgs)
                         dismiss()
                     }
                 }
             }
         }
         edtName = view.findViewById<TextInputEditText>(R.id.edt_name).apply {
-            editGroup?.let { this.setText(it.groupName) }
+            editGroup?.let {
+                if (!isDefaultGroup) {
+                    this.setText(it.groupName)
+                }
+            }
             addTextChangedListener {
                 edtLayout.error = null
             }
+            setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus && editGroup == null) edtLayout.hint = context.getString(R.string.name)
+            }
         }
-        edtLayout = view.findViewById(R.id.edit_layout)
+        edtLayout = view.findViewById<TextInputLayout?>(R.id.edit_layout).apply {
+            this.hint = defaultGroupName
+        }
     }
 
-    fun updateData(context: Context, data: List<AppGroupBottomSheet>, editGroup: GroupApps? = null) {
+    fun updateData(
+        context: Context,
+        data: List<AppGroupBottomSheet>,
+        editGroup: GroupApps? = null
+    ) {
         editGroup?.let {
             this.editGroup = it
             this.selectedPkgs = it.pkgs

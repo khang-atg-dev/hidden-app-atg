@@ -174,4 +174,7 @@
     <string name="shizuku_perrmission_denied">Shizuku：权限被拒绝</string>
     <string name="unsupported_shizuku_version">不支持的 Shizuku 版本：低于 v11。请安装 Shizuku v11 或更高版本</string>
     <string name="re_enter_password">重新输入您的密码</string>
+    <string name="other_settings">其他</string>
+    <string name="auto_lock_timeout">自动锁定超时</string>
+    <string name="default_group_name">群组Apps #%1$s</string>
 </resources>

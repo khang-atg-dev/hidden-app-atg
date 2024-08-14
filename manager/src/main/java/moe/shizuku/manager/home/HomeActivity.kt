@@ -42,7 +42,6 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     private val adapter by unsafeLazy { HomeAdapter() }
     private val apps = mutableListOf<AppGroupBottomSheet>()
     private val lockPermissionDialogFragment = LockPermissionDialogFragment()
-    private val createGroupBottomSheet = CreateGroupBottomSheetDialogFragment()
 
     override fun onResume() {
         super.onResume()
@@ -57,8 +56,6 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
 
         val binding = HomeActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        createGroupBottomSheet.setCallback(homeModel)
 
         lifecycleScope.launch {
             homeModel.events.flowWithLifecycle(
@@ -173,7 +170,8 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
     }
 
     override fun onClickGroup(groupName: String) {
-        createGroupBottomSheet.let {
+        CreateGroupBottomSheetDialogFragment().let {
+            it.setCallback(homeModel)
             it.updateData(
                 this@HomeActivity,
                 apps,
