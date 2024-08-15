@@ -87,8 +87,6 @@ public class BaseAdapter<V, VH extends BaseHolder> extends RecyclerView.Adapter<
         }
     }
 
-
-
     public void removeAtPosition(int position){
         if(this.dataSource.size()> position){
             dataSource.remove(position);

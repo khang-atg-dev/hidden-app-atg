@@ -5,12 +5,19 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
+import androidx.core.widget.doAfterTextChanged
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
@@ -33,6 +40,7 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
     private lateinit var adapter: AppsGroupBottomAdapter
     private lateinit var edtName: TextInputEditText
     private lateinit var edtLayout: TextInputLayout
+    private lateinit var txtEmpty: TextView
 
     private var data: List<AppGroupBottomSheet> = emptyList()
     private var selectedPkgs: Set<String> = emptySet()
@@ -75,10 +83,33 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        txtEmpty = view.findViewById(R.id.empty_txt)
+        view.findViewById<TextView>(R.id.cancel_btn)?.apply {
+            setOnClickListener {
+                dismiss()
+            }
+        }
         view.findViewById<BorderRecyclerView>(R.id.list_apps)?.apply {
             adapter = this@CreateGroupBottomSheetDialogFragment.adapter
             fixEdgeEffect()
             addEdgeSpacing(top = 8f, bottom = 8f, unit = TypedValue.COMPLEX_UNIT_DIP)
+            addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
+                override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                    when (e.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            val imm =
+                                context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(rv.windowToken, 0)
+                        }
+                    }
+                    return false
+                }
+
+                override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
+
+                override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+
+            })
         }
         adapter.dataSource = data
         view.findViewById<MaterialButton>(R.id.action_btn)?.apply {
@@ -135,15 +166,40 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
             addTextChangedListener {
                 edtLayout.error = null
             }
-            setOnFocusChangeListener { _, hasFocus ->
-                if (hasFocus) edtLayout.hint = context.getString(R.string.name)
-            }
         }
         edtLayout = view.findViewById<TextInputLayout?>(R.id.edit_layout).apply {
             if (editGroup != null) {
                 if (isDefaultGroup) this.hint = defaultGroupName
             } else {
                 this.hint = defaultGroupName
+            }
+        }
+        view.findViewById<TextInputEditText?>(R.id.edt_search).apply {
+            setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    val bottomSheet =
+                        dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as? FrameLayout
+                    val bottomSheetBehavior = bottomSheet?.let { BottomSheetBehavior.from(it) }
+                    bottomSheetBehavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                    bottomSheetBehavior?.skipCollapsed = true
+                }
+            }
+            setOnEditorActionListener { _, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    this.clearFocus()
+                }
+                false
+            }
+            addTextChangedListener {
+                doAfterTextChanged { text ->
+                    text?.let {
+                        if (it.isEmpty()) {
+                            adapter.dataSource = data
+                        } else {
+                            searchApp(it.toString().trim())
+                        }
+                    }
+                }
             }
         }
     }
@@ -202,6 +258,12 @@ class CreateGroupBottomSheetDialogFragment : BottomSheetDialogFragment(),
         this.data = updateData
         this.selectedPkgs = this.selectedPkgs.minus(pk)
         adapter.updateItem(position, data.find { it.pkName == pk })
+    }
+
+    private fun searchApp(searchText: String) {
+        val temp = this.data.filter { it.name.contains(searchText, true) }
+        txtEmpty.visibility = View.GONE.takeIf { temp.isNotEmpty() } ?: View.VISIBLE
+        this.adapter.dataSource = temp
     }
 }
 

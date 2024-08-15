@@ -177,4 +177,6 @@
     <string name="other_settings">其他</string>
     <string name="auto_lock_timeout">自动锁定超时</string>
     <string name="default_group_name">群组Apps #%1$s</string>
+    <string name="search">搜索</string>
+    <string name="not_found">未搜到!</string>
 </resources>

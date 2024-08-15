@@ -28,6 +28,7 @@ public class MainActivity extends HomeActivity {
 
     @Override
     protected void onResume() {
+        super.onResume();
         ExtensionsKt.checkLockAppsPermission(this);
         ExtensionsKt.checkHideAppsPermission();
         if (!hasNotificationPermission(this) ||
@@ -42,14 +43,12 @@ public class MainActivity extends HomeActivity {
             long lastTime = ShizukuSettings.getTimeoutLandmark();
             long timeout = ShizukuSettings.getTimeoutPassword();
             if (lastTime != 0L && System.currentTimeMillis() - lastTime <= timeout) {
-                super.onResume();
                 return;
             }
             if (!isDialogFragmentShowing(lockFragment)) {
                 lockFragment.show(getSupportFragmentManager(), "LockDialogFragment");
             }
         }
-        super.onResume();
     }
 
     @Override
