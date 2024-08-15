@@ -19,6 +19,7 @@ import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.LockPermissionDialogFragementBinding
 import moe.shizuku.manager.utils.isAccessibilityServiceEnabled
 import moe.shizuku.manager.utils.isCanDrawOverlays
+import rikka.html.text.HtmlCompat
 
 class LockPermissionDialogFragment : DialogFragment() {
 
@@ -56,12 +57,14 @@ class LockPermissionDialogFragment : DialogFragment() {
             setNegativeButton(android.R.string.cancel, null)
         }
         val dialog = builder.create()
-        dialog.setOnShowListener { onDialogShown(it) }
+        dialog.setOnShowListener { onDialogShown() }
         return dialog
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         ShizukuSettings.setIsOpenOtherActivity(false)
+        launcherAccessibility.unregister()
+        launcherDrawOverlay.unregister()
         super.onDismiss(dialog)
     }
 
@@ -74,7 +77,7 @@ class LockPermissionDialogFragment : DialogFragment() {
         }
     }
 
-    private fun onDialogShown(dialog: DialogInterface) {
+    private fun onDialogShown() {
         context?.let { c ->
             overPermit = binding.overlayPermit
             checkOverlayPermission()
@@ -90,8 +93,23 @@ class LockPermissionDialogFragment : DialogFragment() {
             accessibilityPermit = binding.accessibilityPermit
             checkAccessibilityPermission()
             accessibilityPermit.setOnClickListener {
-                ShizukuSettings.setIsOpenOtherActivity(true)
-                launcherAccessibility.launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                MaterialAlertDialogBuilder(c).apply {
+                    setTitle(getString(R.string.accessibility_titile_dialog))
+                    setMessage(
+                        HtmlCompat.fromHtml(
+                            getString(
+                                R.string.accessibility_direction,
+                                getString(R.string.accessibility_service_label)
+                            )
+                        )
+
+                    )
+                    setPositiveButton(getString(R.string.go_to_accessibility)) { _, _ ->
+                        ShizukuSettings.setIsOpenOtherActivity(true)
+                        launcherAccessibility.launch(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    }
+                    setNegativeButton(android.R.string.cancel, null)
+                }.create().show()
             }
         }
     }

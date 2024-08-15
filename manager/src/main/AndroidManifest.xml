@@ -174,7 +174,7 @@
         <service
             android:name=".service.MainAccessibilityService"
             android:exported="true"
-            android:label="MyAccessibilityService"
+            android:label="@string/accessibility_service_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />

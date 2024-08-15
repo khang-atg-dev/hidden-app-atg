@@ -75,6 +75,8 @@ class RequiredPermissionDialogFragment : DialogFragment() {
 
     override fun onDismiss(dialog: DialogInterface) {
         ShizukuSettings.setIsOpenOtherActivity(false)
+        requestPermissionLauncher.unregister()
+        requestSpecialPermissionLauncher.unregister()
         super.onDismiss(dialog)
     }
 

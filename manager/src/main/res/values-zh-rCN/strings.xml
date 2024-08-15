@@ -179,4 +179,8 @@
     <string name="default_group_name">群组Apps #%1$s</string>
     <string name="search">搜索</string>
     <string name="not_found">未搜到!</string>
+    <string name="accessibility_service_label">隐藏的辅助功能服务</string>
+    <string name="accessibility_direction"><![CDATA[点击 <b>前往辅助功能设置</b><br />- 选择 <b>已下载的apps</b><br />- 寻找 <b>%1$s</b><br />- 启用它（可能会弹出一个对话框，询问你是否信任此服务。只需确认即可!)]]></string>
+    <string name="go_to_accessibility">请前往辅助功能设置</string>
+    <string name="accessibility_titile_dialog">如何启用辅助功能服务</string>
 </resources>

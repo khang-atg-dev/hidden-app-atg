@@ -157,16 +157,22 @@ public class ShizukuSettings {
         }
     }
 
-    public static Long findTimeoutOfPkg(String pkg) {
+    public static long findTimeoutOfPkg(String pkg) {
         Set<String> groups = getGroupLockedAppsAsSet();
+        long minTimeout = -1L;
         for (String group : groups) {
             String groupName = group.substring(group.lastIndexOf(".") + 1);
             GroupApps groupApps = getPksByGroupName(groupName);
             if (groupApps != null && groupApps.getPkgs().contains(pkg)) {
-                return groupApps.getTimeOut();
+                if (groupApps.isLocked()) {
+                    long timeout = groupApps.getTimeOut();
+                    if (minTimeout < 0) minTimeout = timeout;
+                    else if (timeout < minTimeout) minTimeout = timeout;
+                    if (minTimeout == 0) return minTimeout;
+                }
             }
         }
-        return DEFAULT_AUTO_LOCK_TIMEOUT;
+        return minTimeout == -1L ? DEFAULT_AUTO_LOCK_TIMEOUT : minTimeout;
     }
 
     public static void saveDataByGroupName(String name, GroupApps data) {
