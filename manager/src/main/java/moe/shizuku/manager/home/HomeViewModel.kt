@@ -23,6 +23,7 @@ import moe.shizuku.manager.utils.Logger.LOGGER
 import moe.shizuku.manager.utils.ShizukuSystemApis
 import rikka.lifecycle.Resource
 import rikka.shizuku.Shizuku
+import java.util.UUID
 import java.util.concurrent.CancellationException
 
 class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
@@ -89,7 +90,7 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
                 } else {
                     val list = mutableListOf<GroupApps>()
                     groupApps.forEach {
-                        ShizukuSettings.getPksByGroupName(
+                        ShizukuSettings.getPksById(
                             it.substringAfterLast(".")
                         )?.let { groupApps ->
                             list.add(groupApps)
@@ -103,11 +104,12 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         }
     }
 
-    fun changeTimeout(groupName: String, timeout: Long) {
-        ShizukuSettings.getPksByGroupName(groupName)?.let {
-            ShizukuSettings.saveDataByGroupName(
-                groupName,
+    fun changeTimeout(id: String, timeout: Long) {
+        ShizukuSettings.getPksById(id)?.let {
+            ShizukuSettings.saveDataById(
+                id,
                 GroupApps(
+                    id = it.id,
                     groupName = it.groupName,
                     pkgs = it.pkgs,
                     isLocked = it.isLocked,
@@ -120,7 +122,7 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         reloadGroupApps()
     }
 
-    fun actionHideGroup(groupName: String, context: Context) {
+    fun actionHideGroup(id: String, context: Context) {
         if (serviceStatus.value?.data?.isRunning != true) {
             viewModelScope.launch {
                 _events.send(HomeEvents.ShowShirukuAlert(context.getString(R.string.shizuku_note)))
@@ -138,7 +140,7 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
                     ShizukuSettings.setIsOpenOtherActivity(false)
                 }
                 if (success) {
-                    ShizukuSettings.getPksByGroupName(groupName)?.let {
+                    ShizukuSettings.getPksById(id)?.let {
                         if (it.pkgs.isNotEmpty()) {
                             if (!it.isHidden) {
                                 ShizukuSettings.saveAppsIsHidden(it.pkgs)
@@ -148,9 +150,10 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
                                 ShizukuSettings.removeAppsIsHidden(it.pkgs)
                             }
                         }
-                        ShizukuSettings.saveDataByGroupName(
-                            groupName,
+                        ShizukuSettings.saveDataById(
+                            id,
                             GroupApps(
+                                id = id,
                                 groupName = it.groupName,
                                 pkgs = it.pkgs,
                                 isLocked = it.isLocked,
@@ -169,11 +172,12 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         })
     }
 
-    fun actionLockGroup(groupName: String) {
-        ShizukuSettings.getPksByGroupName(groupName)?.let {
-            ShizukuSettings.saveDataByGroupName(
-                groupName,
+    fun actionLockGroup(id: String) {
+        ShizukuSettings.getPksById(id)?.let {
+            ShizukuSettings.saveDataById(
+                id,
                 GroupApps(
+                    id = id,
                     groupName = it.groupName,
                     pkgs = it.pkgs,
                     isLocked = !it.isLocked,
@@ -189,7 +193,7 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
     }
 
     fun onDeleteGroup(groupName: String) {
-        ShizukuSettings.getPksByGroupName(groupName)?.let {
+        ShizukuSettings.getPksById(groupName)?.let {
             if (it.isHidden) {
                 ShizukuSettings.removeAppsIsHidden(it.pkgs)
                 this@HomeViewModel.appHider.show(it.pkgs)
@@ -203,24 +207,27 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         }
     }
 
-    override fun onDone(groupName: String, pks: Set<String>) {
-        ShizukuSettings.saveGroupLockedApps(groupName)
-        ShizukuSettings.saveDataByGroupName(
-            groupName,
+    override fun onDone(name: String, pks: Set<String>) {
+        val uuid = UUID.randomUUID().toString()
+        ShizukuSettings.saveGroupLockedApps(uuid)
+        ShizukuSettings.saveDataById(
+            uuid,
             GroupApps(
-                groupName = groupName,
+                id = uuid,
+                groupName = name,
                 pkgs = pks,
             )
         )
         reloadGroupApps()
     }
 
-    override fun onEditDone(editGroupName: String, newGroupName: String, pkgs: Set<String>) {
-        ShizukuSettings.getPksByGroupName(editGroupName)?.let {
-            ShizukuSettings.saveGroupLockedApps(newGroupName)
-            ShizukuSettings.saveDataByGroupName(
-                newGroupName,
+    override fun onEditDone(id: String, newGroupName: String, pkgs: Set<String>) {
+        ShizukuSettings.getPksById(id)?.let {
+            ShizukuSettings.saveGroupLockedApps(id)
+            ShizukuSettings.saveDataById(
+                id,
                 GroupApps(
+                    id = it.id,
                     groupName = newGroupName,
                     pkgs = pkgs,
                     isLocked = it.isLocked,
@@ -235,7 +242,6 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
             }
             if (it.isHidden) reloadHideApps(it.pkgs, pkgs)
         }
-        if (editGroupName != newGroupName) ShizukuSettings.removeDataByGroupName(editGroupName)
         reloadGroupApps()
     }
 

@@ -169,13 +169,13 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
         }
     }
 
-    override fun onClickGroup(groupName: String) {
+    override fun onClickGroup(id: String) {
         CreateGroupBottomSheetDialogFragment().let {
             it.setCallback(homeModel)
             it.updateData(
                 this@HomeActivity,
                 apps,
-                ShizukuSettings.getPksByGroupName(groupName)
+                ShizukuSettings.getPksById(id)
             )
             it.show(
                 supportFragmentManager,
@@ -184,13 +184,13 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
         }
     }
 
-    override fun onDeleteGroup(groupName: String) {
+    override fun onDeleteGroup(id: String) {
         MaterialAlertDialogBuilder(this@HomeActivity)
             .setTitle(this@HomeActivity.getString(R.string.delete_group_msg))
             .setPositiveButton(android.R.string.ok) { _, _ ->
-                homeModel.onDeleteGroup(groupName)
-                ShizukuSettings.removeGroupLockedApp(GROUP_PKG_PREFIX + groupName)
-                ShizukuSettings.removeDataByGroupName(groupName)
+                homeModel.onDeleteGroup(id)
+                ShizukuSettings.removeGroupLockedApp(GROUP_PKG_PREFIX + id)
+                ShizukuSettings.removeDataById(id)
                 homeModel.reloadPkgLock()
                 homeModel.reloadGroupApps()
             }
@@ -199,21 +199,21 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
             .show()
     }
 
-    override fun onActionHide(groupName: String) {
-        homeModel.actionHideGroup(groupName, this)
+    override fun onActionHide(id: String) {
+        homeModel.actionHideGroup(id, this)
     }
 
 
-    override fun onActionLock(groupName: String) {
+    override fun onActionLock(id: String) {
         if (this.isCanDrawOverlays() && this.isAccessibilityServiceEnabled()) {
-            homeModel.actionLockGroup(groupName)
+            homeModel.actionLockGroup(id)
         } else {
             lockPermissionDialogFragment.show(supportFragmentManager, "LockPermission")
         }
     }
 
-    override fun onEditTimeout(groupName: String) {
-        val data = ShizukuSettings.getPksByGroupName(groupName)
+    override fun onEditTimeout(id: String) {
+        val data = ShizukuSettings.getPksById(id)
         data?.let {
             val indexSelected = resources.getStringArray(R.array.auto_lock_timeout_values)
                 .indexOf(it.timeOut.toString())
@@ -225,7 +225,7 @@ abstract class HomeActivity : AppBarActivity(), HomeCallback {
                 ) { d, which ->
                     val timeout =
                         resources.getStringArray(R.array.auto_lock_timeout_values)[which].toLong()
-                    homeModel.changeTimeout(groupName, timeout)
+                    homeModel.changeTimeout(id, timeout)
                     d.dismiss()
                 }
                 .create()

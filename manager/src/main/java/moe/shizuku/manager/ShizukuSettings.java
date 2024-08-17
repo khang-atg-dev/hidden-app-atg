@@ -4,7 +4,6 @@ import android.app.ActivityThread;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -21,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.TreeSet;
 
 import moe.shizuku.manager.model.GroupApps;
 import moe.shizuku.manager.utils.EmptySharedPreferencesImpl;
@@ -50,9 +48,6 @@ public class ShizukuSettings {
     public static final String IS_CHANNING_PASSWORD = "IS_CHANNING_PASSWORD";
     public static final String IS_OPEN_OTHER_ACTIVITY = "IS_OPEN_OTHER_ACTIVITY";
     public static final String GROUP_APPS_IS_HIDDEN = "GROUP_APPS_IS_HIDDEN";
-    public static final String IS_SHOW_AUTO_START_NOTICE = "IS_SHOW_AUTO_START_NOTICE";
-    public static final String DEFAULT_GROUP_INDEX = "DEFAULT_GROUP_INDEX";
-
 
     private static SharedPreferences sPreferences;
     private static final Gson gson = new Gson();
@@ -132,9 +127,9 @@ public class ShizukuSettings {
         return new HashSet<>(Arrays.asList(pkgStr.split("/-/")));
     }
 
-    public static void saveGroupLockedApps(String groupName) {
+    public static void saveGroupLockedApps(String id) {
         List<String> pkgs = new ArrayList<>(getGroupLockedAppsAsSet());
-        pkgs.add(GROUP_PKG_PREFIX + groupName);
+        pkgs.add(GROUP_PKG_PREFIX + id);
         String pkgsStr = String.join("/-/", pkgs);
         getPreferences().edit().putString(GROUP_LOCK_APPS, pkgsStr).apply();
     }
@@ -147,8 +142,8 @@ public class ShizukuSettings {
     }
 
     @Nullable
-    public static GroupApps getPksByGroupName(String name) {
-        String objStr = getPreferences().getString(GROUP_PKG_PREFIX + name, "");
+    public static GroupApps getPksById(String id) {
+        String objStr = getPreferences().getString(GROUP_PKG_PREFIX + id, "");
         if (objStr.isEmpty()) return null;
         try {
             return gson.fromJson(objStr, GroupApps.class);
@@ -159,10 +154,11 @@ public class ShizukuSettings {
 
     public static long findTimeoutOfPkg(String pkg) {
         Set<String> groups = getGroupLockedAppsAsSet();
+        Log.d("Sss", "findTimeoutOfPkg: " + groups);
         long minTimeout = -1L;
         for (String group : groups) {
             String groupName = group.substring(group.lastIndexOf(".") + 1);
-            GroupApps groupApps = getPksByGroupName(groupName);
+            GroupApps groupApps = getPksById(groupName);
             if (groupApps != null && groupApps.getPkgs().contains(pkg)) {
                 if (groupApps.isLocked()) {
                     long timeout = groupApps.getTimeOut();
@@ -175,12 +171,12 @@ public class ShizukuSettings {
         return minTimeout == -1L ? DEFAULT_AUTO_LOCK_TIMEOUT : minTimeout;
     }
 
-    public static void saveDataByGroupName(String name, GroupApps data) {
-        getPreferences().edit().putString(GROUP_PKG_PREFIX + name, gson.toJson(data)).apply();
+    public static void saveDataById(String id, GroupApps data) {
+        getPreferences().edit().putString(GROUP_PKG_PREFIX + id, gson.toJson(data)).apply();
     }
 
-    public static void removeDataByGroupName(String name) {
-        getPreferences().edit().remove(GROUP_PKG_PREFIX + name).apply();
+    public static void removeDataById(String id) {
+        getPreferences().edit().remove(GROUP_PKG_PREFIX + id).apply();
     }
 
     public static boolean getEnablePassword() {
@@ -239,14 +235,6 @@ public class ShizukuSettings {
         getPreferences().edit().putStringSet(GROUP_APPS_IS_HIDDEN, new HashSet<>(existPkgs)).apply();
     }
 
-    public static void setIsShowAutoStartNotice(boolean value) {
-        getPreferences().edit().putBoolean(IS_SHOW_AUTO_START_NOTICE, value).apply();
-    }
-
-    public static boolean getIsShowAutoStartNotice() {
-        return getPreferences().getBoolean(IS_SHOW_AUTO_START_NOTICE, false);
-    }
-
     public static void saveUnlockStatus(String pkg, boolean isUnlock) {
         getPreferences().edit().putBoolean(pkg, isUnlock).apply();
     }
@@ -269,13 +257,5 @@ public class ShizukuSettings {
 
     public static void saveTimeoutLandmark(long value) {
         getPreferences().edit().putLong(TIME_OUT_LANDMARK, value).apply();
-    }
-
-    public static int getDefaultGroupIndex() {
-        return getPreferences().getInt(DEFAULT_GROUP_INDEX, 0);
-    }
-
-    public static void saveDefaultGroupIndex(int value) {
-        getPreferences().edit().putInt(DEFAULT_GROUP_INDEX, value).apply();
     }
 }

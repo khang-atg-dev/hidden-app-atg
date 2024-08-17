@@ -3,7 +3,6 @@ package moe.shizuku.manager.home
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import moe.shizuku.manager.AppConstants.DEFAULT_GROUP_NAME
 import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.GroupAppsLayoutBinding
 import moe.shizuku.manager.databinding.HomeItemContainerBinding
@@ -45,31 +44,24 @@ class GroupAppsViewHolder(
 
     override fun onBind() {
         data?.let {
-            txtGroupName.text =
-                if (it.groupName.startsWith(DEFAULT_GROUP_NAME))
-                    context.getString(
-                        R.string.default_group_name,
-                        it.groupName.substringAfterLast(DEFAULT_GROUP_NAME)
-                    )
-                else
-                    it.groupName
+            txtGroupName.text = it.groupName
             txtNumberApps.text = "${it.pkgs.size} Apps"
             btnClose.setOnClickListener {
-                listener.onDeleteGroup(data.groupName)
+                listener.onDeleteGroup(data.id)
             }
             btnTimeout.text = mapTimeout[data.timeOut]
             btnTimeout.setOnClickListener {
-                listener.onEditTimeout(data.groupName)
+                listener.onEditTimeout(data.id)
             }
             btnHide.text = context.getString(R.string.unhide).takeIf { data.isHidden }
                 ?: context.getString(R.string.hide)
             btnHide.setOnClickListener {
-                listener.onActionHide(data.groupName)
+                listener.onActionHide(data.id)
             }
             btnLock.text = context.getString(R.string.unlock).takeIf { data.isLocked }
                 ?: context.getString(R.string.lock)
             btnLock.setOnClickListener {
-                listener.onActionLock(data.groupName)
+                listener.onActionLock(data.id)
             }
             binding.lockedIcon.visibility = if (it.isLocked) View.VISIBLE else View.GONE
             binding.hiddenIcon.visibility = if (it.isHidden) View.VISIBLE else View.GONE
@@ -77,6 +69,6 @@ class GroupAppsViewHolder(
     }
 
     override fun onClick(v: View) {
-        listener.onClickGroup(data.groupName)
+        listener.onClickGroup(data.id)
     }
 }

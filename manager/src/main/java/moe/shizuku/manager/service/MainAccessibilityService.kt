@@ -30,7 +30,7 @@ class MainAccessibilityService : AccessibilityService() {
                     val pkgsSet = mutableSetOf(packageLauncher)
                     groups.forEach {
                         val groupApps =
-                            ShizukuSettings.getPksByGroupName(it.substringAfterLast("."))
+                            ShizukuSettings.getPksById(it.substringAfterLast("."))
                         groupApps?.let { d ->
                             if (d.isLocked) pkgsSet.addAll(d.pkgs)
                         }

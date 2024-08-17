@@ -54,12 +54,13 @@ fun Context.checkLockAppsPermission() {
                 val groupApps = ShizukuSettings.getGroupLockedAppsAsSet()
                 if (groupApps.isNotEmpty()) {
                     groupApps.forEach {
-                        ShizukuSettings.getPksByGroupName(
+                        ShizukuSettings.getPksById(
                             it.substringAfterLast(".")
                         )?.let { groupApps ->
                             if (groupApps.isLocked) {
-                                ShizukuSettings.saveDataByGroupName(
-                                    groupApps.groupName, GroupApps(
+                                ShizukuSettings.saveDataById(
+                                    groupApps.id, GroupApps(
+                                        id = groupApps.id,
                                         groupName = groupApps.groupName,
                                         pkgs = groupApps.pkgs,
                                         isLocked = false,
@@ -84,12 +85,13 @@ fun checkHideAppsPermission() {
             val groupApps = ShizukuSettings.getGroupLockedAppsAsSet()
             if (groupApps.isNotEmpty()) {
                 groupApps.forEach {
-                    ShizukuSettings.getPksByGroupName(
+                    ShizukuSettings.getPksById(
                         it.substringAfterLast(".")
                     )?.let { groupApps ->
                         if (groupApps.isHidden) {
-                            ShizukuSettings.saveDataByGroupName(
-                                groupApps.groupName, GroupApps(
+                            ShizukuSettings.saveDataById(
+                                groupApps.id, GroupApps(
+                                    id = groupApps.id,
                                     groupName = groupApps.groupName,
                                     pkgs = groupApps.pkgs,
                                     isLocked = groupApps.isLocked,

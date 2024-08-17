@@ -27,7 +27,7 @@ class HomeAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
                 addItem(
                     GroupAppsViewHolder.CREATOR,
                     it,
-                    ID_GROUP + it.groupName.hashCode()
+                    ID_GROUP + it.id.hashCode()
                 )
             }
         }
@@ -42,9 +42,9 @@ class HomeAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
 
 interface HomeCallback {
     fun onClickAddGroup()
-    fun onClickGroup(groupName: String)
-    fun onDeleteGroup(groupName: String)
-    fun onEditTimeout(groupName: String)
-    fun onActionHide(groupName: String)
-    fun onActionLock(groupName: String)
+    fun onClickGroup(id: String)
+    fun onDeleteGroup(id: String)
+    fun onEditTimeout(id: String)
+    fun onActionHide(id: String)
+    fun onActionLock(id: String)
 }
