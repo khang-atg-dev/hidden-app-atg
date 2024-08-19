@@ -5,17 +5,18 @@ import static moe.shizuku.manager.utils.ExtensionsKt.hasNotificationPermission;
 import static moe.shizuku.manager.utils.ExtensionsKt.isDialogFragmentShowing;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
-import moe.shizuku.manager.home.HomeActivity;
-import moe.shizuku.manager.home.RequiredPermissionDialogFragment;
+import moe.shizuku.manager.app.AppBarActivity;
+import moe.shizuku.manager.hidden.HiddenFragment;
+import moe.shizuku.manager.hidden.RequiredPermissionDialogFragment;
 import moe.shizuku.manager.lock.LockDialogFragment;
 import moe.shizuku.manager.utils.AutoStartPermissionHelper;
 import moe.shizuku.manager.utils.ExtensionsKt;
 
-public class MainActivity extends HomeActivity {
+public class MainActivity extends AppBarActivity {
 
     private final DialogFragment lockFragment = new LockDialogFragment();
     private final RequiredPermissionDialogFragment requiredPermissionDialogFragment = new RequiredPermissionDialogFragment();
@@ -24,6 +25,9 @@ public class MainActivity extends HomeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        HiddenFragment hidden = new HiddenFragment();
+        setCurrentFragment(hidden);
     }
 
     @Override
@@ -69,5 +73,9 @@ public class MainActivity extends HomeActivity {
     protected void onDestroy() {
         ShizukuSettings.setIsOpenOtherActivity(false);
         super.onDestroy();
+    }
+
+    private void setCurrentFragment(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }

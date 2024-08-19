@@ -12,7 +12,7 @@ import android.view.accessibility.AccessibilityEvent
 import androidx.annotation.RequiresApi
 import moe.shizuku.manager.AppConstants.RELOAD_PACKAGES_FOR_LOCK
 import moe.shizuku.manager.ShizukuSettings
-import moe.shizuku.manager.home.LockScreenManage
+import moe.shizuku.manager.hidden.LockScreenManage
 import moe.shizuku.manager.utils.getPackageLauncher
 
 class MainAccessibilityService : AccessibilityService() {

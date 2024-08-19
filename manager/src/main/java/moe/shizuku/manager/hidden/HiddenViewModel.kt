@@ -1,4 +1,4 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.hidden
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -26,7 +26,7 @@ import rikka.shizuku.Shizuku
 import java.util.UUID
 import java.util.concurrent.CancellationException
 
-class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
+class HiddenViewModel : ViewModel(), GroupBottomSheetCallback {
 
     private val _serviceStatus = MutableLiveData<Resource<ServiceStatus>>()
     val serviceStatus = _serviceStatus as LiveData<Resource<ServiceStatus>>
@@ -37,7 +37,11 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
     private val _events = Channel<HomeEvents>()
     val events = _events.receiveAsFlow()
 
-    private val appHider = ShizukuAppHider(context)
+    private var appHider: ShizukuAppHider? = null
+
+    fun initAppHider(context: Context) {
+        appHider = ShizukuAppHider(context)
+    }
 
     private fun load(): ServiceStatus {
         if (!Shizuku.pingBinder()) {
@@ -129,7 +133,7 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
             }
             return
         }
-        appHider.tryToActive(object : ActivationCallbackListener {
+        appHider?.tryToActive(object : ActivationCallbackListener {
             override fun <T : moe.shizuku.manager.apphider.BaseAppHider> onActivationSuccess(
                 appHider: Class<T>,
                 success: Boolean,
@@ -144,9 +148,9 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
                         if (it.pkgs.isNotEmpty()) {
                             if (!it.isHidden) {
                                 ShizukuSettings.saveAppsIsHidden(it.pkgs)
-                                this@HomeViewModel.appHider.hide(it.pkgs)
+                                this@HiddenViewModel.appHider?.hide(it.pkgs)
                             } else {
-                                this@HomeViewModel.appHider.show(it.pkgs)
+                                this@HiddenViewModel.appHider?.show(it.pkgs)
                                 ShizukuSettings.removeAppsIsHidden(it.pkgs)
                             }
                         }
@@ -196,7 +200,7 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
         ShizukuSettings.getPksById(groupName)?.let {
             if (it.isHidden) {
                 ShizukuSettings.removeAppsIsHidden(it.pkgs)
-                this@HomeViewModel.appHider.show(it.pkgs)
+                this@HiddenViewModel.appHider?.show(it.pkgs)
             }
         }
     }
@@ -246,15 +250,15 @@ class HomeViewModel(context: Context) : ViewModel(), GroupBottomSheetCallback {
     }
 
     private fun reloadHideApps(oldPks: Set<String>, newPks: Set<String>) {
-        appHider.tryToActive(object : ActivationCallbackListener {
+        appHider?.tryToActive(object : ActivationCallbackListener {
             override fun <T : moe.shizuku.manager.apphider.BaseAppHider> onActivationSuccess(
                 appHider: Class<T>,
                 success: Boolean,
                 msg: String
             ) {
                 if (success) {
-                    this@HomeViewModel.appHider.show(oldPks)
-                    this@HomeViewModel.appHider.hide(newPks)
+                    this@HiddenViewModel.appHider?.show(oldPks)
+                    this@HiddenViewModel.appHider?.hide(newPks)
                 } else {
                     viewModelScope.launch {
                         _events.send(HomeEvents.ShowShirukuAlert(msg))

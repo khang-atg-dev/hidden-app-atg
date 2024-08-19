@@ -1,4 +1,4 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.hidden
 
 import android.app.Dialog
 import android.content.DialogInterface

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/focus"
+        android:title="Focus"
+        android:enabled="true"
+        android:icon="@drawable/baseline_adjust_24"
+        />
+    <item
+        android:id="@+id/statistics"
+        android:title="Statistics"
+        android:enabled="true"
+        android:icon="@drawable/baseline_pie_chart_outline_24"
+        />
+    <item
+        android:id="@+id/hidden"
+        android:title="Hidden"
+        android:enabled="true"
+        android:icon="@drawable/outline_hourglass_empty_24"
+        />
+    <item
+        android:id="@+id/account"
+        android:title="Account"
+        android:enabled="true"
+        android:icon="@drawable/outline_person_outline_24"
+        />
+</menu>
