@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/focusFragment">
+
+    <fragment
+        android:id="@+id/accountFragment"
+        android:name="moe.shizuku.manager.account.AccountFragment"
+        android:label="AccountFragment" />
+
+    <fragment
+        android:id="@+id/focusFragment"
+        android:name="moe.shizuku.manager.focus.FocusFragment"
+        android:label="FocusFragment" />
+
+    <fragment
+        android:id="@+id/hiddenFragment"
+        android:name="moe.shizuku.manager.hidden.HiddenFragment"
+        android:label="HiddenFragment" />
+
+    <fragment
+        android:id="@+id/statisticsFragment"
+        android:name="moe.shizuku.manager.statistics.StatisticsFragment"
+        android:label="StatisticsFragment" />
+
+</navigation>

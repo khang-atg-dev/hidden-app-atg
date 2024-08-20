@@ -6,10 +6,20 @@ import static moe.shizuku.manager.utils.ExtensionsKt.isDialogFragmentShowing;
 
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
+
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import moe.shizuku.manager.app.AppBarActivity;
+import moe.shizuku.manager.databinding.ActivityMainBinding;
+import moe.shizuku.manager.focus.FocusFragment;
 import moe.shizuku.manager.hidden.HiddenFragment;
 import moe.shizuku.manager.hidden.RequiredPermissionDialogFragment;
 import moe.shizuku.manager.lock.LockDialogFragment;
@@ -21,13 +31,21 @@ public class MainActivity extends AppBarActivity {
     private final DialogFragment lockFragment = new LockDialogFragment();
     private final RequiredPermissionDialogFragment requiredPermissionDialogFragment = new RequiredPermissionDialogFragment();
     private final AutoStartPermissionHelper autoStartPermissionHelper = AutoStartPermissionHelper.Companion.getInstance();
+    private ActivityMainBinding binding;
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        BottomNavigationView bottomNavigation = binding.bottomNavigation;
+        NavController navController = Navigation.findNavController(this, R.id.fragment_container_view);
+        NavigationUI.setupWithNavController(bottomNavigation, navController);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        HiddenFragment hidden = new HiddenFragment();
-        setCurrentFragment(hidden);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
     }
 
     @Override
@@ -73,9 +91,5 @@ public class MainActivity extends AppBarActivity {
     protected void onDestroy() {
         ShizukuSettings.setIsOpenOtherActivity(false);
         super.onDestroy();
-    }
-
-    private void setCurrentFragment(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }

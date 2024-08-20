@@ -27,7 +27,7 @@ import moe.shizuku.manager.AppConstants.RELOAD_PACKAGES_FOR_LOCK
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.app.AppBarActivity
-import moe.shizuku.manager.databinding.HomeActivityBinding
+import moe.shizuku.manager.databinding.HiddenFragmentBinding
 import moe.shizuku.manager.management.appsViewModel
 import moe.shizuku.manager.settings.SettingsActivity
 import moe.shizuku.manager.shizuku.ShizukuActivity
@@ -43,7 +43,7 @@ import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 
 class HiddenFragment : Fragment(), HomeCallback {
-    private lateinit var binding: HomeActivityBinding
+    private lateinit var binding: HiddenFragmentBinding
     private val homeModel by viewModels { HiddenViewModel() }
     private val appsModel by appsViewModel()
     private val adapter by unsafeLazy { HiddenAdapter() }
@@ -61,7 +61,7 @@ class HiddenFragment : Fragment(), HomeCallback {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = HomeActivityBinding.inflate(layoutInflater)
+        binding = HiddenFragmentBinding.inflate(inflater)
         return binding.root
     }
 
@@ -177,24 +177,6 @@ class HiddenFragment : Fragment(), HomeCallback {
             title = "Hidden"
         }
     }
-
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        menuInflater.inflate(R.menu.main, menu)
-//        return true
-//    }
-//
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        return when (item.itemId) {
-//            R.id.action_settings -> {
-//                context?.let {
-//                    startActivity(Intent(it, SettingsActivity::class.java))
-//                }
-//                true
-//            }
-//
-//            else -> super.onOptionsItemSelected(item)
-//        }
-//    }
 
     override fun onClickAddGroup() {
         context?.let { c ->
