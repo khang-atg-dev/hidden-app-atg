@@ -1,28 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/focus"
+        android:id="@+id/focusFragment"
         android:title="Focus"
         android:enabled="true"
-        android:icon="@drawable/baseline_adjust_24"
-        app:destination="@id/focusFragment"/>
+        android:icon="@drawable/baseline_adjust_24" />
     <item
-        android:id="@+id/statistics"
+        android:id="@+id/statisticsFragment"
         android:title="Statistics"
         android:enabled="true"
-        android:icon="@drawable/baseline_pie_chart_outline_24"
-        app:destination="@id/statisticsFragment"/>
+        android:icon="@drawable/baseline_pie_chart_outline_24" />
     <item
-        android:id="@+id/hidden"
+        android:id="@+id/hiddenFragment"
         android:title="Hidden"
         android:enabled="true"
-        android:icon="@drawable/outline_hourglass_empty_24"
-        app:destination="@id/hiddenFragment"/>
+        android:icon="@drawable/outline_hourglass_empty_24" />
     <item
-        android:id="@+id/account"
+        android:id="@+id/accountFragment"
         android:title="Account"
         android:enabled="true"
-        android:icon="@drawable/outline_person_outline_24"
-        app:destination="@id/accountFragment"/>
+        android:icon="@drawable/outline_person_outline_24" />
 </menu>

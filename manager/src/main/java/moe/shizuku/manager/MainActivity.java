@@ -5,7 +5,10 @@ import static moe.shizuku.manager.utils.ExtensionsKt.hasNotificationPermission;
 import static moe.shizuku.manager.utils.ExtensionsKt.isDialogFragmentShowing;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -38,6 +41,7 @@ public class MainActivity extends AppBarActivity {
         super.onPostCreate(savedInstanceState);
         BottomNavigationView bottomNavigation = binding.bottomNavigation;
         NavController navController = Navigation.findNavController(this, R.id.fragment_container_view);
+        navController.setGraph(R.navigation.nav_graph);
         NavigationUI.setupWithNavController(bottomNavigation, navController);
     }
 
