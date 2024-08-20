@@ -1,10 +1,10 @@
-package moe.shizuku.manager.home
+package moe.shizuku.manager.hidden
 
 import moe.shizuku.manager.model.GroupApps
 import rikka.recyclerview.IdBasedRecyclerViewAdapter
 import rikka.recyclerview.IndexCreatorPool
 
-class HomeAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
+class HiddenAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
 
     init {
         updateData(null)
