@@ -5,18 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import moe.shizuku.manager.app.AppBarActivity
 import moe.shizuku.manager.databinding.StatisticsFragmentBinding
+import moe.shizuku.manager.ktx.logd
 
 class StatisticsFragment: Fragment() {
     private lateinit var binding: StatisticsFragmentBinding
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        (activity as AppBarActivity).supportActionBar?.apply {
-            title = "Statistics"
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
