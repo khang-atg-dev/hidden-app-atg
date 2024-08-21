@@ -18,6 +18,7 @@ class GroupAppsViewHolder(
     companion object {
         val CREATOR = Creator<GroupApps> { inflater: LayoutInflater, parent: ViewGroup? ->
             val outer = HomeItemContainerBinding.inflate(inflater, parent, false)
+            outer.root.setCardBackgroundColor(outer.root.context.getColor(R.color.home_card_background_color))
             val inner = GroupAppsLayoutBinding.inflate(inflater, outer.root, true)
             GroupAppsViewHolder(inner, outer.root)
         }
