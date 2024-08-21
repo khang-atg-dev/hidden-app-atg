@@ -34,6 +34,7 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         edtText = view.findViewById<TextInputEditText>(R.id.edt_name_focus)?.apply {
+            setText("New Task")
             imm?.let {
                 requestFocus()
                 this.postDelayed({
@@ -42,13 +43,13 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
 
             setOnEditorActionListener { _, actionId, _ ->
-                val text = (edtText?.text ?: "").trim()
+                var text = (edtText?.text ?: "").trim().toString()
                 if (text.isEmpty()) {
-                    return@setOnEditorActionListener true
+                    text = "New Task"
                 }
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     this.clearFocus()
-                    callback?.onDone((edtText?.text ?: "").trim().toString())
+                    callback?.onDone(text)
                     dismiss()
                 }
                 false

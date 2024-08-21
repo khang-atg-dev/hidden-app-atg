@@ -5,12 +5,21 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import moe.shizuku.manager.AppConstants.DEFAULT_TIME_FOCUS
+import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.Focus
 import java.util.UUID
 
 class FocusViewModel : ViewModel(), FocusBottomSheetCallback {
     private val _state = MutableStateFlow(FocusState())
     val state = _state.asStateFlow()
+
+    init {
+        _state.update {
+           it.copy(
+                focusList = ShizukuSettings.getFocusTasks()
+           )
+        }
+    }
 
 //    override fun onDelete(id: String) {
 //        _state.update {
@@ -50,14 +59,14 @@ class FocusViewModel : ViewModel(), FocusBottomSheetCallback {
         _state.update {
             val uuid = UUID.randomUUID().toString()
             val currentList = it.focusList
+            val newFocus = Focus(
+                id = uuid,
+                name = name,
+                time = DEFAULT_TIME_FOCUS
+            )
+            ShizukuSettings.saveFocusTask(newFocus)
             it.copy(
-                focusList = currentList.plus(
-                    Focus(
-                        id = uuid,
-                        name = name,
-                        time = DEFAULT_TIME_FOCUS
-                    )
-                )
+                focusList = currentList.plus(newFocus)
             )
         }
     }

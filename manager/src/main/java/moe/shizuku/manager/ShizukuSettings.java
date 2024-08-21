@@ -1,5 +1,9 @@
 package moe.shizuku.manager;
 
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+import static moe.shizuku.manager.AppConstants.DEFAULT_AUTO_LOCK_TIMEOUT;
+import static moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX;
+
 import android.app.ActivityThread;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -12,6 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,15 +28,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import moe.shizuku.manager.model.Focus;
 import moe.shizuku.manager.model.GroupApps;
 import moe.shizuku.manager.utils.EmptySharedPreferencesImpl;
 import moe.shizuku.manager.utils.EnvironmentUtils;
-
-import static java.lang.annotation.RetentionPolicy.SOURCE;
-import static moe.shizuku.manager.AppConstants.DEFAULT_AUTO_LOCK_TIMEOUT;
-import static moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX;
-
-import com.google.gson.Gson;
 
 public class ShizukuSettings {
 
@@ -48,6 +50,8 @@ public class ShizukuSettings {
     public static final String IS_CHANNING_PASSWORD = "IS_CHANNING_PASSWORD";
     public static final String IS_OPEN_OTHER_ACTIVITY = "IS_OPEN_OTHER_ACTIVITY";
     public static final String GROUP_APPS_IS_HIDDEN = "GROUP_APPS_IS_HIDDEN";
+    public static final String FOCUS_TASK_LIST = "FOCUS_TASK_LIST";
+
 
     private static SharedPreferences sPreferences;
     private static final Gson gson = new Gson();
@@ -257,5 +261,31 @@ public class ShizukuSettings {
 
     public static void saveTimeoutLandmark(long value) {
         getPreferences().edit().putLong(TIME_OUT_LANDMARK, value).apply();
+    }
+
+    public static void saveFocusTask(Focus focusTask) {
+        List<Focus> focusList = getFocusTasks();
+        if (focusList.isEmpty()) focusList = new ArrayList<>();
+        focusList.add(focusTask);
+        getPreferences().edit().putString(FOCUS_TASK_LIST, gson.toJson(focusList)).apply();
+    }
+
+    public static void removeFocusTask(String id) {
+        List<Focus> focusList = getFocusTasks();
+        if (!focusList.isEmpty()) {
+            focusList.removeIf(i -> i.getId().equals(id));
+            getPreferences().edit().putString(FOCUS_TASK_LIST, gson.toJson(focusList)).apply();
+        }
+    }
+
+    public static List<Focus> getFocusTasks() {
+        String objStr = getPreferences().getString(FOCUS_TASK_LIST, "");
+        if (objStr.isEmpty()) return Collections.emptyList();
+        try {
+            return gson.fromJson(objStr, new TypeToken<List<Focus>>() {
+            }.getType());
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
     }
 }
