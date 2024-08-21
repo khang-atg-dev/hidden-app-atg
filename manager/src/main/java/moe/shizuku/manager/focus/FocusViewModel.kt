@@ -15,9 +15,9 @@ class FocusViewModel : ViewModel(), FocusBottomSheetCallback {
 
     init {
         _state.update {
-           it.copy(
+            it.copy(
                 focusList = ShizukuSettings.getFocusTasks()
-           )
+            )
         }
     }
 
@@ -70,6 +70,20 @@ class FocusViewModel : ViewModel(), FocusBottomSheetCallback {
             )
         }
     }
+
+    override fun onDoneEdit(id: String, name: String) {
+        _state.update {
+            ShizukuSettings.getFocusTaskById(id)?.let { focus ->
+                val currentList = it.focusList
+                val newFocus = focus.copy(name = name)
+                ShizukuSettings.updateFocusTask(newFocus)
+                return@update it.copy(
+                    focusList = currentList.map { i -> if (i.id == id) newFocus else i }
+                )
+            }
+            it
+        }
+    }
 }
 
 data class FocusState(
@@ -77,10 +91,11 @@ data class FocusState(
 )
 
 interface FocusCallback {
-//    fun onAdd(name: String)
+    //    fun onAdd(name: String)
 //    fun onDelete(id: String)
-//    fun onEditName(id: String, newName: String)
-//    fun onChangeTime(id: String, time: Long)
+    fun onEditName(id: String)
+
+    //    fun onChangeTime(id: String, time: Long)
     fun onAddFocusTask()
     fun onOpenTimePicker(time: Long) {}
 }

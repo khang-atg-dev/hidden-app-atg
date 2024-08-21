@@ -74,4 +74,14 @@ class FocusFragment : Fragment(), FocusCallback {
             WheelPickerBottomSheet().show(s, "WheelPickerBottomSheet")
         }
     }
+
+    override fun onEditName(id: String) {
+        this.activity?.supportFragmentManager?.let { s ->
+            CreateFocusBottomSheetDialogFragment().let {
+                it.setEditName(id)
+                it.setCallback(viewModel)
+                it.show(s, "FocusBottomSheet")
+            }
+        }
+    }
 }

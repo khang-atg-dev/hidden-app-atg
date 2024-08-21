@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -26,7 +25,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import moe.shizuku.manager.model.Focus;
 import moe.shizuku.manager.model.GroupApps;
@@ -158,7 +159,6 @@ public class ShizukuSettings {
 
     public static long findTimeoutOfPkg(String pkg) {
         Set<String> groups = getGroupLockedAppsAsSet();
-        Log.d("Sss", "findTimeoutOfPkg: " + groups);
         long minTimeout = -1L;
         for (String group : groups) {
             String groupName = group.substring(group.lastIndexOf(".") + 1);
@@ -270,6 +270,15 @@ public class ShizukuSettings {
         getPreferences().edit().putString(FOCUS_TASK_LIST, gson.toJson(focusList)).apply();
     }
 
+    public static void updateFocusTask(Focus focusTask) {
+        List<Focus> focusList = getFocusTasks();
+        if (focusList.isEmpty()) return;
+        List<Focus> updatedList = focusList.stream()
+                .map(obj -> obj.getId().equals(focusTask.getId()) ? focusTask : obj)
+                .collect(Collectors.toList());
+        getPreferences().edit().putString(FOCUS_TASK_LIST, gson.toJson(updatedList)).apply();
+    }
+
     public static void removeFocusTask(String id) {
         List<Focus> focusList = getFocusTasks();
         if (!focusList.isEmpty()) {
@@ -286,6 +295,25 @@ public class ShizukuSettings {
             }.getType());
         } catch (Exception e) {
             return Collections.emptyList();
+        }
+    }
+
+    @Nullable
+    public static Focus getFocusTaskById(String id) {
+        String objStr = getPreferences().getString(FOCUS_TASK_LIST, "");
+        if (objStr.isEmpty()) return null;
+        try {
+            List<Focus> list = gson.fromJson(
+                    objStr,
+                    new TypeToken<List<Focus>>() {
+                    }.getType()
+            );
+            Optional<Focus> target = list.stream()
+                    .filter(obj -> obj.getId().equals(id))
+                    .findAny();
+            return target.orElse(null);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

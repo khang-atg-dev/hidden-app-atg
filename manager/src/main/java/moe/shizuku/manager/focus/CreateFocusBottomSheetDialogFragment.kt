@@ -10,16 +10,25 @@ import android.view.inputmethod.InputMethodManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.textfield.TextInputEditText
 import moe.shizuku.manager.R
+import moe.shizuku.manager.ShizukuSettings
 
 class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private var imm: InputMethodManager? = null
     private var callback: FocusBottomSheetCallback? = null
-
     private var edtText: TextInputEditText? = null
+    private var editName: String? = null
+    private var editID: String? = null
 
     fun setCallback(callback: FocusBottomSheetCallback) {
         this.callback = callback
+    }
+
+    fun setEditName(id: String) {
+        ShizukuSettings.getFocusTaskById(id)?.let {
+            editName = it.name
+            editID = it.id
+        }
     }
 
     override fun onCreateView(
@@ -34,7 +43,7 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         edtText = view.findViewById<TextInputEditText>(R.id.edt_name_focus)?.apply {
-            setText("New Task")
+            setText("New Task".takeIf { editID.isNullOrEmpty() } ?: editName)
             imm?.let {
                 requestFocus()
                 this.postDelayed({
@@ -49,7 +58,11 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     this.clearFocus()
-                    callback?.onDone(text)
+                    if (editID.isNullOrEmpty()) {
+                        callback?.onDone(text)
+                    } else {
+                        callback?.onDoneEdit(editID ?: "", text)
+                    }
                     dismiss()
                 }
                 false
@@ -60,4 +73,5 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
 interface FocusBottomSheetCallback {
     fun onDone(name: String)
+    fun onDoneEdit(id: String, name: String)
 }
