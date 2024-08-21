@@ -57,6 +57,9 @@ class FocusFragment : Fragment(), FocusCallback {
             right = 16f,
             unit = TypedValue.COMPLEX_UNIT_DIP
         )
+        context?.let {
+            setItemTouchHelper(it, recyclerView, adapter)
+        }
         adapter.listener = this
     }
 
