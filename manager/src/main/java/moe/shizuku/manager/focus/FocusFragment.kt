@@ -9,8 +9,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.ItemTouchHelper
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.FocusFragmentBinding
 import rikka.core.ktx.unsafeLazy
 import rikka.lifecycle.viewModels
@@ -22,6 +25,7 @@ class FocusFragment : Fragment(), FocusCallback {
     private lateinit var binding: FocusFragmentBinding
     private val viewModel by viewModels { FocusViewModel() }
     private val adapter by unsafeLazy { FocusAdapter() }
+    private var itemTouchHelper: SwipeCallback<FocusAdapter>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,7 +62,11 @@ class FocusFragment : Fragment(), FocusCallback {
             unit = TypedValue.COMPLEX_UNIT_DIP
         )
         context?.let {
-            setItemTouchHelper(it, recyclerView, adapter)
+            itemTouchHelper = SwipeCallback(it, adapter).let { c ->
+                val itemTouchHelper = ItemTouchHelper(c)
+                itemTouchHelper.attachToRecyclerView(recyclerView)
+                c
+            }
         }
         adapter.listener = this
     }
@@ -85,6 +93,19 @@ class FocusFragment : Fragment(), FocusCallback {
                 it.setCallback(viewModel)
                 it.show(s, "FocusBottomSheet")
             }
+        }
+    }
+
+    override fun onDelete(id: String) {
+        context?.let {
+            MaterialAlertDialogBuilder(it)
+                .setTitle(it.getString(R.string.delete_group_msg))
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    viewModel.deleteFocusTask(id)
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
+                .show()
         }
     }
 }

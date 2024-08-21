@@ -27,6 +27,7 @@ class FocusViewHolder(
 
     override fun onBind() {
         data?.let {
+            binding.root.scrollTo(0, 0)
             binding.name.let { name ->
                 name.text = it.name
                 name.setOnClickListener {
@@ -39,7 +40,9 @@ class FocusViewHolder(
                     (adapter?.listener as FocusCallback).onOpenTimePicker(data.time)
                 }
             }
-
+            binding.delete.setOnClickListener {
+                (adapter?.listener as FocusCallback).onDelete(data.id)
+            }
         }
     }
 

@@ -9,153 +9,145 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import rikka.recyclerview.IdBasedRecyclerViewAdapter
 
-fun <T: IdBasedRecyclerViewAdapter> setItemTouchHelper(
+class SwipeCallback<T : IdBasedRecyclerViewAdapter>(
     context: Context,
-    recyclerView: RecyclerView,
-    adapter: T
-) {
+    private val adapter: T
+) : ItemTouchHelper.Callback() {
+    private val limitScrollX = dipToPx(context)
+    private var currentScrollX = 0
+    private var currentScrollXWhenInActive = 0
+    private var initXWhenInActive = 0f
+    private var firstInActive = false
+    private var leftSwipeChecker = false
 
-    ItemTouchHelper(object : ItemTouchHelper.Callback() {
+    override fun getMovementFlags(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder
+    ): Int {
+        val dragFlags = 0
+        val swipeFlags = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        return makeMovementFlags(dragFlags, swipeFlags)
+    }
 
-        private val limitScrollX = dipToPx(context)
-        private var currentScrollX = 0
-        private var currentScrollXWhenInActive = 0
-        private var initXWhenInActive = 0f
-        private var firstInActive = false
-        var leftSwipeChecker = false
+    override fun onMove(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        target: RecyclerView.ViewHolder
+    ): Boolean {
+        return true
+    }
 
-        override fun getMovementFlags(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder
-        ): Int {
-            val dragFlags = 0
-            val swipeFlags = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-            return makeMovementFlags(dragFlags, swipeFlags)
-        }
+    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
 
-        override fun onMove(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            target: RecyclerView.ViewHolder
-        ): Boolean {
-            return true
-        }
+    override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float {
+        return Integer.MAX_VALUE.toFloat()
+    }
 
-        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+    override fun getSwipeEscapeVelocity(defaultValue: Float): Float {
+        return Integer.MAX_VALUE.toFloat()
+    }
 
-        override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float {
-            return Integer.MAX_VALUE.toFloat()
-        }
+    override fun onChildDraw(
+        c: Canvas,
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
+        dX: Float,
+        dY: Float,
+        actionState: Int,
+        isCurrentlyActive: Boolean
+    ) {
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
 
-        override fun getSwipeEscapeVelocity(defaultValue: Float): Float {
-            return Integer.MAX_VALUE.toFloat()
-        }
+            if (viewHolder.itemView.scrollX == 0) {
+                leftSwipeChecker = true
+            }
 
-        override fun onChildDraw(
-            c: Canvas,
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            dX: Float,
-            dY: Float,
-            actionState: Int,
-            isCurrentlyActive: Boolean
-        ) {
-            if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+            leftSwipeChecker = leftSwipeChecker && dX < 0
 
-                if (viewHolder.itemView.scrollX == 0) {
-                    leftSwipeChecker = true
+            if (leftSwipeChecker) {
+                recoverSwipedItem(viewHolder, recyclerView)
+                if (viewHolder.itemView.scrollX != 0) {
+                    leftSwipeChecker = false
+                }
+            }
+
+            if (dX == 0f) {
+                currentScrollX = viewHolder.itemView.scrollX
+                firstInActive = true
+            }
+
+            if (isCurrentlyActive) {
+                var scrollOffset = currentScrollX + (-dX).toInt()
+                if (scrollOffset > limitScrollX) {
+                    scrollOffset = limitScrollX
+                } else if (scrollOffset < 0) {
+                    scrollOffset = 0
+                }
+                viewHolder.itemView.scrollTo(scrollOffset, 0)
+            } else {
+                if (firstInActive) {
+                    firstInActive = false
+                    currentScrollXWhenInActive = viewHolder.itemView.scrollX
+                    initXWhenInActive = dX
                 }
 
-                leftSwipeChecker = leftSwipeChecker && dX < 0
-
-                if (leftSwipeChecker) {
-                    recoverSwipedItem(viewHolder, recyclerView)
-                    if (viewHolder.itemView.scrollX != 0) {
-                        leftSwipeChecker = false
-                    }
-                }
-
-                if (dX == 0f) {
-                    currentScrollX = viewHolder.itemView.scrollX
-                    firstInActive = true
-                }
-
-                if (isCurrentlyActive) {
-                    var scrollOffset = currentScrollX + (-dX).toInt()
-                    if (scrollOffset > limitScrollX) {
-                        scrollOffset = limitScrollX
-                    } else if (scrollOffset < 0) {
-                        scrollOffset = 0
-                    }
-                    viewHolder.itemView.scrollTo(scrollOffset, 0)
-                } else {
-                    if (firstInActive) {
-                        firstInActive = false
-                        currentScrollXWhenInActive = viewHolder.itemView.scrollX
-                        initXWhenInActive = dX
-                    }
-
-                    if (viewHolder.itemView.scrollX < limitScrollX) {
-                        viewHolder.itemView.scrollTo(
-                            (currentScrollXWhenInActive * dX / initXWhenInActive).toInt(),
-                            0
-                        )
-                    }
+                if (viewHolder.itemView.scrollX < limitScrollX) {
+                    viewHolder.itemView.scrollTo(
+                        (currentScrollXWhenInActive * dX / initXWhenInActive).toInt(),
+                        0
+                    )
                 }
             }
         }
+    }
 
-        private fun recoverSwipedItem(
-            viewHolder: RecyclerView.ViewHolder,
-            recyclerView: RecyclerView
-        ) {
+    private fun recoverSwipedItem(
+        viewHolder: RecyclerView.ViewHolder,
+        recyclerView: RecyclerView
+    ) {
 
-            for (i in adapter.ids.size downTo 0) {
-                val itemView = recyclerView.findViewHolderForAdapterPosition(i)?.itemView
+        for (i in adapter.ids.size downTo 0) {
+            val itemView = recyclerView.findViewHolderForAdapterPosition(i)?.itemView
 
-                if (i != viewHolder.absoluteAdapterPosition) {
+            if (i != viewHolder.absoluteAdapterPosition) {
 
-                    itemView?.let {
-                        if (it.scrollX > 0) {
-                            recoverItemAnim(itemView)
-                        }
+                itemView?.let {
+                    if (it.scrollX > 0) {
+                        recoverItemAnim(itemView)
                     }
                 }
+            }
 
-                itemView?.setOnClickListener {
-                    recoverItemAnim(itemView)
-                }
+            itemView?.setOnClickListener {
+                recoverItemAnim(itemView)
             }
         }
+    }
 
-        private fun recoverItemAnim(itemView: View?) {
-            val startX = itemView?.scrollX ?: 0
-            ValueAnimator.ofInt(startX, 0).apply {
-                duration = 300 // Animation duration in milliseconds
-                interpolator = AccelerateDecelerateInterpolator() // Smoothing interpolator
-                addUpdateListener { animation ->
-                    val scrollX = animation.animatedValue as Int
-                    itemView?.scrollTo(scrollX, 0)
-                }
-                start()
+    private fun recoverItemAnim(itemView: View?) {
+        val startX = itemView?.scrollX ?: 0
+        ValueAnimator.ofInt(startX, 0).apply {
+            duration = 300 // Animation duration in milliseconds
+            interpolator = AccelerateDecelerateInterpolator() // Smoothing interpolator
+            addUpdateListener { animation ->
+                val scrollX = animation.animatedValue as Int
+                itemView?.scrollTo(scrollX, 0)
             }
+            start()
         }
+    }
 
-        override fun clearView(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder
-        ) {
-            super.clearView(recyclerView, viewHolder)
+    override fun clearView(
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder
+    ) {
+        super.clearView(recyclerView, viewHolder)
 
-            if (viewHolder.itemView.scrollX > limitScrollX) {
-                viewHolder.itemView.scrollTo(limitScrollX, 0)
-            } else if (viewHolder.itemView.scrollX < 0) {
-                viewHolder.itemView.scrollTo(0, 0)
-            }
+        if (viewHolder.itemView.scrollX > limitScrollX) {
+            viewHolder.itemView.scrollTo(limitScrollX, 0)
+        } else if (viewHolder.itemView.scrollX < 0) {
+            viewHolder.itemView.scrollTo(0, 0)
         }
-
-    }).apply {
-        attachToRecyclerView(recyclerView)
     }
 }
 

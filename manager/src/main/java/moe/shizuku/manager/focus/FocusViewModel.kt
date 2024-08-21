@@ -84,6 +84,19 @@ class FocusViewModel : ViewModel(), FocusBottomSheetCallback {
             it
         }
     }
+
+    fun deleteFocusTask(id: String) {
+        _state.update {
+            ShizukuSettings.removeFocusTask(id)
+            val currentList = it.focusList
+            currentList.find { i -> i.id == id }?.let { d ->
+                return@update it.copy(
+                    focusList = currentList.minus(d)
+                )
+            }
+            return@update it
+        }
+    }
 }
 
 data class FocusState(
@@ -92,7 +105,7 @@ data class FocusState(
 
 interface FocusCallback {
     //    fun onAdd(name: String)
-//    fun onDelete(id: String)
+    fun onDelete(id: String)
     fun onEditName(id: String)
 
     //    fun onChangeTime(id: String, time: Long)
