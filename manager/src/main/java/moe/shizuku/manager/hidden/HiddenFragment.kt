@@ -36,7 +36,7 @@ import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 
-class HiddenFragment : Fragment(), HomeCallback {
+class HiddenFragment : Fragment(), HiddenCallback {
     private lateinit var binding: HiddenFragmentBinding
     private val homeModel by viewModels { HiddenViewModel() }
     private val appsModel by appsViewModel()

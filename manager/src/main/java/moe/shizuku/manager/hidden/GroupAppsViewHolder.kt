@@ -33,7 +33,7 @@ class GroupAppsViewHolder(
     private val btnHide get() = binding.btnHide
     private val btnTimeout get() = binding.btnTimeout
     private val btnClose get() = binding.closeBtn
-    private val listener get() = (adapter.listener as HomeCallback)
+    private val listener get() = (adapter.listener as HiddenCallback)
     private val mapTimeout = mapOf(
         0L to "0s",
         60000L to "60s",

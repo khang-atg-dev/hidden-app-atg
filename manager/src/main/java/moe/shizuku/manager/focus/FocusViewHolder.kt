@@ -35,5 +35,6 @@ class FocusViewHolder(
     }
 
     override fun onClick(v: View) {
+        (adapter?.listener as FocusCallback).onOpenTimePicker(data.time)
     }
 }

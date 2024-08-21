@@ -12,20 +12,20 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.databinding.FocusFragmentBinding
-import moe.shizuku.manager.ktx.logd
 import rikka.core.ktx.unsafeLazy
 import rikka.lifecycle.viewModels
 import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 
-class FocusFragment : Fragment() {
+class FocusFragment : Fragment(), FocusCallback {
     private lateinit var binding: FocusFragmentBinding
     private val viewModel by viewModels { FocusViewModel() }
     private val adapter by unsafeLazy { FocusAdapter() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        adapter.listener = this
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collectLatest { state ->
@@ -46,7 +46,6 @@ class FocusFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         val recyclerView = binding.list
         recyclerView.adapter = adapter
         recyclerView.fixEdgeEffect()
@@ -59,5 +58,20 @@ class FocusFragment : Fragment() {
             unit = TypedValue.COMPLEX_UNIT_DIP
         )
         adapter.listener = this
+    }
+
+    override fun onAddFocusTask() {
+        this.activity?.supportFragmentManager?.let { s ->
+            CreateFocusBottomSheetDialogFragment().let {
+                it.setCallback(viewModel)
+                it.show(s, "FocusBottomSheet")
+            }
+        }
+    }
+
+    override fun onOpenTimePicker(time: Long) {
+        this.activity?.supportFragmentManager?.let { s ->
+            WheelPickerBottomSheet().show(s, "WheelPickerBottomSheet")
+        }
     }
 }

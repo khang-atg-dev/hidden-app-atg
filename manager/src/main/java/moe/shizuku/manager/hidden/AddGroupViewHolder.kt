@@ -25,6 +25,6 @@ class AddGroupViewHolder(
     }
 
     override fun onClick(v: View?) {
-        (adapter?.listener as HomeCallback).onClickAddGroup()
+        (adapter?.listener as HiddenCallback).onClickAddGroup()
     }
 }

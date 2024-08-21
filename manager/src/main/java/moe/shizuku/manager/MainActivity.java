@@ -115,6 +115,7 @@ public class MainActivity extends AppBarActivity {
             hiddenFragment.onClickAddGroup();
             return true;
         } else if (item.getItemId() == R.id.add_focus) {
+            focusFragment.onAddFocusTask();
             return true;
         } else {
             return super.onOptionsItemSelected(item);

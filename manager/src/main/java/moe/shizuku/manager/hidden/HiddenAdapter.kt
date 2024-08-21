@@ -34,7 +34,7 @@ class HiddenAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
     }
 }
 
-interface HomeCallback {
+interface HiddenCallback {
     fun onClickAddGroup()
     fun onClickGroup(id: String)
     fun onDeleteGroup(id: String)

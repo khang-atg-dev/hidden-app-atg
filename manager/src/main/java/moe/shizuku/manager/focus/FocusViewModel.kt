@@ -8,11 +8,45 @@ import moe.shizuku.manager.AppConstants.DEFAULT_TIME_FOCUS
 import moe.shizuku.manager.model.Focus
 import java.util.UUID
 
-class FocusViewModel : ViewModel(), FocusCallback {
+class FocusViewModel : ViewModel(), FocusBottomSheetCallback {
     private val _state = MutableStateFlow(FocusState())
     val state = _state.asStateFlow()
 
-    override fun onAdd(id: String, name: String) {
+//    override fun onDelete(id: String) {
+//        _state.update {
+//            val currentList = it.focusList
+//            currentList.find { i -> i.id == id }?.let { d ->
+//                it.copy(
+//                    focusList = currentList.minus(d)
+//                )
+//            }
+//            it
+//        }
+//    }
+//
+//    override fun onEditName(id: String, newName: String) {
+//        _state.update {
+//            val currentList = it.focusList
+//            it.copy(
+//                focusList = currentList.map { i ->
+//                    if (i.id == id) i.copy(name = newName) else i
+//                }
+//            )
+//        }
+//    }
+//
+//    override fun onChangeTime(id: String, time: Long) {
+//        _state.update {
+//            val currentList = it.focusList
+//            it.copy(
+//                focusList = currentList.map { i ->
+//                    if (i.id == id) i.copy(time = time) else i
+//                }
+//            )
+//        }
+//    }
+
+    override fun onDone(name: String) {
         _state.update {
             val uuid = UUID.randomUUID().toString()
             val currentList = it.focusList
@@ -27,40 +61,6 @@ class FocusViewModel : ViewModel(), FocusCallback {
             )
         }
     }
-
-    override fun onDelete(id: String) {
-        _state.update {
-            val currentList = it.focusList
-            currentList.find { i -> i.id == id }?.let { d ->
-                it.copy(
-                    focusList = currentList.minus(d)
-                )
-            }
-            it
-        }
-    }
-
-    override fun onEditName(id: String, newName: String) {
-        _state.update {
-            val currentList = it.focusList
-            it.copy(
-                focusList = currentList.map { i ->
-                    if (i.id == id) i.copy(name = newName) else i
-                }
-            )
-        }
-    }
-
-    override fun onChangeTime(id: String, time: Long) {
-        _state.update {
-            val currentList = it.focusList
-            it.copy(
-                focusList = currentList.map { i ->
-                    if (i.id == id) i.copy(time = time) else i
-                }
-            )
-        }
-    }
 }
 
 data class FocusState(
@@ -68,8 +68,10 @@ data class FocusState(
 )
 
 interface FocusCallback {
-    fun onAdd(id: String, name: String) {}
-    fun onDelete(id: String) {}
-    fun onEditName(id: String, newName: String) {}
-    fun onChangeTime(id: String, time: Long) {}
+//    fun onAdd(name: String)
+//    fun onDelete(id: String)
+//    fun onEditName(id: String, newName: String)
+//    fun onChangeTime(id: String, time: Long)
+    fun onAddFocusTask()
+    fun onOpenTimePicker(time: Long) {}
 }
