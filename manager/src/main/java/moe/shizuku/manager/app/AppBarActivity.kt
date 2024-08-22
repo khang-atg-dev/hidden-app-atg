@@ -34,6 +34,10 @@ abstract class AppBarActivity : AppActivity() {
         setSupportActionBar(toolbar)
     }
 
+    fun hideToolbar() {
+        toolbarContainer.visibility = View.GONE
+    }
+
     @LayoutRes
     open fun getLayoutId(): Int {
         return R.layout.appbar_activity

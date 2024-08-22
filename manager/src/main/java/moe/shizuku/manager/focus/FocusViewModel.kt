@@ -118,11 +118,9 @@ data class FocusState(
 )
 
 interface FocusCallback {
-    //    fun onAdd(name: String)
     fun onDelete(id: String)
     fun onEditName(id: String)
-
-    //    fun onChangeTime(id: String, time: Long)
+    fun onStart(id: String)
     fun onAddFocusTask()
     fun onOpenTimePicker(id: String, time: Long) {}
 }

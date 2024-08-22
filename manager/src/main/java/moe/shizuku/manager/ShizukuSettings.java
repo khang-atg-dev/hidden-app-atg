@@ -2,6 +2,7 @@ package moe.shizuku.manager;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static moe.shizuku.manager.AppConstants.DEFAULT_AUTO_LOCK_TIMEOUT;
+import static moe.shizuku.manager.AppConstants.DEFAULT_TIME_FOCUS;
 import static moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX;
 
 import android.app.ActivityThread;
@@ -52,6 +53,7 @@ public class ShizukuSettings {
     public static final String IS_OPEN_OTHER_ACTIVITY = "IS_OPEN_OTHER_ACTIVITY";
     public static final String GROUP_APPS_IS_HIDDEN = "GROUP_APPS_IS_HIDDEN";
     public static final String FOCUS_TASK_LIST = "FOCUS_TASK_LIST";
+    public static final String CURRENT_FOCUS_TASK = "CURRENT_FOCUS_TASK";
 
 
     private static SharedPreferences sPreferences;
@@ -315,5 +317,31 @@ public class ShizukuSettings {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static void saveCurrentFocusTask(String id) {
+       getPreferences().edit().putString(CURRENT_FOCUS_TASK, id).apply();
+    }
+
+    @Nullable
+    public static String getCurrentFocusTask() {
+        return getPreferences().getString(CURRENT_FOCUS_TASK, null);
+    }
+
+    public static void removeCurrentFocusTask() {
+        getPreferences().edit().remove(CURRENT_FOCUS_TASK).apply();
+    }
+
+    public static long getRemainingTime(String id) {
+        if (id.isEmpty()) return -1L;
+        return getPreferences().getLong(id, DEFAULT_TIME_FOCUS);
+    }
+
+    public static void saveRemainingTime(String id, long value) {
+        getPreferences().edit().putLong(id, value).apply();
+    }
+
+    public static void removeRemainingTime(String id) {
+        getPreferences().edit().remove(id).apply();
     }
 }

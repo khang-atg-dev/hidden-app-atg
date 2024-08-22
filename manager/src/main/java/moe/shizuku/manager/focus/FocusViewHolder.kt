@@ -43,6 +43,9 @@ class FocusViewHolder(
             binding.delete.setOnClickListener {
                 (adapter?.listener as FocusCallback).onDelete(data.id)
             }
+            binding.startFocus.setOnClickListener {
+                (adapter?.listener as FocusCallback).onStart(data.id)
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package moe.shizuku.manager.focus
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -13,7 +14,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.AppConstants.FOCUS_ID
+import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.FocusFragmentBinding
+import moe.shizuku.manager.focus.details.FocusDetailsActivity
 import rikka.core.ktx.unsafeLazy
 import rikka.lifecycle.viewModels
 import rikka.recyclerview.addEdgeSpacing
@@ -110,6 +114,15 @@ class FocusFragment : Fragment(), FocusCallback {
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()
                 .show()
+        }
+    }
+
+    override fun onStart(id: String) {
+        context?.let {
+            ShizukuSettings.saveCurrentFocusTask(id)
+            startActivity(Intent(it, FocusDetailsActivity::class.java).apply {
+                putExtra(FOCUS_ID, id)
+            })
         }
     }
 }
