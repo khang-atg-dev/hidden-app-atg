@@ -13,13 +13,13 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.FocusFragmentBinding
 import rikka.core.ktx.unsafeLazy
 import rikka.lifecycle.viewModels
 import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
+import java.util.concurrent.TimeUnit
 
 class FocusFragment : Fragment(), FocusCallback {
     private lateinit var binding: FocusFragmentBinding
@@ -80,9 +80,13 @@ class FocusFragment : Fragment(), FocusCallback {
         }
     }
 
-    override fun onOpenTimePicker(time: Long) {
+    override fun onOpenTimePicker(id: String, time: Long) {
         this.activity?.supportFragmentManager?.let { s ->
-            WheelPickerBottomSheet().show(s, "WheelPickerBottomSheet")
+            WheelPickerBottomSheet(
+                id = id,
+                selectedValue = TimeUnit.MILLISECONDS.toMinutes(time).toInt(),
+                viewModel
+            ).show(s, "WheelPickerBottomSheet")
         }
     }
 
@@ -99,7 +103,7 @@ class FocusFragment : Fragment(), FocusCallback {
     override fun onDelete(id: String) {
         context?.let {
             MaterialAlertDialogBuilder(it)
-                .setTitle(it.getString(R.string.delete_group_msg))
+                .setTitle("Do you want to delete this focus?")
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     viewModel.deleteFocusTask(id)
                 }

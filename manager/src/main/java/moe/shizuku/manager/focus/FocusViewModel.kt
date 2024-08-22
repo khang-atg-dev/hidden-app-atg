@@ -9,7 +9,7 @@ import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.Focus
 import java.util.UUID
 
-class FocusViewModel : ViewModel(), FocusBottomSheetCallback {
+class FocusViewModel : ViewModel(), FocusBottomSheetCallback, WheelPickerCallback {
     private val _state = MutableStateFlow(FocusState())
     val state = _state.asStateFlow()
 
@@ -85,6 +85,20 @@ class FocusViewModel : ViewModel(), FocusBottomSheetCallback {
         }
     }
 
+    override fun onConfirm(id: String, time: Long) {
+        _state.update {
+            val currentList = it.focusList
+            currentList.find { i -> i.id == id }?.let { focus ->
+                ShizukuSettings.updateFocusTask(focus.copy(time = time))
+            }
+            it.copy(
+                focusList = currentList.map { i ->
+                    if (i.id == id) i.copy(time = time) else i
+                }
+            )
+        }
+    }
+
     fun deleteFocusTask(id: String) {
         _state.update {
             ShizukuSettings.removeFocusTask(id)
@@ -110,5 +124,5 @@ interface FocusCallback {
 
     //    fun onChangeTime(id: String, time: Long)
     fun onAddFocusTask()
-    fun onOpenTimePicker(time: Long) {}
+    fun onOpenTimePicker(id: String, time: Long) {}
 }

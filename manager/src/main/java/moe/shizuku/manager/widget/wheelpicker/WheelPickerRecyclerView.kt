@@ -5,7 +5,6 @@ import android.graphics.Camera
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.util.AttributeSet
-import android.view.HapticFeedbackConstants
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,7 +42,7 @@ class WheelPickerRecyclerView @JvmOverloads constructor(
      *
      * @see isHapticFeedbackEnabled
      * */
-    private var ignoreHapticFeedback: Boolean = false
+    private var ignoreHapticFeedback: Boolean = true
 
     var currentPosition: Int = NO_POSITION
         private set(value) {
@@ -190,10 +189,6 @@ class WheelPickerRecyclerView @JvmOverloads constructor(
         if (hapticFeedbackLastTriggerPosition != visibleCenterItemPosition) {
             hapticFeedbackLastTriggerPosition = visibleCenterItemPosition
             if (isHapticFeedbackEnabled && !ignoreHapticFeedback) {
-                performHapticFeedback(
-                    HapticFeedbackConstants.KEYBOARD_TAP,
-                    HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
-                )
             }
         }
     }

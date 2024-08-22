@@ -45,10 +45,10 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
         edtText = view.findViewById<TextInputEditText>(R.id.edt_name_focus)?.apply {
             setText("New Task".takeIf { editID.isNullOrEmpty() } ?: editName)
             imm?.let {
-                requestFocus()
                 this.postDelayed({
+                    requestFocus()
                     it.showSoftInput(this@apply, InputMethodManager.SHOW_IMPLICIT)
-                }, 200)
+                }, 500)
             }
 
             setOnEditorActionListener { _, actionId, _ ->
@@ -57,13 +57,14 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     text = "New Task"
                 }
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    this.clearFocus()
                     if (editID.isNullOrEmpty()) {
                         callback?.onDone(text)
                     } else {
                         callback?.onDoneEdit(editID ?: "", text)
                     }
-                    dismiss()
+                    this.postDelayed({
+                        this@CreateFocusBottomSheetDialogFragment.dismiss()
+                    }, 200)
                 }
                 false
             }
