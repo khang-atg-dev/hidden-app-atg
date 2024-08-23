@@ -4,6 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import moe.shizuku.manager.AppConstants.DEFAULT_TIME_FOCUS
 import moe.shizuku.manager.utils.formatMilliseconds
@@ -33,7 +34,7 @@ class CircleProgressView @JvmOverloads constructor(
     }
 
     private val textPaint: Paint = Paint().apply {
-        color = ContextCompat.getColor(context, android.R.color.black)
+        color = fetchDefaultTextColor(context)
         textSize = 64f
         isAntiAlias = true
         textAlign = Paint.Align.CENTER
@@ -82,5 +83,11 @@ class CircleProgressView @JvmOverloads constructor(
     fun updateProgress(remainingTimeMillis: Long) {
         this.remainingTimeMillis = remainingTimeMillis
         invalidate() // Redraw the view
+    }
+
+    // Function to fetch the default TextView text color from the theme
+    private fun fetchDefaultTextColor(context: Context): Int {
+        val textView = AppCompatTextView(context)
+        return textView.currentTextColor
     }
 }
