@@ -37,14 +37,14 @@ class FocusViewHolder(
             binding.txtMinute.let { min ->
                 min.text = convertTime(it.time)
                 min.setOnClickListener {
-                    (adapter?.listener as FocusCallback).onOpenTimePicker(data.id ,data.time)
+                    (adapter?.listener as FocusCallback).onOpenTimePicker(data.id, data.time)
                 }
             }
             binding.delete.setOnClickListener {
                 (adapter?.listener as FocusCallback).onDelete(data.id)
             }
             binding.startFocus.setOnClickListener {
-                (adapter?.listener as FocusCallback).onStart(data.id)
+                (adapter?.listener as FocusCallback).onStart(data.id, data.time, data.name)
             }
         }
     }

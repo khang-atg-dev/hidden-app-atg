@@ -23,9 +23,12 @@ import moe.shizuku.manager.account.AccountFragment;
 import moe.shizuku.manager.app.AppBarActivity;
 import moe.shizuku.manager.databinding.ActivityMainBinding;
 import moe.shizuku.manager.focus.FocusFragment;
+import moe.shizuku.manager.focus.details.CountdownService;
+import moe.shizuku.manager.focus.details.FocusDetailsActivity;
 import moe.shizuku.manager.hidden.HiddenFragment;
 import moe.shizuku.manager.hidden.RequiredPermissionDialogFragment;
 import moe.shizuku.manager.lock.LockDialogFragment;
+import moe.shizuku.manager.model.CurrentFocus;
 import moe.shizuku.manager.settings.SettingsActivity;
 import moe.shizuku.manager.statistics.StatisticsFragment;
 import moe.shizuku.manager.utils.AutoStartPermissionHelper;
@@ -127,6 +130,12 @@ public class MainActivity extends AppBarActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        CurrentFocus currentFocus = ShizukuSettings.getCurrentFocusTask();
+        if (currentFocus != null) {
+            this.stopService(new Intent(this, CountdownService.class));
+            Intent intent = new Intent(this, FocusDetailsActivity.class);
+            startActivity(intent);
+        }
     }
 
     @Override

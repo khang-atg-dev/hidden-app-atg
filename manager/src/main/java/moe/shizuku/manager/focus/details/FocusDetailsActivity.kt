@@ -4,7 +4,6 @@ import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.window.OnBackInvokedDispatcher
-import moe.shizuku.manager.AppConstants.FOCUS_ID
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.app.AppBarFragmentActivity
@@ -24,17 +23,11 @@ class FocusDetailsActivity : AppBarFragmentActivity() {
         super.onCreate(savedInstanceState)
 
         hideToolbar()
-        val data = intent.getStringExtra(FOCUS_ID) ?: ""
-        if (data.isEmpty()) this.finish()
-        val fragment = FocusDetailsFragment().apply {
-            arguments = Bundle().apply {
-                putString(FOCUS_ID, data)
-            }
-        }
-
+        val currentFocus = ShizukuSettings.getCurrentFocusTask()
+        if (currentFocus == null) this.finish()
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
+                .replace(R.id.fragment_container, FocusDetailsFragment())
                 .commit()
         }
 

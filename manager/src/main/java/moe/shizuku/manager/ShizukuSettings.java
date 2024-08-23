@@ -2,7 +2,6 @@ package moe.shizuku.manager;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static moe.shizuku.manager.AppConstants.DEFAULT_AUTO_LOCK_TIMEOUT;
-import static moe.shizuku.manager.AppConstants.DEFAULT_TIME_FOCUS;
 import static moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX;
 
 import android.app.ActivityThread;
@@ -30,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import moe.shizuku.manager.model.CurrentFocus;
 import moe.shizuku.manager.model.Focus;
 import moe.shizuku.manager.model.GroupApps;
 import moe.shizuku.manager.utils.EmptySharedPreferencesImpl;
@@ -319,29 +319,36 @@ public class ShizukuSettings {
         }
     }
 
-    public static void saveCurrentFocusTask(String id) {
-       getPreferences().edit().putString(CURRENT_FOCUS_TASK, id).apply();
+    public static void saveCurrentFocusTask(CurrentFocus focus) {
+        getPreferences().edit().putString(CURRENT_FOCUS_TASK, gson.toJson(focus)).apply();
+    }
+
+    public static void updateIsPausedCurrentFocusTask(boolean value) {
+        CurrentFocus currentFocus = getCurrentFocusTask();
+        if (currentFocus == null) return;
+        saveCurrentFocusTask(
+                currentFocus.copy(
+                        currentFocus.getId(),
+                        currentFocus.getName(),
+                        currentFocus.getTime(),
+                        currentFocus.getRemainingTime(),
+                        value
+                )
+        );
     }
 
     @Nullable
-    public static String getCurrentFocusTask() {
-        return getPreferences().getString(CURRENT_FOCUS_TASK, null);
+    public static CurrentFocus getCurrentFocusTask() {
+        String objStr = getPreferences().getString(CURRENT_FOCUS_TASK, null);
+        if (objStr == null || objStr.isEmpty()) return null;
+        try {
+            return gson.fromJson(objStr, CurrentFocus.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static void removeCurrentFocusTask() {
         getPreferences().edit().remove(CURRENT_FOCUS_TASK).apply();
-    }
-
-    public static long getRemainingTime(String id) {
-        if (id.isEmpty()) return -1L;
-        return getPreferences().getLong(id, DEFAULT_TIME_FOCUS);
-    }
-
-    public static void saveRemainingTime(String id, long value) {
-        getPreferences().edit().putLong(id, value).apply();
-    }
-
-    public static void removeRemainingTime(String id) {
-        getPreferences().edit().remove(id).apply();
     }
 }

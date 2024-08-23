@@ -74,9 +74,9 @@ class CircleProgressView @JvmOverloads constructor(
         canvas.drawText(timeText, centerX, textY, textPaint)
     }
 
-    fun setTotalTimeMillis(totalTimeMillis: Long) {
+    fun initTimeMillis(totalTimeMillis: Long, remainingTimeMillis: Long) {
         this.totalTimeMillis = totalTimeMillis
-        this.remainingTimeMillis = totalTimeMillis
+        this.remainingTimeMillis = remainingTimeMillis
         invalidate() // Redraw the view
     }
 

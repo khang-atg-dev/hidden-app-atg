@@ -14,10 +14,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import moe.shizuku.manager.AppConstants.FOCUS_ID
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.FocusFragmentBinding
 import moe.shizuku.manager.focus.details.FocusDetailsActivity
+import moe.shizuku.manager.model.CurrentFocus
 import rikka.core.ktx.unsafeLazy
 import rikka.lifecycle.viewModels
 import rikka.recyclerview.addEdgeSpacing
@@ -117,12 +117,18 @@ class FocusFragment : Fragment(), FocusCallback {
         }
     }
 
-    override fun onStart(id: String) {
+    override fun onStart(id: String, time: Long, name: String) {
         context?.let {
-            ShizukuSettings.saveCurrentFocusTask(id)
-            startActivity(Intent(it, FocusDetailsActivity::class.java).apply {
-                putExtra(FOCUS_ID, id)
-            })
+            ShizukuSettings.saveCurrentFocusTask(
+                CurrentFocus(
+                    id = id,
+                    name = name,
+                    time = time,
+                    remainingTime = time,
+                    isPaused = false
+                )
+            )
+            startActivity(Intent(it, FocusDetailsActivity::class.java))
         }
     }
 }

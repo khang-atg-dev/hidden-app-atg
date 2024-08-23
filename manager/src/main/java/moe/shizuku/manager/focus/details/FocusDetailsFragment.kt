@@ -1,5 +1,7 @@
 package moe.shizuku.manager.focus.details
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,17 +16,17 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import androidx.work.workDataOf
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import moe.shizuku.manager.AppConstants.FOCUS_ID
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.FocusDetailsFragmentBinding
-import moe.shizuku.manager.model.Focus
+import moe.shizuku.manager.model.CurrentFocus
 
 class FocusDetailsFragment : Fragment() {
     private lateinit var binding: FocusDetailsFragmentBinding
     private lateinit var circleProgressView: CircleProgressView
 
+    private var countdownServiceIntent: Intent? = null
     private var isPaused = false
-    private var focusTask: Focus? = null
+    private var focusTask: CurrentFocus? = null
 
     private lateinit var workRequest: OneTimeWorkRequest
     private var workManager: WorkManager? = null
@@ -41,10 +43,12 @@ class FocusDetailsFragment : Fragment() {
                         circleProgressView.updateProgress(remainingTimeMillis)
                     }
                 }
+
                 WorkInfo.State.SUCCEEDED -> {
                     endTimer()
                     this@FocusDetailsFragment.activity?.finish()
                 }
+
                 else -> {}
             }
         }
@@ -58,10 +62,13 @@ class FocusDetailsFragment : Fragment() {
         context?.let {
             workManager = WorkManager.getInstance(it)
         }
-        arguments?.let {
-            ShizukuSettings.getFocusTaskById(it.getString(FOCUS_ID, ""))?.let { f ->
-                focusTask = f
-                workRequest = createCountdownWorkRequest(f.time)
+        ShizukuSettings.getCurrentFocusTask()?.let { f ->
+            focusTask = f
+            isPaused = f.isPaused
+            workRequest = createCountdownWorkRequest(f.remainingTime)
+            context?.let { c ->
+                countdownServiceIntent = Intent(c, CountdownService::class.java)
+                if (!isPaused) startCountdownService()
             }
         }
         binding = FocusDetailsFragmentBinding.inflate(inflater)
@@ -73,8 +80,8 @@ class FocusDetailsFragment : Fragment() {
         focusTask?.let { f ->
             binding.name.text = f.name
             circleProgressView = binding.circleProgress.apply {
-                setTotalTimeMillis(f.time)
-                startTimer()
+                initTimeMillis(f.time, f.remainingTime)
+                if (!isPaused) startTimer()
             }
             binding.btnPauseResume.let { v ->
                 v.text = if (isPaused) "Resume" else "Pause"
@@ -118,7 +125,6 @@ class FocusDetailsFragment : Fragment() {
             .setInputData(
                 workDataOf(
                     CountdownWorker.TOTAL_TIME_MILLIS to totalTimeMillis,
-                    CountdownWorker.FOCUS_ID to focusTask?.id
                 )
             )
             .build()
@@ -139,31 +145,54 @@ class FocusDetailsFragment : Fragment() {
     }
 
     private fun pauseTimer() {
+        stopCountdownService()
         isPaused = true
         workRequest.let {
             workManager?.cancelWorkById(it.id)
             workInfoLiveData?.removeObserver(observer)
         }
+        ShizukuSettings.updateIsPausedCurrentFocusTask(true)
     }
 
     private fun resumeTimer() {
-        val remainingTimeMillis = ShizukuSettings.getRemainingTime(focusTask?.id ?: "")
+        val remainingTimeMillis = ShizukuSettings.getCurrentFocusTask()?.remainingTime ?: -1
         if (remainingTimeMillis > 0) {
+            startCountdownService()
             workRequest = createCountdownWorkRequest(remainingTimeMillis)
             startTimer()
             isPaused = false
+            ShizukuSettings.updateIsPausedCurrentFocusTask(false)
         }
     }
 
 
     private fun endTimer() {
+        stopCountdownService()
         isPaused = false
         workRequest.let {
             workManager?.cancelWorkById(it.id)
             workInfoLiveData?.removeObserver(observer)
         }
-        ShizukuSettings.removeRemainingTime(focusTask?.id)
         ShizukuSettings.removeCurrentFocusTask()
     }
 
+    private fun startCountdownService() {
+        context?.let {
+            countdownServiceIntent?.let { intent ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    it.startForegroundService(intent)
+                } else {
+                    it.startService(intent)
+                }
+            }
+        }
+    }
+
+    private fun stopCountdownService() {
+        context?.let {
+            countdownServiceIntent?.let { intent ->
+                it.stopService(intent)
+            }
+        }
+    }
 }

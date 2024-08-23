@@ -120,7 +120,7 @@ data class FocusState(
 interface FocusCallback {
     fun onDelete(id: String)
     fun onEditName(id: String)
-    fun onStart(id: String)
+    fun onStart(id: String, time: Long, name: String)
     fun onAddFocusTask()
     fun onOpenTimePicker(id: String, time: Long) {}
 }
