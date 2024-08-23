@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import moe.shizuku.manager.MainActivity
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
+import moe.shizuku.manager.utils.formatMilliseconds
 
 class CountdownService : Service() {
     companion object {
@@ -77,7 +78,7 @@ class CountdownService : Service() {
 
         return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Countdown Timer")
-            .setContentText("Time is counting down: ${remainingTimeMillis}s")
+            .setContentText("Time is counting down: ${remainingTimeMillis.formatMilliseconds(this)}")
             .setSmallIcon(R.drawable.ic_system_icon)
             .setContentIntent(pendingIntent)
             .setOngoing(true)

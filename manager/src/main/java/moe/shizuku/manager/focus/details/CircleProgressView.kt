@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import moe.shizuku.manager.AppConstants.DEFAULT_TIME_FOCUS
+import moe.shizuku.manager.utils.formatMilliseconds
 import kotlin.math.min
 
 class CircleProgressView @JvmOverloads constructor(
@@ -66,9 +67,7 @@ class CircleProgressView @JvmOverloads constructor(
         )
 
         // Draw remaining time text
-        val minutes = (remainingTimeMillis / 1000) / 60
-        val seconds = (remainingTimeMillis / 1000) % 60
-        val timeText = String.format("%02d:%02d", minutes, seconds)
+        val timeText = remainingTimeMillis.formatMilliseconds(context)
         val textY = centerY - (textPaint.descent() + textPaint.ascent()) / 2
 
         canvas.drawText(timeText, centerX, textY, textPaint)

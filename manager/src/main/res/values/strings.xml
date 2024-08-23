@@ -222,5 +222,8 @@ With %1$s, in any terminal app, you can connect to and interact with the shell r
     <string name="accessibility_titile_dialog">How to enable Accessibility Service</string>
     <string name="number_apps">%1$s Apps</string>
     <string name="default_group_name">Limited Time Task</string>
+    <string name="time_format_seconds">%1$02d s</string>
+    <string name="time_format_minutes">%1$02d m %2$02d s</string>
+    <string name="time_format_hours">%1$02d h %2$02d m %3$02d s</string>
 
 </resources>

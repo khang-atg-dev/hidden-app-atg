@@ -14,9 +14,11 @@ import androidx.fragment.app.DialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
 import rikka.shizuku.Shizuku
+import java.util.concurrent.TimeUnit
 
 fun Context.isAccessibilityServiceEnabled(): Boolean {
     val am = this.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
@@ -153,4 +155,16 @@ fun Context.hasBatteryOptimizationExemption(): Boolean {
 
 fun DialogFragment.isDialogFragmentShowing(): Boolean {
     return this.dialog?.isShowing == true && !this.isRemoving
+}
+
+fun Long.formatMilliseconds(context: Context): String {
+    val hours = TimeUnit.MILLISECONDS.toHours(this)
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(this) % 60
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(this) % 60
+
+    return when {
+        hours > 0 -> context.getString(R.string.time_format_hours, hours, minutes, seconds)
+        minutes > 0 -> context.getString(R.string.time_format_minutes, minutes, seconds)
+        else -> context.getString(R.string.time_format_seconds, seconds)
+    }
 }
