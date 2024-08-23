@@ -1,13 +1,12 @@
 package moe.shizuku.manager.focus
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import moe.shizuku.manager.databinding.FocusItemLayoutBinding
 import moe.shizuku.manager.model.Focus
+import moe.shizuku.manager.utils.formatMilliseconds
 import rikka.recyclerview.BaseViewHolder
 import rikka.recyclerview.BaseViewHolder.Creator
-import java.util.concurrent.TimeUnit
 
 class FocusViewHolder(
     private val binding: FocusItemLayoutBinding,
@@ -35,7 +34,7 @@ class FocusViewHolder(
                 }
             }
             binding.txtMinute.let { min ->
-                min.text = convertTime(it.time)
+                min.text = it.time.formatMilliseconds(context)
                 min.setOnClickListener {
                     (adapter?.listener as FocusCallback).onOpenTimePicker(data.id, data.time)
                 }
@@ -47,11 +46,5 @@ class FocusViewHolder(
                 (adapter?.listener as FocusCallback).onStart(data.id, data.time, data.name)
             }
         }
-    }
-
-    @SuppressLint("DefaultLocale")
-    private fun convertTime(time: Long): String {
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(time)
-        return String.format("%d minute%s", minutes, "".takeIf { minutes == 1L } ?: "s")
     }
 }

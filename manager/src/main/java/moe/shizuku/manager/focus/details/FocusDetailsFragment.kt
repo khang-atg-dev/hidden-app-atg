@@ -16,6 +16,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import androidx.work.workDataOf
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.FocusDetailsFragmentBinding
 import moe.shizuku.manager.model.CurrentFocus
@@ -85,13 +86,20 @@ class FocusDetailsFragment : Fragment() {
             }
             binding.btnPauseResume.let { v ->
                 v.text = if (isPaused) "Resume" else "Pause"
+                v.icon = if (isPaused) {
+                    context?.getDrawable(R.drawable.ic_outline_play_arrow_24)
+                } else {
+                    context?.getDrawable(R.drawable.baseline_pause_24)
+                }
                 v.setOnClickListener {
                     if (isPaused) {
                         resumeTimer()
                         v.text = "Pause"
+                        v.icon = context?.getDrawable(R.drawable.baseline_pause_24)
                     } else {
                         pauseTimer()
                         v.text = "Resume"
+                        v.icon = context?.getDrawable(R.drawable.ic_outline_play_arrow_24)
                     }
                 }
             }
