@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:fitsSystemWindows="true"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="20dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Choose a color"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/confirm_button"
+        app:layout_constraintEnd_toStartOf="@id/confirm_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/confirm_button" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/confirm_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirm"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/group_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:checkedChip="@+id/all"
+        app:layout_constraintTop_toBottomOf="@id/confirm_button"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/all"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="All"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/red"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Red"
+            android:textColor="@color/material_white_1000"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipBackgroundColor="#FF0000"
+            app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/pink"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pink"
+            android:textColor="@color/material_black_1000"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipBackgroundColor="#FFC0CB"
+            app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/blue"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Blue"
+            android:textColor="@color/material_white_1000"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipBackgroundColor="#0000FF"
+            app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/green"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Green"
+            android:textColor="@color/material_white_1000"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipBackgroundColor="#008000"
+            app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/yellow"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Yellow"
+            android:textColor="@color/material_black_1000"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipBackgroundColor="#FFFF00"
+            app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/orange"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Orange"
+            android:textColor="@color/material_white_1000"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipBackgroundColor="#FFA500"
+            app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/grey"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Grey"
+            android:textColor="@color/material_white_1000"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipBackgroundColor="#808080"
+            app:chipStrokeWidth="0dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/custom"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Custom"
+            app:checkedIcon="@drawable/outline_check_24"
+            app:checkedIconVisible="true"
+            app:chipStrokeWidth="0dp" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="10dp"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintTop_toBottomOf="@id/group_name" />
+
+    <top.defaults.colorpicker.ColorPickerView
+        android:id="@+id/custom_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingBottom="200dp"
+        android:visibility="gone"
+        app:enableAlpha="true"
+        app:enableBrightness="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingBottom="200dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/group_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:singleSelection="true" />
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

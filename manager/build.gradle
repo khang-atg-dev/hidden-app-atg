@@ -200,6 +200,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
     implementation 'androidx.work:work-runtime-ktx:2.8.0'
+    implementation 'com.github.duanhong169:colorpicker:1.1.6'
+    implementation 'com.github.duanhong169:checkerboarddrawable:1.0.2'
 }
 
 apply from: rootProject.file('signing.gradle')

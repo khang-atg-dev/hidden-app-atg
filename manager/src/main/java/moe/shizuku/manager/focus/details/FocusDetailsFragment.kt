@@ -103,6 +103,11 @@ class FocusDetailsFragment : Fragment() {
                     }
                 }
             }
+            binding.colorPicker.setOnClickListener {
+                this.activity?.supportFragmentManager?.let {
+                    ColorsBottomSheet().show(it, "ColorPicker")
+                }
+            }
             binding.btnEnd.setOnClickListener {
                 context?.let {
                     MaterialAlertDialogBuilder(it)
