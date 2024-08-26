@@ -2,22 +2,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/focusFragment"
-        android:title="Focus"
+        android:title="@string/focus"
         android:enabled="true"
         android:icon="@drawable/baseline_adjust_24" />
     <item
         android:id="@+id/statisticsFragment"
-        android:title="Statistics"
+        android:title="@string/statistics"
         android:enabled="true"
         android:icon="@drawable/baseline_pie_chart_outline_24" />
     <item
         android:id="@+id/hiddenFragment"
-        android:title="Hidden"
+        android:title="@string/hidden"
         android:enabled="true"
         android:icon="@drawable/outline_hourglass_empty_24" />
     <item
         android:id="@+id/accountFragment"
-        android:title="Account"
+        android:title="@string/account"
         android:enabled="true"
         android:icon="@drawable/outline_person_outline_24" />
 </menu>

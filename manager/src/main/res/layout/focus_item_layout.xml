@@ -24,9 +24,9 @@
                 android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="4dp"
                 android:ellipsize="end"
                 android:maxLines="2"
+                android:padding="4dp"
                 android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -41,29 +41,16 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/name" />
 
-            <LinearLayout
+            <TextView
                 android:id="@+id/start_focus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="4dp"
-                android:orientation="horizontal"
+                android:drawableStart="@drawable/ic_outline_play_arrow_24"
+                android:text="@string/start_focus_task"
+                android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_outline_play_arrow_24"
-                    tools:ignore="ContentDescription" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Start"
-                    android:textSize="16sp" />
-            </LinearLayout>
+                app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

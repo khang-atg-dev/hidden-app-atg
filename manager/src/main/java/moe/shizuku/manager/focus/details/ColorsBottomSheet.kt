@@ -87,14 +87,16 @@ class ColorsBottomSheet(
         adapter = ColorPickerAdapter(inflater, this)
         binding = ColorsBottomSheetLayoutBinding.inflate(inflater)
         updateChip(binding.all.id)
-        colorPicker = ColorPickerPopup.Builder(context)
-            .initialColor(colorSelected?.let { Color.parseColor(it) } ?: Color.WHITE)
-            .enableBrightness(true)
-            .enableAlpha(true)
-            .okTitle("Choose")
-            .cancelTitle("Cancel")
-            .showIndicator(true)
-            .build()
+        context?.let {
+            colorPicker = ColorPickerPopup.Builder(it)
+                .initialColor(colorSelected?.let { c -> Color.parseColor(c) } ?: Color.WHITE)
+                .enableBrightness(true)
+                .enableAlpha(true)
+                .okTitle(it.getString(R.string.choose))
+                .cancelTitle(it.getString(android.R.string.cancel))
+                .showIndicator(true)
+                .build()
+        }
         return binding.root
     }
 

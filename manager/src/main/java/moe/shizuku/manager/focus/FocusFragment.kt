@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.FocusFragmentBinding
 import moe.shizuku.manager.focus.details.FocusDetailsActivity
@@ -107,7 +108,7 @@ class FocusFragment : Fragment(), FocusCallback {
     override fun onDelete(id: String) {
         context?.let {
             MaterialAlertDialogBuilder(it)
-                .setTitle("Do you want to delete this focus?")
+                .setTitle(it.getString(R.string.do_u_want_delete_focus))
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     viewModel.deleteFocusTask(id)
                 }

@@ -100,7 +100,8 @@ class FocusDetailsFragment : Fragment() {
                 if (!isPaused) startTimer()
             }
             binding.btnPauseResume.let { v ->
-                v.text = if (isPaused) "Resume" else "Pause"
+                v.text =
+                    context?.getString(if (isPaused) R.string.resume_forcus_task else R.string.pause_focus_task)
                 v.icon = if (isPaused) {
                     context?.getDrawable(R.drawable.ic_outline_play_arrow_24)
                 } else {
@@ -109,11 +110,11 @@ class FocusDetailsFragment : Fragment() {
                 v.setOnClickListener {
                     if (isPaused) {
                         resumeTimer()
-                        v.text = "Pause"
+                        v.text = context?.getString(R.string.pause_focus_task)
                         v.icon = context?.getDrawable(R.drawable.baseline_pause_24)
                     } else {
                         pauseTimer()
-                        v.text = "Resume"
+                        v.text = context?.getString(R.string.resume_forcus_task)
                         v.icon = context?.getDrawable(R.drawable.ic_outline_play_arrow_24)
                     }
                 }
@@ -134,7 +135,7 @@ class FocusDetailsFragment : Fragment() {
             binding.btnEnd.setOnClickListener {
                 context?.let {
                     MaterialAlertDialogBuilder(it)
-                        .setTitle("Are you sure to end this task now?")
+                        .setTitle(it.getString(R.string.are_u_sure_end_task))
                         .setPositiveButton(android.R.string.ok) { _, _ ->
                             endTimer()
                             view.postDelayed({
@@ -193,7 +194,9 @@ class FocusDetailsFragment : Fragment() {
                 ShizukuSettings.setKeepScreenOnCurrentTask(isKeepScreenOn)
                 Toast.makeText(
                     context,
-                    "Keep screen on is ${if (isKeepScreenOn) "on" else "off"}",
+                    context?.getString(R.string.keep_screen) + " " +
+                            if (isKeepScreenOn) context?.getString(R.string.on)
+                            else context?.getString(R.string.off),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -316,16 +319,16 @@ class FocusDetailsFragment : Fragment() {
     }
 
     private fun showPermissionExplanationDialog() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Permission Required")
-            .setMessage("To adjust the screen brightness, this app needs permission to modify system settings. Please grant this permission to proceed.")
-            .setPositiveButton("Grant Permission") { _, _ ->
-                requestWriteSettingsPermission()
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
+        context?.let {
+            MaterialAlertDialogBuilder(it)
+                .setTitle(it.getString(R.string.permissions_required))
+                .setMessage(it.getString(R.string.write_setting_perrmission_msg))
+                .setPositiveButton(it.getString(R.string.grant_permission)) { _, _ ->
+                    requestWriteSettingsPermission()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
     }
 
     private fun getCurrentBrightness(): Int {

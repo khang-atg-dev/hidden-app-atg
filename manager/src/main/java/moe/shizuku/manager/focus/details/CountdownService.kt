@@ -62,7 +62,7 @@ class CountdownService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
-                "Countdown Timer",
+                applicationContext.getString(R.string.focus),
                 NotificationManager.IMPORTANCE_LOW
             )
             notificationManager.createNotificationChannel(channel)
@@ -78,8 +78,14 @@ class CountdownService : Service() {
         )
 
         return NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("Countdown Timer")
-            .setContentText("Time is counting down: ${remainingTimeMillis.formatMilliseconds(this)}")
+            .setContentTitle(applicationContext.getString(R.string.title_focus_notification))
+            .setContentText(
+                "${applicationContext.getString(R.string.msg_focus_notification)} ${
+                    remainingTimeMillis.formatMilliseconds(
+                        this
+                    )
+                }"
+            )
             .setSmallIcon(R.drawable.ic_system_icon)
             .setContentIntent(pendingIntent)
             .setOngoing(true)

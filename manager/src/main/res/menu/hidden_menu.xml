@@ -5,7 +5,7 @@
         android:id="@+id/add_group"
         android:icon="@drawable/round_add_circle_outline_24"
         android:showAsAction="ifRoom"
-        android:title="Add" />
+        android:title="@string/add_focus_task" />
 
     <item
         android:id="@+id/action_settings"

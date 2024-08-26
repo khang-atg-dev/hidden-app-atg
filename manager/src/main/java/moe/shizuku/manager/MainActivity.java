@@ -94,7 +94,7 @@ public class MainActivity extends AppBarActivity {
         });
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Focus");
+            getSupportActionBar().setTitle(this.getString(R.string.focus));
         }
     }
 

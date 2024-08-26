@@ -183,4 +183,7 @@
     <string name="go_to_accessibility">请前往辅助功能设置</string>
     <string name="accessibility_titile_dialog">如何启用辅助功能服务</string>
     <string name="default_group_name">"限时任务 "</string>
+    <string name="min_time_bottom_sheet">%1$02d 分钟</string>
+    <string name="hours_time_bottom_sheet">"  (%1$.1f 小时)"</string>
+    <string name="mins_time_bottom_sheet">%1$02d 分钟</string>
 </resources>

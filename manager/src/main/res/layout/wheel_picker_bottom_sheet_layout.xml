@@ -11,7 +11,7 @@
         android:id="@+id/txt_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Set focus duration"
+        android:text="@string/set_focus_duration"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="@id/confirm_button"
         app:layout_constraintEnd_toStartOf="@id/confirm_button"
@@ -22,7 +22,7 @@
         android:id="@+id/confirm_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Confirm"
+        android:text="@string/confirm"
         style="@style/CardButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
