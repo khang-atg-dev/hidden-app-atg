@@ -1,6 +1,7 @@
 package moe.shizuku.manager.focus.details
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -22,6 +23,7 @@ import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.FocusDetailsFragmentBinding
 import moe.shizuku.manager.model.CurrentFocus
 
+
 class FocusDetailsFragment : Fragment() {
     private lateinit var binding: FocusDetailsFragmentBinding
     private lateinit var circleProgressView: CircleProgressView
@@ -29,8 +31,9 @@ class FocusDetailsFragment : Fragment() {
     private var countdownServiceIntent: Intent? = null
     private var isPaused = false
     private var focusTask: CurrentFocus? = null
+    private var isLandScape: Boolean = false
 
-    private lateinit var workRequest: OneTimeWorkRequest
+    private var workRequest: OneTimeWorkRequest? = null
     private var workManager: WorkManager? = null
     private var workInfoLiveData: LiveData<WorkInfo>? = null
     private var observer: Observer<WorkInfo?> = Observer { workInfo ->
@@ -48,7 +51,11 @@ class FocusDetailsFragment : Fragment() {
 
                 WorkInfo.State.SUCCEEDED -> {
                     endTimer()
-                    this@FocusDetailsFragment.activity?.finish()
+                    view?.postDelayed({
+                        activity?.requestedOrientation =
+                            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    }, 300)
+                    activity?.finish()
                 }
 
                 else -> {}
@@ -78,7 +85,6 @@ class FocusDetailsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         focusTask?.let { f ->
             binding.name.text = f.name
             circleProgressView = binding.circleProgress.apply {
@@ -123,18 +129,33 @@ class FocusDetailsFragment : Fragment() {
                         .setTitle("Are you sure to end this task now?")
                         .setPositiveButton(android.R.string.ok) { _, _ ->
                             endTimer()
-                            this.activity?.finish()
+                            view.postDelayed({
+                                activity?.requestedOrientation =
+                                    ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                            }, 300)
+                            activity?.finish()
                         }
                         .setNegativeButton(android.R.string.cancel, null)
                         .create()
                         .show()
                 }
             }
+            binding.rotation.setOnClickListener {
+                activity?.let {
+                    if (isLandScape) {
+                        it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    } else {
+                        it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                    }
+                    isLandScape = !isLandScape
+                }
+            }
         }
+        super.onViewCreated(view, savedInstanceState)
     }
 
     override fun onDestroy() {
-        workRequest.let {
+        workRequest?.let {
             workManager?.cancelWorkById(it.id)
             workInfoLiveData?.removeObserver(observer)
         }
@@ -154,10 +175,12 @@ class FocusDetailsFragment : Fragment() {
 
     private fun startTimer() {
         workManager?.let {
-            it.beginUniqueWork(
-                CountdownWorker.WORK_TAG, ExistingWorkPolicy.REPLACE, workRequest
-            ).enqueue()
-            observeWorkProgress(it, workRequest)
+            workRequest?.let { wr ->
+                it.beginUniqueWork(
+                    CountdownWorker.WORK_TAG, ExistingWorkPolicy.REPLACE, wr
+                ).enqueue()
+                observeWorkProgress(it, wr)
+            }
         }
     }
 
@@ -169,7 +192,7 @@ class FocusDetailsFragment : Fragment() {
     private fun pauseTimer() {
         stopCountdownService()
         isPaused = true
-        workRequest.let {
+        workRequest?.let {
             workManager?.cancelWorkById(it.id)
             workInfoLiveData?.removeObserver(observer)
         }
@@ -190,7 +213,7 @@ class FocusDetailsFragment : Fragment() {
     private fun endTimer() {
         stopCountdownService()
         isPaused = false
-        workRequest.let {
+        workRequest?.let {
             workManager?.cancelWorkById(it.id)
             workInfoLiveData?.removeObserver(observer)
         }

@@ -22,7 +22,7 @@ class CountdownService : Service() {
         const val NOTIFICATION_ID = 1
     }
 
-    private lateinit var countDownTimer: CountDownTimer
+    private var countDownTimer: CountDownTimer? = null
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -31,6 +31,7 @@ class CountdownService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val currentFocus = ShizukuSettings.getCurrentFocusTask()
             ?: return super.onStartCommand(intent, flags, startId)
+        countDownTimer?.cancel()
         countDownTimer = object : CountDownTimer(currentFocus.remainingTime, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 ShizukuSettings.saveCurrentFocusTask(
@@ -49,7 +50,7 @@ class CountdownService : Service() {
     }
 
     override fun onDestroy() {
-        countDownTimer.cancel()
+        countDownTimer?.cancel()
         super.onDestroy()
     }
 
