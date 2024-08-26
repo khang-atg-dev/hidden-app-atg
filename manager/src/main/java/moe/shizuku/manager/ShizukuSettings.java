@@ -55,6 +55,7 @@ public class ShizukuSettings {
     public static final String FOCUS_TASK_LIST = "FOCUS_TASK_LIST";
     public static final String CURRENT_FOCUS_TASK = "CURRENT_FOCUS_TASK";
     public static final String COLOR_CURRENT_TASK = "COLOR_CURRENT_TASK";
+    public static final String KEEP_SCREEN_ON_CURRENT_TASK = "KEEP_SCREEN_ON_CURRENT_TASK";
 
 
     private static SharedPreferences sPreferences;
@@ -360,5 +361,13 @@ public class ShizukuSettings {
 
     public static void saveColorCurrentTask(String value) {
         getPreferences().edit().putString(COLOR_CURRENT_TASK, value).apply();
+    }
+
+    public static boolean getKeepScreenOnCurrentTask() {
+        return getPreferences().getBoolean(KEEP_SCREEN_ON_CURRENT_TASK, false);
+    }
+
+    public static void setKeepScreenOnCurrentTask(boolean value) {
+        getPreferences().edit().putBoolean(KEEP_SCREEN_ON_CURRENT_TASK, value).apply();
     }
 }

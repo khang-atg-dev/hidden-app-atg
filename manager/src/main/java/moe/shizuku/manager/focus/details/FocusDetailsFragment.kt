@@ -3,11 +3,15 @@ package moe.shizuku.manager.focus.details
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -32,6 +36,8 @@ class FocusDetailsFragment : Fragment() {
     private var isPaused = false
     private var focusTask: CurrentFocus? = null
     private var isLandScape: Boolean = false
+    private var currentBrightness: Int = 0
+    private var isKeepScreenOn: Boolean = false
 
     private var workRequest: OneTimeWorkRequest? = null
     private var workManager: WorkManager? = null
@@ -70,6 +76,8 @@ class FocusDetailsFragment : Fragment() {
     ): View {
         context?.let {
             workManager = WorkManager.getInstance(it)
+            currentBrightness = getCurrentBrightness()
+            isKeepScreenOn = ShizukuSettings.getKeepScreenOnCurrentTask()
         }
         ShizukuSettings.getCurrentFocusTask()?.let { f ->
             focusTask = f
@@ -150,6 +158,45 @@ class FocusDetailsFragment : Fragment() {
                     isLandScape = !isLandScape
                 }
             }
+            binding.brightDecrease.setOnClickListener {
+                if (!checkWriteSettingsPermission()) {
+                    showPermissionExplanationDialog()
+                } else {
+                    decreaseBrightness()
+                }
+            }
+            binding.brightIncrease.setOnClickListener {
+                if (!checkWriteSettingsPermission()) {
+                    showPermissionExplanationDialog()
+                } else {
+                    increaseBrightness()
+                }
+            }
+            binding.keepScreen.setImageDrawable(
+                if (isKeepScreenOn) {
+                    context?.getDrawable(R.drawable.light_bulb)
+                } else {
+                    context?.getDrawable(R.drawable.light_bulb_slash)
+                }
+            )
+            binding.keepScreen.setOnClickListener {
+                activity?.let {
+                    if (!isKeepScreenOn) {
+                        binding.keepScreen.setImageDrawable(it.getDrawable(R.drawable.light_bulb))
+                        it.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    } else {
+                        binding.keepScreen.setImageDrawable(it.getDrawable(R.drawable.light_bulb_slash))
+                        it.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    }
+                }
+                isKeepScreenOn = !isKeepScreenOn
+                ShizukuSettings.setKeepScreenOnCurrentTask(isKeepScreenOn)
+                Toast.makeText(
+                    context,
+                    "Keep screen on is ${if (isKeepScreenOn) "on" else "off"}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
         super.onViewCreated(view, savedInstanceState)
     }
@@ -159,6 +206,7 @@ class FocusDetailsFragment : Fragment() {
             workManager?.cancelWorkById(it.id)
             workInfoLiveData?.removeObserver(observer)
         }
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         super.onDestroy()
     }
 
@@ -251,5 +299,64 @@ class FocusDetailsFragment : Fragment() {
         binding.brightDecrease.setColorFilter(color)
         binding.brightIncrease.setColorFilter(color)
         binding.keepScreen.setColorFilter(color)
+    }
+
+    private fun checkWriteSettingsPermission(): Boolean {
+        return Settings.System.canWrite(requireContext())
+    }
+
+    private fun requestWriteSettingsPermission() {
+        if (!checkWriteSettingsPermission()) {
+            context?.let {
+                val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS)
+                intent.data = Uri.parse("package:" + it.packageName)
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun showPermissionExplanationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Permission Required")
+            .setMessage("To adjust the screen brightness, this app needs permission to modify system settings. Please grant this permission to proceed.")
+            .setPositiveButton("Grant Permission") { _, _ ->
+                requestWriteSettingsPermission()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun getCurrentBrightness(): Int {
+        return context?.let {
+            Settings.System.getInt(
+                it.contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS,
+                0
+            ) / 13 // Convert from 0-255 to 0-20
+        } ?: 0
+    }
+
+    private fun setBrightnessLevel(level: Int) {
+        if (level < 0 || level > 20) return
+        val brightnessValue = level * 13 // Convert from 0-20 to 0-255
+        val layoutParams = activity?.window?.attributes
+        layoutParams?.screenBrightness = brightnessValue / 255f
+        activity?.window?.attributes = layoutParams
+    }
+
+    private fun increaseBrightness() {
+        if (currentBrightness < 20) {
+            currentBrightness++
+            setBrightnessLevel(currentBrightness)
+        }
+    }
+
+    private fun decreaseBrightness() {
+        if (currentBrightness > 0) {
+            currentBrightness--
+            setBrightnessLevel(currentBrightness)
+        }
     }
 }
