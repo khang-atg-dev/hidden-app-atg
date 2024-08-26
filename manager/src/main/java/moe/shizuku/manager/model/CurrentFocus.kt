@@ -8,5 +8,5 @@ data class CurrentFocus(
     val name: String,
     val time: Long,
     val remainingTime: Long,
-    val isPaused: Boolean
+    val isPaused: Boolean,
 )

@@ -105,7 +105,11 @@ class FocusDetailsFragment : Fragment() {
             }
             binding.colorPicker.setOnClickListener {
                 this.activity?.supportFragmentManager?.let {
-                    ColorsBottomSheet().show(it, "ColorPicker")
+                    ColorsBottomSheet( object : ColorPickerCallback {
+                        override fun onColorSelected(hexColor: String) {
+                            ShizukuSettings.updateColorPickerCurrentFocusTask(hexColor)
+                        }
+                    }).show(it, "ColorPicker")
                 }
             }
             binding.btnEnd.setOnClickListener {
@@ -177,7 +181,6 @@ class FocusDetailsFragment : Fragment() {
             ShizukuSettings.updateIsPausedCurrentFocusTask(false)
         }
     }
-
 
     private fun endTimer() {
         stopCountdownService()

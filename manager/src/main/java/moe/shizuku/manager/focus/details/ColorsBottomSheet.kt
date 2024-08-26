@@ -2,18 +2,22 @@ package moe.shizuku.manager.focus.details
 
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.children
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.chip.Chip
 import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.ColorsBottomSheetLayoutBinding
+import top.defaults.colorpicker.ColorPickerPopup
 
-class ColorsBottomSheet : BottomSheetDialogFragment() {
+class ColorsBottomSheet(
+    private val callback: ColorPickerCallback,
+) : BottomSheetDialogFragment(), ColorCallback, View.OnClickListener {
     private lateinit var binding: ColorsBottomSheetLayoutBinding
+    private lateinit var colorPicker: ColorPickerPopup
+    private lateinit var adapter: ColorPickerAdapter
 
     private var redArray: Array<String> = emptyArray()
     private var pinkArray: Array<String> = emptyArray()
@@ -72,56 +76,101 @@ class ColorsBottomSheet : BottomSheetDialogFragment() {
     }
 
     private var colorSelected = ""
+    private var colorGroupSelected: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        adapter = ColorPickerAdapter(inflater, this)
         binding = ColorsBottomSheetLayoutBinding.inflate(inflater)
+        updateChip(binding.all.id)
+        colorPicker = ColorPickerPopup.Builder(context)
+            .initialColor(Color.RED)
+            .enableBrightness(true)
+            .enableAlpha(true)
+            .okTitle("Choose")
+            .cancelTitle("Cancel")
+            .showIndicator(true)
+            .build()
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.groupName.check(binding.all.id)
-        binding.all.isChecked = true
-        updateChip(binding.all.id)
+        binding.confirmButton.setOnClickListener {
+            callback.onColorSelected(colorSelected)
+            dismiss()
+        }
+        binding.groupColor.adapter = adapter
+        setBackgroundForTextView(binding.all.id)
+        colorGroupSelected = binding.all.id
+        binding.all.setOnClickListener(this)
+        binding.red.setOnClickListener(this)
+        binding.pink.setOnClickListener(this)
+        binding.blue.setOnClickListener(this)
+        binding.green.setOnClickListener(this)
+        binding.yellow.setOnClickListener(this)
+        binding.orange.setOnClickListener(this)
+        binding.grey.setOnClickListener(this)
+        binding.custom.setOnClickListener(this)
+    }
 
-        binding.groupName.setOnCheckedStateChangeListener { _, checkedIds ->
-            if (checkedIds[0].equals(binding.custom.id)) {
-                binding.customPicker.visibility = View.VISIBLE
-                binding.groupColor.visibility = View.GONE
-            } else {
-                binding.customPicker.visibility = View.GONE
-                binding.groupColor.visibility = View.VISIBLE
-                checkedIds.forEach {
-                    updateChip(it)
+    override fun onClick(v: View) {
+        if (v.id != R.id.custom) {
+            colorGroupSelected = v.id
+            setBackgroundForTextView(v.id)
+            updateChip(v.id)
+        } else {
+            colorPicker.show(v, object : ColorPickerPopup.ColorPickerObserver() {
+                override fun onColorPicked(color: Int) {
+                    TODO("Not yet implemented")
                 }
-            }
+            })
         }
     }
 
-    private fun updateChip(chipId: Int) {
-        binding.groupColor.removeAllViews()
-        binding.groupColor.isSingleSelection = true
-        mapColor[chipId]?.forEach { hexColor ->
-            val customChip = (layoutInflater.inflate(
-                R.layout.custom_chip_layout,
-                binding.groupColor,
-                false
-            ) as Chip).apply {
-                text = hexColor.uppercase()
-                chipBackgroundColor = ColorStateList.valueOf(Color.parseColor(hexColor))
-                setOnClickListener {
-                    colorSelected = hexColor
-                    binding.groupColor.children.forEach { c ->
-                        if (c is Chip) {
-                            c.isChecked = c.text == hexColor.uppercase()
-                        }
-                    }
-                }
-            }
-            binding.groupColor.addView(customChip)
+    override fun onSelectedColor(text: String) {
+        colorSelected = text
+        updateChip(colorGroupSelected)
+    }
+
+    private fun updateChip(id: Int) {
+        adapter.dataSource = mapColor[id]?.map { hexColor ->
+            ItemColor(
+                text = hexColor,
+                hexColor = hexColor,
+                isSelected = hexColor == colorSelected
+            )
         }
     }
+
+    private fun getGradientColor(colorInt: Int, isSelected: Boolean = false) =
+        GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 16f
+            color = ColorStateList.valueOf(colorInt)
+            if (isSelected) {
+                setStroke(4, Color.BLACK)
+            }
+        }
+
+    private fun setBackgroundForTextView(id: Int) {
+        binding.custom.background = getGradientColor(Color.LTGRAY, binding.custom.id == id)
+        binding.all.background = getGradientColor(Color.LTGRAY, binding.all.id == id)
+        binding.red.background = getGradientColor(Color.RED, binding.red.id == id)
+        binding.pink.background =
+            getGradientColor(Color.parseColor("#FFC0CB"), binding.pink.id == id)
+        binding.blue.background = getGradientColor(Color.BLUE, binding.blue.id == id)
+        binding.green.background = getGradientColor(Color.GREEN, binding.green.id == id)
+        binding.yellow.background = getGradientColor(Color.YELLOW, binding.yellow.id == id)
+        binding.orange.background =
+            getGradientColor(Color.parseColor("#FFA500"), binding.orange.id == id)
+        binding.grey.background =
+            getGradientColor(Color.parseColor("#808080"), binding.grey.id == id)
+    }
+}
+
+interface ColorPickerCallback {
+    fun onColorSelected(hexColor: String)
 }
