@@ -1,12 +1,15 @@
 package moe.shizuku.manager.focus.details
+
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import moe.shizuku.manager.AppConstants.DEFAULT_TIME_FOCUS
+import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.utils.formatMilliseconds
 import kotlin.math.min
 
@@ -18,23 +21,30 @@ class CircleProgressView @JvmOverloads constructor(
     private var totalTimeMillis: Long = DEFAULT_TIME_FOCUS
     private var remainingTimeMillis: Long = totalTimeMillis
 
-    private val circlePaint: Paint = Paint().apply {
-        color = ContextCompat.getColor(context, android.R.color.transparent)
+    private var circlePaint: Paint = Paint().apply {
+        color = ShizukuSettings.getColorCurrentTask()?.let {
+            Color.parseColor(it)
+        } ?: ContextCompat.getColor(context, android.R.color.transparent)
         style = Paint.Style.STROKE
         strokeWidth = 30f
         isAntiAlias = true
     }
 
-    private val progressPaint: Paint = Paint().apply {
-        color = ContextCompat.getColor(context, android.R.color.holo_red_light)
+    private var progressPaint: Paint = Paint().apply {
+        color =
+            ShizukuSettings.getColorCurrentTask()?.let {
+                Color.parseColor(it)
+            } ?: ContextCompat.getColor(context, android.R.color.holo_red_light)
         style = Paint.Style.STROKE
         strokeWidth = 30f
         isAntiAlias = true
         strokeCap = Paint.Cap.ROUND
     }
 
-    private val textPaint: Paint = Paint().apply {
-        color = fetchDefaultTextColor(context)
+    private var textPaint: Paint = Paint().apply {
+        color = ShizukuSettings.getColorCurrentTask()?.let {
+            Color.parseColor(it)
+        } ?: fetchDefaultTextColor(context)
         textSize = 64f
         isAntiAlias = true
         textAlign = Paint.Align.CENTER
@@ -83,6 +93,13 @@ class CircleProgressView @JvmOverloads constructor(
     fun updateProgress(remainingTimeMillis: Long) {
         this.remainingTimeMillis = remainingTimeMillis
         invalidate() // Redraw the view
+    }
+
+    fun updateColor(colorHex: String) {
+        circlePaint.color = Color.parseColor(colorHex)
+        progressPaint.color = Color.parseColor(colorHex)
+        textPaint.color = Color.parseColor(colorHex)
+        invalidate()
     }
 
     // Function to fetch the default TextView text color from the theme

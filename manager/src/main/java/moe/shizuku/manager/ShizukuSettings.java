@@ -54,6 +54,7 @@ public class ShizukuSettings {
     public static final String GROUP_APPS_IS_HIDDEN = "GROUP_APPS_IS_HIDDEN";
     public static final String FOCUS_TASK_LIST = "FOCUS_TASK_LIST";
     public static final String CURRENT_FOCUS_TASK = "CURRENT_FOCUS_TASK";
+    public static final String COLOR_CURRENT_TASK = "COLOR_CURRENT_TASK";
 
 
     private static SharedPreferences sPreferences;
@@ -350,5 +351,14 @@ public class ShizukuSettings {
 
     public static void removeCurrentFocusTask() {
         getPreferences().edit().remove(CURRENT_FOCUS_TASK).apply();
+    }
+
+    @Nullable
+    public static String getColorCurrentTask() {
+        return getPreferences().getString(COLOR_CURRENT_TASK, null);
+    }
+
+    public static void saveColorCurrentTask(String value) {
+        getPreferences().edit().putString(COLOR_CURRENT_TASK, value).apply();
     }
 }

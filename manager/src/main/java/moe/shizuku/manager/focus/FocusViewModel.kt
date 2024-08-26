@@ -21,40 +21,6 @@ class FocusViewModel : ViewModel(), FocusBottomSheetCallback, WheelPickerCallbac
         }
     }
 
-//    override fun onDelete(id: String) {
-//        _state.update {
-//            val currentList = it.focusList
-//            currentList.find { i -> i.id == id }?.let { d ->
-//                it.copy(
-//                    focusList = currentList.minus(d)
-//                )
-//            }
-//            it
-//        }
-//    }
-//
-//    override fun onEditName(id: String, newName: String) {
-//        _state.update {
-//            val currentList = it.focusList
-//            it.copy(
-//                focusList = currentList.map { i ->
-//                    if (i.id == id) i.copy(name = newName) else i
-//                }
-//            )
-//        }
-//    }
-//
-//    override fun onChangeTime(id: String, time: Long) {
-//        _state.update {
-//            val currentList = it.focusList
-//            it.copy(
-//                focusList = currentList.map { i ->
-//                    if (i.id == id) i.copy(time = time) else i
-//                }
-//            )
-//        }
-//    }
-
     override fun onDone(name: String) {
         _state.update {
             val uuid = UUID.randomUUID().toString()

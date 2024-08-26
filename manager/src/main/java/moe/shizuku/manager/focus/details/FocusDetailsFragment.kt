@@ -1,6 +1,7 @@
 package moe.shizuku.manager.focus.details
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -103,11 +104,15 @@ class FocusDetailsFragment : Fragment() {
                     }
                 }
             }
+            ShizukuSettings.getColorCurrentTask()?.let {
+                updateColorView(it)
+            }
             binding.colorPicker.setOnClickListener {
                 this.activity?.supportFragmentManager?.let {
-                    ColorsBottomSheet( object : ColorPickerCallback {
+                    ColorsBottomSheet(object : ColorPickerCallback {
                         override fun onColorSelected(hexColor: String) {
-                            ShizukuSettings.updateColorPickerCurrentFocusTask(hexColor)
+                            ShizukuSettings.saveColorCurrentTask(hexColor)
+                            updateColorView(hexColor)
                         }
                     }).show(it, "ColorPicker")
                 }
@@ -210,5 +215,18 @@ class FocusDetailsFragment : Fragment() {
                 it.stopService(intent)
             }
         }
+    }
+
+    private fun updateColorView(hexColor: String) {
+        val color = Color.parseColor(hexColor)
+        circleProgressView.updateColor(hexColor)
+        binding.name.setTextColor(color)
+        binding.btnPauseResume.setBackgroundColor(color)
+        binding.btnEnd.setBackgroundColor(color)
+        binding.rotation.setColorFilter(color)
+        binding.colorPicker.setColorFilter(color)
+        binding.brightDecrease.setColorFilter(color)
+        binding.brightIncrease.setColorFilter(color)
+        binding.keepScreen.setColorFilter(color)
     }
 }

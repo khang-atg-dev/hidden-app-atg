@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import moe.shizuku.manager.R
+import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.ColorsBottomSheetLayoutBinding
 import top.defaults.colorpicker.ColorPickerPopup
 
@@ -75,7 +76,7 @@ class ColorsBottomSheet(
         }
     }
 
-    private var colorSelected = ""
+    private var colorSelected = ShizukuSettings.getColorCurrentTask()
     private var colorGroupSelected: Int = 0
 
     override fun onCreateView(
@@ -87,7 +88,7 @@ class ColorsBottomSheet(
         binding = ColorsBottomSheetLayoutBinding.inflate(inflater)
         updateChip(binding.all.id)
         colorPicker = ColorPickerPopup.Builder(context)
-            .initialColor(Color.RED)
+            .initialColor(colorSelected?.let { Color.parseColor(it) } ?: Color.WHITE)
             .enableBrightness(true)
             .enableAlpha(true)
             .okTitle("Choose")
@@ -99,8 +100,10 @@ class ColorsBottomSheet(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.confirmButton.setOnClickListener {
-            callback.onColorSelected(colorSelected)
-            dismiss()
+            colorSelected?.let {
+                callback.onColorSelected(it)
+                dismiss()
+            }
         }
         binding.groupColor.adapter = adapter
         setBackgroundForTextView(binding.all.id)
@@ -124,7 +127,8 @@ class ColorsBottomSheet(
         } else {
             colorPicker.show(v, object : ColorPickerPopup.ColorPickerObserver() {
                 override fun onColorPicked(color: Int) {
-                    TODO("Not yet implemented")
+                    callback.onColorSelected(String.format("#%08X", color))
+                    dismiss()
                 }
             })
         }
