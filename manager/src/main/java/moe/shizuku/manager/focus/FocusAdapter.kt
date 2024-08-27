@@ -6,7 +6,6 @@ import rikka.recyclerview.IndexCreatorPool
 
 class FocusAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
     init {
-        updateData(null)
         setHasStableIds(true)
     }
 
