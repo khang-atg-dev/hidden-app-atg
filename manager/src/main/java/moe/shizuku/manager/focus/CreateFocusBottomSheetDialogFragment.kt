@@ -43,7 +43,7 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         edtText = view.findViewById<TextInputEditText>(R.id.edt_name_focus)?.apply {
-            setText(context.getString(R.string.default_group_name).takeIf { editID.isNullOrEmpty() } ?: editName)
+            setText(context.getString(R.string.default_focus_task_name).takeIf { editID.isNullOrEmpty() } ?: editName)
             imm?.let {
                 this.postDelayed({
                     requestFocus()
@@ -54,7 +54,7 @@ class CreateFocusBottomSheetDialogFragment : BottomSheetDialogFragment() {
             setOnEditorActionListener { _, actionId, _ ->
                 var text = (edtText?.text ?: "").trim().toString()
                 if (text.isEmpty()) {
-                    text = context.getString(R.string.default_group_name)
+                    text = context.getString(R.string.default_focus_task_name)
                 }
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     if (editID.isNullOrEmpty()) {

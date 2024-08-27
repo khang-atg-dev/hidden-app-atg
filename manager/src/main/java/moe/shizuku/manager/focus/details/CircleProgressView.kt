@@ -21,16 +21,14 @@ class CircleProgressView @JvmOverloads constructor(
     private var totalTimeMillis: Long = DEFAULT_TIME_FOCUS
     private var remainingTimeMillis: Long = totalTimeMillis
 
-    private var circlePaint: Paint = Paint().apply {
-        color = ShizukuSettings.getColorCurrentTask()?.let {
-            Color.parseColor(it)
-        } ?: ContextCompat.getColor(context, android.R.color.transparent)
+    private val circlePaint: Paint = Paint().apply {
+        color = ContextCompat.getColor(context, android.R.color.transparent)
         style = Paint.Style.STROKE
         strokeWidth = 30f
         isAntiAlias = true
     }
 
-    private var progressPaint: Paint = Paint().apply {
+    private val progressPaint: Paint = Paint().apply {
         color =
             ShizukuSettings.getColorCurrentTask()?.let {
                 Color.parseColor(it)
@@ -41,7 +39,7 @@ class CircleProgressView @JvmOverloads constructor(
         strokeCap = Paint.Cap.ROUND
     }
 
-    private var textPaint: Paint = Paint().apply {
+    private val textPaint: Paint = Paint().apply {
         color = ShizukuSettings.getColorCurrentTask()?.let {
             Color.parseColor(it)
         } ?: fetchDefaultTextColor(context)
@@ -96,7 +94,6 @@ class CircleProgressView @JvmOverloads constructor(
     }
 
     fun updateColor(colorHex: String) {
-        circlePaint.color = Color.parseColor(colorHex)
         progressPaint.color = Color.parseColor(colorHex)
         textPaint.color = Color.parseColor(colorHex)
         invalidate()

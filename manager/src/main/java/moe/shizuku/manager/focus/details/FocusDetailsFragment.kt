@@ -27,7 +27,6 @@ import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.FocusDetailsFragmentBinding
 import moe.shizuku.manager.model.CurrentFocus
 
-
 class FocusDetailsFragment : Fragment() {
     private lateinit var binding: FocusDetailsFragmentBinding
     private lateinit var circleProgressView: CircleProgressView
