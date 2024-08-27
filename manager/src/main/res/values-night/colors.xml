@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="text_wheel_text_color">@android:color/white</color>
+    <color name="text_wheel_disable_text_color">#727987</color>
+</resources>

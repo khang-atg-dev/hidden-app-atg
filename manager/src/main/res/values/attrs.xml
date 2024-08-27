@@ -2,4 +2,7 @@
 <resources>
     <attr name="homeCardStyle" format="reference" />
     <attr name="appColorPrimary" format="reference" />
+    <declare-styleable name="TextWheelPickerView">
+        <attr name="highlighting_visible" format="boolean" />
+    </declare-styleable>
 </resources>

@@ -18,6 +18,7 @@ class GroupAppsViewHolder(
     companion object {
         val CREATOR = Creator<GroupApps> { inflater: LayoutInflater, parent: ViewGroup? ->
             val outer = HomeItemContainerBinding.inflate(inflater, parent, false)
+            outer.root.setCardBackgroundColor(outer.root.context.getColor(R.color.home_card_background_color))
             val inner = GroupAppsLayoutBinding.inflate(inflater, outer.root, true)
             GroupAppsViewHolder(inner, outer.root)
         }
@@ -33,7 +34,7 @@ class GroupAppsViewHolder(
     private val btnHide get() = binding.btnHide
     private val btnTimeout get() = binding.btnTimeout
     private val btnClose get() = binding.closeBtn
-    private val listener get() = (adapter.listener as HomeCallback)
+    private val listener get() = (adapter.listener as HiddenCallback)
     private val mapTimeout = mapOf(
         0L to "0s",
         60000L to "60s",

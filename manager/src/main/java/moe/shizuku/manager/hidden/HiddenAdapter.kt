@@ -13,7 +13,6 @@ class HiddenAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
 
     companion object {
         private const val ID_GROUP = 2L
-        private const val ID_ADD_GROUP = 2L
     }
 
     override fun onCreateCreatorPool(): IndexCreatorPool {
@@ -31,16 +30,11 @@ class HiddenAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
                 )
             }
         }
-        addItem(
-            AddGroupViewHolder.CREATOR,
-            null,
-            ID_ADD_GROUP
-        )
         notifyDataSetChanged()
     }
 }
 
-interface HomeCallback {
+interface HiddenCallback {
     fun onClickAddGroup()
     fun onClickGroup(id: String)
     fun onDeleteGroup(id: String)

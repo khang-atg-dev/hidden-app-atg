@@ -1,16 +1,22 @@
 package moe.shizuku.manager;
 
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+import static moe.shizuku.manager.AppConstants.DEFAULT_AUTO_LOCK_TIMEOUT;
+import static moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX;
+
 import android.app.ActivityThread;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
@@ -19,17 +25,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import moe.shizuku.manager.model.CurrentFocus;
+import moe.shizuku.manager.model.Focus;
 import moe.shizuku.manager.model.GroupApps;
 import moe.shizuku.manager.utils.EmptySharedPreferencesImpl;
 import moe.shizuku.manager.utils.EnvironmentUtils;
-
-import static java.lang.annotation.RetentionPolicy.SOURCE;
-import static moe.shizuku.manager.AppConstants.DEFAULT_AUTO_LOCK_TIMEOUT;
-import static moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX;
-
-import com.google.gson.Gson;
 
 public class ShizukuSettings {
 
@@ -48,6 +52,11 @@ public class ShizukuSettings {
     public static final String IS_CHANNING_PASSWORD = "IS_CHANNING_PASSWORD";
     public static final String IS_OPEN_OTHER_ACTIVITY = "IS_OPEN_OTHER_ACTIVITY";
     public static final String GROUP_APPS_IS_HIDDEN = "GROUP_APPS_IS_HIDDEN";
+    public static final String FOCUS_TASK_LIST = "FOCUS_TASK_LIST";
+    public static final String CURRENT_FOCUS_TASK = "CURRENT_FOCUS_TASK";
+    public static final String COLOR_CURRENT_TASK = "COLOR_CURRENT_TASK";
+    public static final String KEEP_SCREEN_ON_CURRENT_TASK = "KEEP_SCREEN_ON_CURRENT_TASK";
+
 
     private static SharedPreferences sPreferences;
     private static final Gson gson = new Gson();
@@ -154,7 +163,6 @@ public class ShizukuSettings {
 
     public static long findTimeoutOfPkg(String pkg) {
         Set<String> groups = getGroupLockedAppsAsSet();
-        Log.d("Sss", "findTimeoutOfPkg: " + groups);
         long minTimeout = -1L;
         for (String group : groups) {
             String groupName = group.substring(group.lastIndexOf(".") + 1);
@@ -257,5 +265,109 @@ public class ShizukuSettings {
 
     public static void saveTimeoutLandmark(long value) {
         getPreferences().edit().putLong(TIME_OUT_LANDMARK, value).apply();
+    }
+
+    public static void saveFocusTask(Focus focusTask) {
+        List<Focus> focusList = getFocusTasks();
+        if (focusList.isEmpty()) focusList = new ArrayList<>();
+        focusList.add(focusTask);
+        getPreferences().edit().putString(FOCUS_TASK_LIST, gson.toJson(focusList)).apply();
+    }
+
+    public static void updateFocusTask(Focus focusTask) {
+        List<Focus> focusList = getFocusTasks();
+        if (focusList.isEmpty()) return;
+        List<Focus> updatedList = focusList.stream()
+                .map(obj -> obj.getId().equals(focusTask.getId()) ? focusTask : obj)
+                .collect(Collectors.toList());
+        getPreferences().edit().putString(FOCUS_TASK_LIST, gson.toJson(updatedList)).apply();
+    }
+
+    public static void removeFocusTask(String id) {
+        List<Focus> focusList = getFocusTasks();
+        if (!focusList.isEmpty()) {
+            focusList.removeIf(i -> i.getId().equals(id));
+            getPreferences().edit().putString(FOCUS_TASK_LIST, gson.toJson(focusList)).apply();
+        }
+    }
+
+    public static List<Focus> getFocusTasks() {
+        String objStr = getPreferences().getString(FOCUS_TASK_LIST, "");
+        if (objStr.isEmpty()) return Collections.emptyList();
+        try {
+            return gson.fromJson(objStr, new TypeToken<List<Focus>>() {
+            }.getType());
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+    }
+
+    @Nullable
+    public static Focus getFocusTaskById(String id) {
+        String objStr = getPreferences().getString(FOCUS_TASK_LIST, "");
+        if (objStr.isEmpty()) return null;
+        try {
+            List<Focus> list = gson.fromJson(
+                    objStr,
+                    new TypeToken<List<Focus>>() {
+                    }.getType()
+            );
+            Optional<Focus> target = list.stream()
+                    .filter(obj -> obj.getId().equals(id))
+                    .findAny();
+            return target.orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static void saveCurrentFocusTask(CurrentFocus focus) {
+        getPreferences().edit().putString(CURRENT_FOCUS_TASK, gson.toJson(focus)).apply();
+    }
+
+    public static void updateIsPausedCurrentFocusTask(boolean value) {
+        CurrentFocus currentFocus = getCurrentFocusTask();
+        if (currentFocus == null) return;
+        saveCurrentFocusTask(
+                currentFocus.copy(
+                        currentFocus.getId(),
+                        currentFocus.getName(),
+                        currentFocus.getTime(),
+                        currentFocus.getRemainingTime(),
+                        value
+                )
+        );
+    }
+
+    @Nullable
+    public static CurrentFocus getCurrentFocusTask() {
+        String objStr = getPreferences().getString(CURRENT_FOCUS_TASK, null);
+        if (objStr == null || objStr.isEmpty()) return null;
+        try {
+            return gson.fromJson(objStr, CurrentFocus.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static void removeCurrentFocusTask() {
+        getPreferences().edit().remove(CURRENT_FOCUS_TASK).apply();
+    }
+
+    @Nullable
+    public static String getColorCurrentTask() {
+        return getPreferences().getString(COLOR_CURRENT_TASK, null);
+    }
+
+    public static void saveColorCurrentTask(String value) {
+        getPreferences().edit().putString(COLOR_CURRENT_TASK, value).apply();
+    }
+
+    public static boolean getKeepScreenOnCurrentTask() {
+        return getPreferences().getBoolean(KEEP_SCREEN_ON_CURRENT_TASK, false);
+    }
+
+    public static void setKeepScreenOnCurrentTask(boolean value) {
+        getPreferences().edit().putBoolean(KEEP_SCREEN_ON_CURRENT_TASK, value).apply();
     }
 }

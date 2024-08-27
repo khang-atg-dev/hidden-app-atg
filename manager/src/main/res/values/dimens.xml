@@ -19,4 +19,6 @@
 
     <dimen name="home_icon_padding">16dp</dimen>
 
+    <dimen name="text_wheel_picker_item_height">32dp</dimen>
+
 </resources>

@@ -6,13 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -26,10 +22,8 @@ import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
 import moe.shizuku.manager.AppConstants.RELOAD_PACKAGES_FOR_LOCK
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
-import moe.shizuku.manager.app.AppBarActivity
 import moe.shizuku.manager.databinding.HiddenFragmentBinding
 import moe.shizuku.manager.management.appsViewModel
-import moe.shizuku.manager.settings.SettingsActivity
 import moe.shizuku.manager.shizuku.ShizukuActivity
 import moe.shizuku.manager.starter.Starter
 import moe.shizuku.manager.utils.getApplicationIcon
@@ -42,7 +36,7 @@ import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 
-class HiddenFragment : Fragment(), HomeCallback {
+class HiddenFragment : Fragment(), HiddenCallback {
     private lateinit var binding: HiddenFragmentBinding
     private val homeModel by viewModels { HiddenViewModel() }
     private val appsModel by appsViewModel()
@@ -67,24 +61,6 @@ class HiddenFragment : Fragment(), HomeCallback {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        requireActivity().addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.main, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_settings -> {
-                        context?.let {
-                            startActivity(Intent(it, SettingsActivity::class.java))
-                        }
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
         val recyclerView = binding.list
         recyclerView.adapter = adapter
         recyclerView.fixEdgeEffect()
@@ -172,9 +148,6 @@ class HiddenFragment : Fragment(), HomeCallback {
 
         if (homeModel.groupApps.value == null) {
             homeModel.reloadGroupApps()
-        }
-        (activity as AppBarActivity).supportActionBar?.apply {
-            title = "Hidden"
         }
     }
 

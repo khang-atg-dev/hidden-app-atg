@@ -7,21 +7,25 @@
     <fragment
         android:id="@+id/accountFragment"
         android:name="moe.shizuku.manager.account.AccountFragment"
-        android:label="AccountFragment" />
+        android:label="Account"
+        app:launchSingleTop="true" />
 
     <fragment
         android:id="@+id/focusFragment"
         android:name="moe.shizuku.manager.focus.FocusFragment"
-        android:label="FocusFragment" />
+        android:label="Focus"
+        app:launchSingleTop="true" />
 
     <fragment
         android:id="@+id/hiddenFragment"
         android:name="moe.shizuku.manager.hidden.HiddenFragment"
-        android:label="HiddenFragment" />
+        android:label="Hidden"
+        app:launchSingleTop="true" />
 
     <fragment
         android:id="@+id/statisticsFragment"
         android:name="moe.shizuku.manager.statistics.StatisticsFragment"
-        android:label="StatisticsFragment" />
+        android:label="Statistics"
+        app:launchSingleTop="true" />
 
 </navigation>
