@@ -16,7 +16,7 @@ class FocusDetailsActivity : AppBarFragmentActivity() {
 
     override fun onStart() {
         super.onStart()
-        ShizukuSettings.setIsOpenOtherActivity(true)
+//        ShizukuSettings.setIsOpenOtherActivity(true)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
