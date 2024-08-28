@@ -17,4 +17,5 @@ public class AppConstants {
     public static final String RELOAD_PACKAGES_FOR_LOCK = "RELOAD_PACKAGES_FOR_LOCK";
     public static final Long DEFAULT_AUTO_LOCK_TIMEOUT = 0L;
     public static final Long DEFAULT_TIME_FOCUS = 25 * 60 * 1000L;
+    public static final String FORMAT_TIME = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 }

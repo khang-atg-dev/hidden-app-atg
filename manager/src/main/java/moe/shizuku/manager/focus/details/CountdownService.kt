@@ -15,6 +15,8 @@ import moe.shizuku.manager.MainActivity
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.utils.formatMilliseconds
+import moe.shizuku.manager.utils.getTimeAsString
+import java.util.Calendar
 
 class CountdownService : Service() {
     companion object {
@@ -29,24 +31,28 @@ class CountdownService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val currentFocus = ShizukuSettings.getCurrentFocusTask()
-            ?: return super.onStartCommand(intent, flags, startId)
-        countDownTimer?.cancel()
-        countDownTimer = object : CountDownTimer(currentFocus.remainingTime, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                ShizukuSettings.saveCurrentFocusTask(
-                    currentFocus.copy(remainingTime = millisUntilFinished)
-                )
-                updateNotification(millisUntilFinished)
-            }
+        ShizukuSettings.getCurrentFocusTask()?.let {
+            countDownTimer?.cancel()
+            countDownTimer = object : CountDownTimer(it.remainingTime, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    ShizukuSettings.saveCurrentFocusTask(
+                        it.copy(remainingTime = millisUntilFinished)
+                    )
+                    ShizukuSettings.updateRunningTimeStatisticCurrentFocus(1000)
+                    updateNotification(millisUntilFinished)
+                }
 
-            override fun onFinish() {
-                ShizukuSettings.removeCurrentFocusTask()
-                this@CountdownService.stopSelf()
-            }
-        }.start()
-        startForeground(NOTIFICATION_ID, createNotification(currentFocus.remainingTime))
-        return START_STICKY
+                override fun onFinish() {
+                    val currentTime = Calendar.getInstance().time.getTimeAsString()
+                    ShizukuSettings.updateEndTimeStatisticCurrentFocus(currentTime)
+                    ShizukuSettings.removeCurrentFocusTask()
+                    this@CountdownService.stopSelf()
+                }
+            }.start()
+            startForeground(NOTIFICATION_ID, createNotification(it.remainingTime))
+            return START_STICKY
+        }
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {

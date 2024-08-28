@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import moe.shizuku.manager.model.CurrentFocus;
 import moe.shizuku.manager.model.Focus;
 import moe.shizuku.manager.model.GroupApps;
+import moe.shizuku.manager.model.StatisticFocus;
 import moe.shizuku.manager.utils.EmptySharedPreferencesImpl;
 import moe.shizuku.manager.utils.EnvironmentUtils;
 
@@ -56,6 +57,8 @@ public class ShizukuSettings {
     public static final String CURRENT_FOCUS_TASK = "CURRENT_FOCUS_TASK";
     public static final String COLOR_CURRENT_TASK = "COLOR_CURRENT_TASK";
     public static final String KEEP_SCREEN_ON_CURRENT_TASK = "KEEP_SCREEN_ON_CURRENT_TASK";
+    public static final String STATISTICS_OF_FOCUS = "STATISTICS_OF_FOCUS";
+    public static final String STATISTICS_OF_CURRENT_FOCUS = "STATISTICS_OF_CURRENT_FOCUS";
 
 
     private static SharedPreferences sPreferences;
@@ -87,7 +90,7 @@ public class ShizukuSettings {
 
     public static void initialize(Context context) {
         if (sPreferences == null) {
-            sPreferences = getSettingsStorageContext(context)
+            sPreferences = context
                     .getSharedPreferences(NAME, Context.MODE_PRIVATE);
         }
     }
@@ -331,6 +334,7 @@ public class ShizukuSettings {
         saveCurrentFocusTask(
                 currentFocus.copy(
                         currentFocus.getId(),
+                        currentFocus.getStatisticFocusId(),
                         currentFocus.getName(),
                         currentFocus.getTime(),
                         currentFocus.getRemainingTime(),
@@ -352,6 +356,11 @@ public class ShizukuSettings {
 
     public static void removeCurrentFocusTask() {
         getPreferences().edit().remove(CURRENT_FOCUS_TASK).apply();
+        StatisticFocus statisticFocus = getStatisticsOfCurrentFocus();
+        if (statisticFocus != null && statisticFocus.getRunningTime() >= 60 * 1000) {
+            saveStatistics(statisticFocus);
+        }
+        removeStatisticsOfCurrentFocus();
     }
 
     @Nullable
@@ -369,5 +378,109 @@ public class ShizukuSettings {
 
     public static void setKeepScreenOnCurrentTask(boolean value) {
         getPreferences().edit().putBoolean(KEEP_SCREEN_ON_CURRENT_TASK, value).apply();
+    }
+
+    private static void saveStatistics(StatisticFocus focus) {
+        List<StatisticFocus> allStatistics = getAllStatistics();
+        if (allStatistics == null) {
+            allStatistics = new ArrayList<>();
+        }
+        allStatistics.add(focus);
+        getPreferences().edit().putString(STATISTICS_OF_FOCUS, gson.toJson(allStatistics)).apply();
+    }
+
+    @Nullable
+    public static List<StatisticFocus> getAllStatistics() {
+        try {
+            String objStr = getPreferences().getString(STATISTICS_OF_FOCUS, "");
+            if (objStr.isEmpty()) return null;
+            return gson.fromJson(
+                    objStr,
+                    new TypeToken<List<StatisticFocus>>() {
+                    }.getType()
+            );
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static void saveStatisticsOfCurrentFocus(StatisticFocus value) {
+        try {
+            String objStr = gson.toJson(value);
+            getPreferences().edit().putString(STATISTICS_OF_CURRENT_FOCUS, objStr).apply();
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void updateRunningTimeStatisticCurrentFocus(Long time) {
+        try {
+            StatisticFocus current = getStatisticsOfCurrentFocus();
+            if (current == null) return;
+            StatisticFocus newStatistics = new StatisticFocus(
+                    current.getId(),
+                    current.getFocusId(),
+                    current.getName(),
+                    current.getTime(),
+                    current.getRunningTime() + time,
+                    current.getPauseTime(),
+                    current.getStartTime(),
+                    current.getEndTime()
+            );
+            saveStatisticsOfCurrentFocus(newStatistics);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void updateEndTimeStatisticCurrentFocus(String endTime) {
+        try {
+            StatisticFocus current = getStatisticsOfCurrentFocus();
+            if (current == null) return;
+            StatisticFocus newStatistics = current.copy(
+                    current.getId(),
+                    current.getFocusId(),
+                    current.getName(),
+                    current.getTime(),
+                    current.getRunningTime(),
+                    current.getPauseTime(),
+                    current.getStartTime(),
+                    endTime
+            );
+            saveStatisticsOfCurrentFocus(newStatistics);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void updatePauseTimeStatisticCurrentFocus() {
+        try {
+            StatisticFocus current = getStatisticsOfCurrentFocus();
+            if (current == null) return;
+            StatisticFocus newStatistics = current.copy(
+                    current.getId(),
+                    current.getFocusId(),
+                    current.getName(),
+                    current.getTime(),
+                    current.getRunningTime(),
+                    current.getPauseTime() + 1,
+                    current.getStartTime(),
+                    current.getEndTime()
+            );
+            saveStatisticsOfCurrentFocus(newStatistics);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static void removeStatisticsOfCurrentFocus() {
+        getPreferences().edit().remove(STATISTICS_OF_CURRENT_FOCUS).apply();
+    }
+
+    @Nullable
+    private static StatisticFocus getStatisticsOfCurrentFocus() {
+        try {
+            String objStr = getPreferences().getString(STATISTICS_OF_CURRENT_FOCUS, "");
+            if (objStr.isEmpty()) return null;
+            return gson.fromJson(objStr, StatisticFocus.class);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

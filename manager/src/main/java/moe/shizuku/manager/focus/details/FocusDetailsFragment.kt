@@ -26,6 +26,8 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.databinding.FocusDetailsFragmentBinding
 import moe.shizuku.manager.model.CurrentFocus
+import moe.shizuku.manager.utils.getTimeAsString
+import java.util.Calendar
 
 class FocusDetailsFragment : Fragment() {
     private lateinit var binding: FocusDetailsFragmentBinding
@@ -247,6 +249,7 @@ class FocusDetailsFragment : Fragment() {
             workInfoLiveData?.removeObserver(observer)
         }
         ShizukuSettings.updateIsPausedCurrentFocusTask(true)
+        ShizukuSettings.updatePauseTimeStatisticCurrentFocus()
     }
 
     private fun resumeTimer() {
@@ -267,6 +270,8 @@ class FocusDetailsFragment : Fragment() {
             workManager?.cancelWorkById(it.id)
             workInfoLiveData?.removeObserver(observer)
         }
+        val currentTime = Calendar.getInstance().time.getTimeAsString()
+        ShizukuSettings.updateEndTimeStatisticCurrentFocus(currentTime)
         ShizukuSettings.removeCurrentFocusTask()
     }
 

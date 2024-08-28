@@ -14,10 +14,14 @@ import androidx.fragment.app.DialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.AppConstants.FORMAT_TIME
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
 import rikka.shizuku.Shizuku
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 fun Context.isAccessibilityServiceEnabled(): Boolean {
@@ -167,4 +171,9 @@ fun Long.formatMilliseconds(context: Context): String {
         minutes > 0 -> context.getString(R.string.time_format_minutes, minutes, seconds)
         else -> context.getString(R.string.time_format_seconds, seconds)
     }
+}
+
+fun Date.getTimeAsString(): String {
+    val formatter = SimpleDateFormat(FORMAT_TIME, Locale.getDefault())
+    return formatter.format(this)
 }
