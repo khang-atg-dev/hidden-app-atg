@@ -58,7 +58,11 @@ public class MainActivity extends AppBarActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(item.getTitle());
+                if (item.getItemId() != R.id.statisticsFragment) {
+                    getSupportActionBar().setTitle(item.getTitle());
+                } else {
+                    getSupportActionBar().hide();
+                }
                 showMenu = item.getItemId() == R.id.hiddenFragment || item.getItemId() == R.id.focusFragment;
                 invalidateOptionsMenu();
             }

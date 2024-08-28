@@ -14,12 +14,14 @@ import androidx.fragment.app.DialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.AppConstants.FORMAT_MONTH_DAY_TIME
 import moe.shizuku.manager.AppConstants.FORMAT_TIME
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
 import rikka.shizuku.Shizuku
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -176,4 +178,26 @@ fun Long.formatMilliseconds(context: Context): String {
 fun Date.getTimeAsString(): String {
     val formatter = SimpleDateFormat(FORMAT_TIME, Locale.getDefault())
     return formatter.format(this)
+}
+
+fun Date.getTimeAsString(format: String): String {
+    val formatter = SimpleDateFormat(format, Locale.getDefault())
+    return formatter.format(this)
+}
+
+fun Date.getWeekRange(): String {
+    val calendar = Calendar.getInstance().apply {
+        time = this@getWeekRange
+        // Set to the start of the week
+        set(Calendar.DAY_OF_WEEK, firstDayOfWeek + 1)
+    }
+    val startOfWeek = calendar.time
+
+    // Move to the end of the week
+    calendar.add(Calendar.DAY_OF_WEEK, 6)
+    val endOfWeek = calendar.time
+
+    // Format the dates
+    val dateFormat = SimpleDateFormat(FORMAT_MONTH_DAY_TIME, Locale.getDefault())
+    return "${dateFormat.format(startOfWeek)} - ${dateFormat.format(endOfWeek)}"
 }

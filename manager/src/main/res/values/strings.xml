@@ -253,5 +253,9 @@ With %1$s, in any terminal app, you can connect to and interact with the shell r
     <string name="custom">Custom</string>
     <string name="title_focus_notification">Focus task is running</string>
     <string name="msg_focus_notification">Time is counting down:</string>
+    <string name="day">Day</string>
+    <string name="week">Week</string>
+    <string name="month">Month</string>
+    <string name="year">Year</string>
 
 </resources>

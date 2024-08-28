@@ -18,4 +18,8 @@ public class AppConstants {
     public static final Long DEFAULT_AUTO_LOCK_TIMEOUT = 0L;
     public static final Long DEFAULT_TIME_FOCUS = 25 * 60 * 1000L;
     public static final String FORMAT_TIME = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+    public static final String FORMAT_DATE_TIME = "yyyy-MM-dd";
+    public static final String FORMAT_MONTH_DAY_TIME = "MM-dd";
+    public static final String FORMAT_YEAR_MONTH_TIME = "yyyy-MM";
+    public static final String FORMAT_YEAR_TIME = "yyyy";
 }

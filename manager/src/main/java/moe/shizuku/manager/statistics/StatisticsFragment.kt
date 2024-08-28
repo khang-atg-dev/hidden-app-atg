@@ -5,11 +5,29 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import moe.shizuku.manager.ShizukuSettings
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import moe.shizuku.manager.databinding.StatisticsFragmentBinding
+import rikka.lifecycle.viewModels
 
 class StatisticsFragment: Fragment() {
     private lateinit var binding: StatisticsFragmentBinding
+    private val viewModel by viewModels { StatisticsViewModel() }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collectLatest { state ->
+                    binding.segmentTab.check(state.segmentSelected.id)
+                    binding.dateIndicator.text = state.segmentSelected.getFormatTime(state.dateIndicator)
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -22,11 +40,17 @@ class StatisticsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.test.text = ShizukuSettings.getAllStatistics().toString()
+        binding.segmentTab.addOnButtonCheckedListener { _group, checkedId, isChecked ->
+            if (isChecked) {
+                viewModel.onChangeSegment(checkedId)
+            }
+        }
+        binding.forward.setOnClickListener { viewModel.onChangeDateIndicator(true) }
+        binding.backward.setOnClickListener { viewModel.onChangeDateIndicator(false) }
     }
 
     override fun onResume() {
         super.onResume()
-        binding.test.text = ShizukuSettings.getAllStatistics().toString()
+
     }
 }
