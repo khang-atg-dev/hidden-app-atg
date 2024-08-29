@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.PowerManager
@@ -175,6 +176,18 @@ fun Long.formatMilliseconds(context: Context): String {
     }
 }
 
+fun Long.formatMillisecondsToSimple(): String {
+    val hours = TimeUnit.MILLISECONDS.toHours(this)
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(this) % 60
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(this) % 60
+
+    return when {
+        hours > 0 -> "${hours}h${minutes}m${seconds}s"
+        minutes > 0 -> "${minutes}m${seconds}s"
+        else -> "${seconds}s"
+    }
+}
+
 fun Date.getTimeAsString(): String {
     val formatter = SimpleDateFormat(FORMAT_TIME, Locale.getDefault())
     return formatter.format(this)
@@ -200,4 +213,51 @@ fun Date.getWeekRange(): String {
     // Format the dates
     val dateFormat = SimpleDateFormat(FORMAT_MONTH_DAY_TIME, Locale.getDefault())
     return "${dateFormat.format(startOfWeek)} - ${dateFormat.format(endOfWeek)}"
+}
+
+fun String.toDate(): Date? {
+    val formatter = SimpleDateFormat(FORMAT_TIME, Locale.getDefault())
+    return try {
+        formatter.parse(this)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+fun isSameDay(date1: Date, date2: Date): Boolean {
+    val calendar1 = Calendar.getInstance().apply { time = date1 }
+    val calendar2 = Calendar.getInstance().apply { time = date2 }
+
+    return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR) &&
+            calendar1.get(Calendar.DAY_OF_YEAR) == calendar2.get(Calendar.DAY_OF_YEAR)
+}
+
+fun isSameWeek(date1: Date, date2: Date): Boolean {
+    val calendar1 = Calendar.getInstance().apply { time = date1 }
+    val calendar2 = Calendar.getInstance().apply { time = date2 }
+
+    return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR) &&
+            calendar1.get(Calendar.WEEK_OF_YEAR) == calendar2.get(Calendar.WEEK_OF_YEAR)
+}
+
+fun isSameMonth(date1: Date, date2: Date): Boolean {
+    val calendar1 = Calendar.getInstance().apply { time = date1 }
+    val calendar2 = Calendar.getInstance().apply { time = date2 }
+
+    return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR) &&
+            calendar1.get(Calendar.MONTH) == calendar2.get(Calendar.MONTH)
+}
+
+fun isSameYear(date1: Date, date2: Date): Boolean {
+    val calendar1 = Calendar.getInstance().apply { time = date1 }
+    val calendar2 = Calendar.getInstance().apply { time = date2 }
+
+    return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR)
+}
+
+fun Context.getMixColor(): List<Int> {
+    return this.resources?.getStringArray(R.array.mix_colors)?.map { c ->
+        Color.parseColor(c)
+    } ?: emptyList()
 }

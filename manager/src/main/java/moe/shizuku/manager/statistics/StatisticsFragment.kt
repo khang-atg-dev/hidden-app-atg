@@ -11,11 +11,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.databinding.StatisticsFragmentBinding
+import moe.shizuku.manager.utils.formatMillisecondsToSimple
 import rikka.lifecycle.viewModels
 
-class StatisticsFragment: Fragment() {
+class StatisticsFragment : Fragment() {
     private lateinit var binding: StatisticsFragmentBinding
-    private val viewModel by viewModels { StatisticsViewModel() }
+    private val viewModel by viewModels { StatisticsViewModel(requireContext()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,7 +24,17 @@ class StatisticsFragment: Fragment() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.state.collectLatest { state ->
                     binding.segmentTab.check(state.segmentSelected.id)
-                    binding.dateIndicator.text = state.segmentSelected.getFormatTime(state.dateIndicator)
+                    binding.dateIndicator.text =
+                        state.segmentSelected.getFormatTime(state.dateIndicator)
+                    binding.totalTime.text = state.totalTime.formatMillisecondsToSimple()
+                    binding.totalFocus.text = state.numberOfFocuses.toString()
+                    if (state.pieData.dataSetCount != 0) {
+                        binding.pieChartContainer.visibility = View.VISIBLE
+                        binding.pieChart.data = state.pieData
+                        binding.pieChart.invalidate()
+                    } else {
+                        binding.pieChartContainer.visibility = View.GONE
+                    }
                 }
             }
         }
@@ -40,17 +51,29 @@ class StatisticsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.segmentTab.addOnButtonCheckedListener { _group, checkedId, isChecked ->
+        binding.segmentTab.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 viewModel.onChangeSegment(checkedId)
             }
         }
         binding.forward.setOnClickListener { viewModel.onChangeDateIndicator(true) }
         binding.backward.setOnClickListener { viewModel.onChangeDateIndicator(false) }
+        binding.pieChart.let {
+            it.extraTopOffset = 20f
+            it.extraBottomOffset = 20f
+            it.setDrawEntryLabels(true)
+            it.setUsePercentValues(true)
+            it.setEntryLabelColor(binding.totalTime.textColors.defaultColor)
+            it.setEntryLabelTextSize(10f)
+            it.isRotationEnabled = false
+            it.legend.isEnabled = false
+            it.description.isEnabled = false
+            it.setHoleColor(android.R.color.transparent)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-
+        viewModel.refreshData()
     }
 }

@@ -29,6 +29,30 @@
         <item>3600000</item>
     </string-array>
 
+    <string-array name="mix_colors">
+        <item>#f4511e</item>
+        <item>#b71c1c</item>
+        <item>#f48fb1</item>
+        <item>#8e24aa</item>
+        <item>#ba68c8</item>
+        <item>#512da8</item>
+        <item>#283593</item>
+        <item>#3d5afe</item>
+        <item>#42a5f5</item>
+        <item>#80d8ff</item>
+        <item>#18ffff</item>
+        <item>#006064</item>
+        <item>#00bfa5</item>
+        <item>#2e7d32</item>
+        <item>#cddc39</item>
+        <item>#76ff03</item>
+        <item>#f57f17</item>
+        <item>#4e342e</item>
+        <item>#6d4c41</item>
+        <item>#607d8b</item>
+
+    </string-array>
+
 
     <string-array name="red">
         <item>#ffebee</item>

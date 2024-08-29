@@ -59,6 +59,7 @@ public class MainActivity extends AppBarActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (getSupportActionBar() != null) {
                 if (item.getItemId() != R.id.statisticsFragment) {
+                    getSupportActionBar().show();
                     getSupportActionBar().setTitle(item.getTitle());
                 } else {
                     getSupportActionBar().hide();

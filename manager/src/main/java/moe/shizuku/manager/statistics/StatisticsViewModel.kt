@@ -1,6 +1,11 @@
 package moe.shizuku.manager.statistics
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.formatter.ValueFormatter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -11,21 +16,27 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.StatisticFocus
 import moe.shizuku.manager.statistics.SegmentTime.DAY
+import moe.shizuku.manager.utils.formatMillisecondsToSimple
+import moe.shizuku.manager.utils.getMixColor
 import moe.shizuku.manager.utils.getTimeAsString
 import moe.shizuku.manager.utils.getWeekRange
+import moe.shizuku.manager.utils.isSameDay
+import moe.shizuku.manager.utils.isSameMonth
+import moe.shizuku.manager.utils.isSameWeek
+import moe.shizuku.manager.utils.isSameYear
+import moe.shizuku.manager.utils.toDate
 import java.util.Calendar
 import java.util.Date
 
-class StatisticsViewModel : ViewModel(), StatisticCallback {
+class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
     private val _state = MutableStateFlow(StatisticState())
     val state = _state.asStateFlow()
 
+    private var allData = ShizukuSettings.getAllStatistics() ?: emptyList()
+    private val mixColor = context.getMixColor()
+
     init {
-        _state.update {
-            it.copy(
-                data = ShizukuSettings.getAllStatistics() ?: emptyList()
-            )
-        }
+        refreshData()
     }
 
     override fun onChangeSegment(segmentId: Int) {
@@ -38,6 +49,7 @@ class StatisticsViewModel : ViewModel(), StatisticCallback {
                 dateIndicator = date,
             )
         }
+        refreshData()
     }
 
     override fun onChangeDateIndicator(isIncrease: Boolean) {
@@ -50,11 +62,57 @@ class StatisticsViewModel : ViewModel(), StatisticCallback {
                 dateIndicator = newDate.time
             )
         }
+        refreshData()
+    }
+
+    override fun refreshData() {
+        _state.value.let { state ->
+            allData = ShizukuSettings.getAllStatistics() ?: emptyList()
+            val filteredDate = allData.filter {
+                val startDate = it.startTime.toDate() ?: return@filter false
+                when (state.segmentSelected) {
+                    DAY -> isSameDay(startDate, state.dateIndicator)
+                    SegmentTime.WEEK -> isSameWeek(startDate, state.dateIndicator)
+                    SegmentTime.MONTH -> isSameMonth(startDate, state.dateIndicator)
+                    SegmentTime.YEAR -> isSameYear(startDate, state.dateIndicator)
+                }
+            }
+            val totalTime = filteredDate.sumOf { it.runningTime }
+            _state.update {
+                it.copy(
+                    totalTime = totalTime,
+                    numberOfFocuses = filteredDate.size,
+                    pieData = getPieData(filteredDate, totalTime)
+                )
+            }
+        }
+    }
+
+    private fun getPieData(data: List<StatisticFocus>, totalTime: Long): PieData {
+        if (data.isEmpty()) return PieData()
+        val entries = data.groupBy { i ->
+            i.focusId
+        }.map { d ->
+            PieEntry(d.value.sumOf { i -> i.runningTime }.toFloat() / totalTime, d.value[0].name)
+        }
+        val pieSet = PieDataSet(entries, "").apply {
+            xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+            yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+            valueTextSize = 9f
+            valueLineWidth = 1f
+            valueLinePart1Length = 0.4f
+            valueLinePart2Length = 0.4f
+            colors = mixColor
+            valueFormatter = CustomValueFormatter(totalTime)
+        }
+        return PieData(pieSet)
     }
 }
 
 data class StatisticState(
-    val data: List<StatisticFocus> = emptyList(),
+    val pieData: PieData = PieData(),
+    val totalTime: Long = 0L,
+    val numberOfFocuses: Int = 0,
     val segmentSelected: SegmentTime = DAY,
     val dateIndicator: Date = Calendar.getInstance().time,
 )
@@ -62,6 +120,7 @@ data class StatisticState(
 interface StatisticCallback {
     fun onChangeSegment(segmentId: Int)
     fun onChangeDateIndicator(isIncrease: Boolean)
+    fun refreshData()
 }
 
 enum class SegmentTime(val id: Int, val typeOfTime: Int) {
@@ -79,5 +138,15 @@ enum class SegmentTime(val id: Int, val typeOfTime: Int) {
         WEEK -> date.getWeekRange()
         MONTH -> date.getTimeAsString(FORMAT_YEAR_MONTH_TIME)
         YEAR -> date.getTimeAsString(FORMAT_YEAR_TIME)
+    }
+}
+
+
+class CustomValueFormatter(
+    private val totalTime: Long
+) : ValueFormatter() {
+    override fun getFormattedValue(value: Float): String {
+        // Format your label with a newline
+        return ((value * totalTime) / 100).toLong().formatMillisecondsToSimple()
     }
 }
