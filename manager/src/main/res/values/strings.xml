@@ -259,7 +259,8 @@ With %1$s, in any terminal app, you can connect to and interact with the shell r
     <string name="year">Year</string>
     <string name="total_number_of_focues">Number of focues</string>
     <string name="total_focus_time">Total focus time</string>
-    <string name="number_focus">%1$s time</string>
+    <string name="number_focus">%1$d time</string>
     <string name="focus_task_statistics">Focus task statistics</string>
+    <string name="percent_value">%1$.02f%%</string>
 
 </resources>

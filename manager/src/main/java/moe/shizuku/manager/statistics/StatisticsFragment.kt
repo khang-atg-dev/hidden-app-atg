@@ -16,6 +16,7 @@ import rikka.lifecycle.viewModels
 
 class StatisticsFragment : Fragment() {
     private lateinit var binding: StatisticsFragmentBinding
+    private lateinit var adapter: StatisticAdapter
     private val viewModel by viewModels { StatisticsViewModel(requireContext()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +33,7 @@ class StatisticsFragment : Fragment() {
                         binding.pieChartContainer.visibility = View.VISIBLE
                         binding.pieChart.data = state.pieData
                         binding.pieChart.invalidate()
+                        adapter.dataSource = state.listStatistics
                     } else {
                         binding.pieChartContainer.visibility = View.GONE
                     }
@@ -45,6 +47,7 @@ class StatisticsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        adapter = StatisticAdapter(inflater)
         binding = StatisticsFragmentBinding.inflate(inflater)
         return binding.root
     }
@@ -70,6 +73,7 @@ class StatisticsFragment : Fragment() {
             it.description.isEnabled = false
             it.setHoleColor(android.R.color.transparent)
         }
+        binding.listStatistics.adapter = adapter
     }
 
     override fun onResume() {

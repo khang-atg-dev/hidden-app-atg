@@ -78,21 +78,21 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                 }
             }
             val totalTime = filteredDate.sumOf { it.runningTime }
+            val groupedData = filteredDate.groupBy { it.focusId }
             _state.update {
                 it.copy(
                     totalTime = totalTime,
                     numberOfFocuses = filteredDate.size,
-                    pieData = getPieData(filteredDate, totalTime)
+                    pieData = getPieData(groupedData, totalTime),
+                    listStatistics = getListStatistics(groupedData, totalTime)
                 )
             }
         }
     }
 
-    private fun getPieData(data: List<StatisticFocus>, totalTime: Long): PieData {
+    private fun getPieData(data: Map<String, List<StatisticFocus>>, totalTime: Long): PieData {
         if (data.isEmpty()) return PieData()
-        val entries = data.groupBy { i ->
-            i.focusId
-        }.map { d ->
+        val entries = data.map { d ->
             PieEntry(d.value.sumOf { i -> i.runningTime }.toFloat() / totalTime, d.value[0].name)
         }
         val pieSet = PieDataSet(entries, "").apply {
@@ -107,9 +107,27 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
         }
         return PieData(pieSet)
     }
+
+    private fun getListStatistics(
+        data: Map<String, List<StatisticFocus>>,
+        totalTime: Long
+    ): List<StatisticItem> {
+        var index = 0
+        return data.map { d ->
+            val sum = d.value.sumOf { i -> i.runningTime }
+            StatisticItem(
+                name = d.value[0].name,
+                time = sum,
+                color = mixColor[index++],
+                percentage = (sum.toFloat() / totalTime) * 100,
+                numberOfFocuses = d.value.size
+            )
+        }
+    }
 }
 
 data class StatisticState(
+    val listStatistics: List<StatisticItem> = emptyList(),
     val pieData: PieData = PieData(),
     val totalTime: Long = 0L,
     val numberOfFocuses: Int = 0,
