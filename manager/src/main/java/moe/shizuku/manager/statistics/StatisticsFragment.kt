@@ -46,10 +46,17 @@ class StatisticsFragment : Fragment() {
                                 (30.takeIf { state.barData.maxEntryCountSet.yMax < 30 * 60 * 1000f }
                                     ?: 60) * 60 * 1000f
                             it.data = state.barData
-                            binding.barChart.invalidate()
+                            it.invalidate()
                         }
                     } else {
                         binding.barChartContainer.visibility = View.GONE
+                    }
+                    if (state.segmentSelected == SegmentTime.DAY || state.periodicBarData.dataSetCount == 0) {
+                        binding.periodicBarChartContainer.visibility = View.GONE
+                    } else {
+                        binding.periodicBarChartContainer.visibility = View.VISIBLE
+                        binding.periodicBarChart.data = state.periodicBarData
+                        binding.periodicBarChart.invalidate()
                     }
                 }
             }
@@ -75,6 +82,7 @@ class StatisticsFragment : Fragment() {
         }
         binding.forward.setOnClickListener { viewModel.onChangeDateIndicator(true) }
         binding.backward.setOnClickListener { viewModel.onChangeDateIndicator(false) }
+
         binding.pieChart.let {
             it.extraTopOffset = 20f
             it.extraBottomOffset = 20f
@@ -116,6 +124,36 @@ class StatisticsFragment : Fragment() {
             it.axisMinimum = 0f
             it.labelCount = 6
             it.axisMaximum = 60 * 60 * 1000f
+            it.setDrawAxisLine(false)
+            it.valueFormatter = CustomBarValueFormatter()
+        }
+
+        binding.periodicBarChart.setDrawValueAboveBar(false)
+        binding.periodicBarChart.legend.isEnabled = false
+        binding.periodicBarChart.description.isEnabled = false
+        binding.periodicBarChart.renderer = RoundedBarChartRenderer(
+            binding.periodicBarChart,
+            binding.periodicBarChart.animator,
+            binding.periodicBarChart.viewPortHandler
+        ).apply {
+            setRoundedPositiveDataSetRadius(20f)
+            setRoundedShadowRadius(0f)
+            setRoundedNegativeDataSetRadius(0f)
+        }
+        binding.periodicBarChart.setPinchZoom(false)
+        binding.periodicBarChart.isDoubleTapToZoomEnabled = false
+        binding.periodicBarChart.isScaleXEnabled = false
+        binding.periodicBarChart.isScaleYEnabled = false
+        binding.periodicBarChart.xAxis.let {
+            it.position = XAxis.XAxisPosition.BOTTOM
+            it.setDrawAxisLine(false)
+            it.setDrawGridLines(false)
+            it.axisMinimum = 0.5f
+            it.valueFormatter = CustomDaysOfWeekValueFormatter()
+        }
+        binding.periodicBarChart.axisRight.isEnabled = false
+        binding.periodicBarChart.axisLeft.let {
+            it.axisMinimum = 0f
             it.setDrawAxisLine(false)
             it.valueFormatter = CustomBarValueFormatter()
         }

@@ -20,6 +20,7 @@ import moe.shizuku.manager.AppConstants.FORMAT_TIME
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
+import moe.shizuku.manager.model.StatisticFocus
 import rikka.shizuku.Shizuku
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -202,7 +203,7 @@ fun Date.getWeekRange(): String {
     val calendar = Calendar.getInstance().apply {
         time = this@getWeekRange
         // Set to the start of the week
-        set(Calendar.DAY_OF_WEEK, firstDayOfWeek + 1)
+        set(Calendar.DAY_OF_WEEK, firstDayOfWeek)
     }
     val startOfWeek = calendar.time
 
@@ -223,6 +224,22 @@ fun String.toDate(): Date? {
         e.printStackTrace()
         null
     }
+}
+
+fun calculateRunningTimePerDay(tasks: List<StatisticFocus>): List<Pair<Int, Long>> {
+    val dayRunningTimeMap = mutableMapOf<Int, Long>()
+
+    tasks.forEach { task ->
+        val calendar = Calendar.getInstance()
+        task.startTime.toDate()?.let {
+            calendar.time = it
+            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+            val runningTime = dayRunningTimeMap.getOrDefault(dayOfWeek, 0L) + task.runningTime
+            dayRunningTimeMap[dayOfWeek] = runningTime
+        }
+    }
+
+    return dayRunningTimeMap.map { Pair(it.key, it.value) }
 }
 
 fun calculateHourlyDurations(startTime: Date, endTime: Date, targetHour: Int): Long {
@@ -248,27 +265,6 @@ fun calculateHourlyDurations(startTime: Date, endTime: Date, targetHour: Int): L
     val durationMillis = if (overlapStart < overlapEnd) overlapEnd - overlapStart else 0L
 
     return durationMillis
-}
-
-fun isInRangeHour(startDate: Date, endDate: Date, target: Int): Boolean {
-    val calendar1 = Calendar.getInstance().apply { time = startDate }
-    val calendar2 = Calendar.getInstance().apply { time = endDate }
-    val calendar3 = Calendar.getInstance().apply {
-        time = calendar1.time
-        set(Calendar.HOUR_OF_DAY, target)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-    }
-    val startHour = calendar1.get(Calendar.HOUR_OF_DAY)
-    val startDay = calendar1.get(Calendar.DAY_OF_YEAR)
-    val endHour = calendar1.get(Calendar.HOUR_OF_DAY)
-    val endDay = calendar2.get(Calendar.DAY_OF_YEAR)
-    val targetHour = calendar3.get(Calendar.HOUR_OF_DAY)
-    return if (startDay == endDay) {
-        targetHour in startHour..endHour
-    } else {
-        targetHour in startHour..23 || targetHour in 0..endHour
-    }
 }
 
 fun isSameDay(date1: Date, date2: Date): Boolean {

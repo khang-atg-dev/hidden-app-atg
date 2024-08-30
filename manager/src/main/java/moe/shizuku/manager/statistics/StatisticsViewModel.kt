@@ -20,6 +20,7 @@ import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.StatisticFocus
 import moe.shizuku.manager.statistics.SegmentTime.DAY
 import moe.shizuku.manager.utils.calculateHourlyDurations
+import moe.shizuku.manager.utils.calculateRunningTimePerDay
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
 import moe.shizuku.manager.utils.getMixColor
 import moe.shizuku.manager.utils.getTimeAsString
@@ -29,6 +30,7 @@ import moe.shizuku.manager.utils.isSameMonth
 import moe.shizuku.manager.utils.isSameWeek
 import moe.shizuku.manager.utils.isSameYear
 import moe.shizuku.manager.utils.toDate
+import java.text.DateFormatSymbols
 import java.util.Calendar
 import java.util.Date
 import java.util.concurrent.TimeUnit
@@ -39,7 +41,6 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
 
     private var allData = ShizukuSettings.getAllStatistics() ?: emptyList()
     private val mixColor = context.getMixColor()
-    private val timeMark = (0 until 24).toList()
 
     init {
         refreshData()
@@ -91,7 +92,8 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                     numberOfFocuses = filteredDate.size,
                     pieData = getPieData(groupedData, totalTime),
                     listStatistics = getListStatistics(groupedData, totalTime),
-                    barData = getBarData(filteredDate)
+                    barData = getBarData(filteredDate),
+                    periodicBarData = getPeriodicBarData(filteredDate)
                 )
             }
         }
@@ -136,7 +138,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
         data: List<StatisticFocus>
     ): BarData {
         if (data.isEmpty()) return BarData()
-        val entries = timeMark.map {
+        val entries = (0 until 24).map {
             var value = 0f
             data.forEach { d ->
                 val startDate = d.startTime.toDate() ?: return BarData()
@@ -150,11 +152,29 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
         }
         return BarData(barDataSet)
     }
+
+    private fun getPeriodicBarData(
+        data: List<StatisticFocus>
+    ): BarData {
+        val times = calculateRunningTimePerDay(data)
+        if (times.isEmpty()) return BarData()
+        val entries = (Calendar.SUNDAY..Calendar.SATURDAY).map {
+            val time = times.find { t -> t.first == it }?.second?.toFloat()
+            BarEntry(it.toFloat(), time ?: 0f)
+        }
+        val barDataSet = BarDataSet(entries, "").apply {
+            setDrawValues(false)
+        }
+        return BarData(barDataSet).apply {
+            barWidth = 0.7f
+        }
+    }
 }
 
 data class StatisticState(
     val listStatistics: List<StatisticItem> = emptyList(),
     val barData: BarData = BarData(),
+    val periodicBarData: BarData = BarData(),
     val pieData: PieData = PieData(),
     val totalTime: Long = 0L,
     val numberOfFocuses: Int = 0,
@@ -204,9 +224,16 @@ class CustomBarValueFormatter : ValueFormatter() {
         val seconds = TimeUnit.MILLISECONDS.toSeconds(value.toLong()) % 60
 
         return when {
-            hours > 0 -> "${hours}h${minutes}m${seconds}s"
-            minutes > 0 -> "${minutes}m${seconds}s"
+            hours > 0 -> "${hours}h"
+            minutes > 0 -> "${minutes}m"
             else -> "${seconds}s"
         }
+    }
+}
+
+class CustomDaysOfWeekValueFormatter : ValueFormatter() {
+    override fun getFormattedValue(value: Float): String {
+        val weekDays = DateFormatSymbols().weekdays
+        return weekDays[value.toInt()]
     }
 }
