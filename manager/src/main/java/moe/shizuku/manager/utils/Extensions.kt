@@ -225,6 +225,52 @@ fun String.toDate(): Date? {
     }
 }
 
+fun calculateHourlyDurations(startTime: Date, endTime: Date, targetHour: Int): Long {
+    val calendar = Calendar.getInstance()
+
+    // Set the calendar to the start time and align it to the target hour
+    calendar.time = startTime
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+
+    // Set the calendar to the target hour
+    calendar.set(Calendar.HOUR_OF_DAY, targetHour)
+    val targetHourStart = calendar.time
+
+    // Move to the next hour
+    calendar.add(Calendar.HOUR_OF_DAY, 1)
+    val targetHourEnd = calendar.time
+
+    // Calculate the overlapping time in milliseconds for the target hour
+    val overlapStart = maxOf(startTime.time, targetHourStart.time)
+    val overlapEnd = minOf(endTime.time, targetHourEnd.time)
+    val durationMillis = if (overlapStart < overlapEnd) overlapEnd - overlapStart else 0L
+
+    return durationMillis
+}
+
+fun isInRangeHour(startDate: Date, endDate: Date, target: Int): Boolean {
+    val calendar1 = Calendar.getInstance().apply { time = startDate }
+    val calendar2 = Calendar.getInstance().apply { time = endDate }
+    val calendar3 = Calendar.getInstance().apply {
+        time = calendar1.time
+        set(Calendar.HOUR_OF_DAY, target)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+    }
+    val startHour = calendar1.get(Calendar.HOUR_OF_DAY)
+    val startDay = calendar1.get(Calendar.DAY_OF_YEAR)
+    val endHour = calendar1.get(Calendar.HOUR_OF_DAY)
+    val endDay = calendar2.get(Calendar.DAY_OF_YEAR)
+    val targetHour = calendar3.get(Calendar.HOUR_OF_DAY)
+    return if (startDay == endDay) {
+        targetHour in startHour..endHour
+    } else {
+        targetHour in startHour..23 || targetHour in 0..endHour
+    }
+}
+
 fun isSameDay(date1: Date, date2: Date): Boolean {
     val calendar1 = Calendar.getInstance().apply { time = date1 }
     val calendar2 = Calendar.getInstance().apply { time = date2 }

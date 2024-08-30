@@ -234,8 +234,7 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginBottom="10dp"
                     android:overScrollMode="never"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/focus_progress_bar" />
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -255,13 +254,35 @@
             android:orientation="horizontal"
             app:cardCornerRadius="28dp"
             app:cardElevation="4dp"
-            app:contentPaddingBottom="40dp"
-            app:contentPaddingLeft="20dp"
-            app:contentPaddingRight="20dp"
-            app:contentPaddingTop="40dp"
+            app:contentPaddingBottom="10dp"
+            app:contentPaddingTop="10dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pie_chart_container" />
+            app:layout_constraintTop_toBottomOf="@+id/pie_chart_container">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/focus_duration_statistics"
+                    android:textAlignment="center"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/bar_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@android:color/transparent" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/view_raw_data"

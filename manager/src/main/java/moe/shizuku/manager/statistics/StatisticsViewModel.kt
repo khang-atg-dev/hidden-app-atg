@@ -2,6 +2,9 @@ package moe.shizuku.manager.statistics
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -16,6 +19,7 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.StatisticFocus
 import moe.shizuku.manager.statistics.SegmentTime.DAY
+import moe.shizuku.manager.utils.calculateHourlyDurations
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
 import moe.shizuku.manager.utils.getMixColor
 import moe.shizuku.manager.utils.getTimeAsString
@@ -27,6 +31,7 @@ import moe.shizuku.manager.utils.isSameYear
 import moe.shizuku.manager.utils.toDate
 import java.util.Calendar
 import java.util.Date
+import java.util.concurrent.TimeUnit
 
 class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
     private val _state = MutableStateFlow(StatisticState())
@@ -34,6 +39,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
 
     private var allData = ShizukuSettings.getAllStatistics() ?: emptyList()
     private val mixColor = context.getMixColor()
+    private val timeMark = (0 until 24).toList()
 
     init {
         refreshData()
@@ -84,7 +90,8 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                     totalTime = totalTime,
                     numberOfFocuses = filteredDate.size,
                     pieData = getPieData(groupedData, totalTime),
-                    listStatistics = getListStatistics(groupedData, totalTime)
+                    listStatistics = getListStatistics(groupedData, totalTime),
+                    barData = getBarData(filteredDate)
                 )
             }
         }
@@ -103,7 +110,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
             valueLinePart1Length = 0.4f
             valueLinePart2Length = 0.4f
             colors = mixColor
-            valueFormatter = CustomValueFormatter(totalTime)
+            valueFormatter = CustomPieValueFormatter(totalTime)
         }
         return PieData(pieSet)
     }
@@ -124,10 +131,30 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
             )
         }
     }
+
+    private fun getBarData(
+        data: List<StatisticFocus>
+    ): BarData {
+        if (data.isEmpty()) return BarData()
+        val entries = timeMark.map {
+            var value = 0f
+            data.forEach { d ->
+                val startDate = d.startTime.toDate() ?: return BarData()
+                val endDate = d.endTime.toDate() ?: return BarData()
+                value += calculateHourlyDurations(startDate, endDate, it)
+            }
+            BarEntry(it.toFloat(), value)
+        }
+        val barDataSet = BarDataSet(entries, "").apply {
+            setDrawValues(false)
+        }
+        return BarData(barDataSet)
+    }
 }
 
 data class StatisticState(
     val listStatistics: List<StatisticItem> = emptyList(),
+    val barData: BarData = BarData(),
     val pieData: PieData = PieData(),
     val totalTime: Long = 0L,
     val numberOfFocuses: Int = 0,
@@ -160,11 +187,26 @@ enum class SegmentTime(val id: Int, val typeOfTime: Int) {
 }
 
 
-class CustomValueFormatter(
+class CustomPieValueFormatter(
     private val totalTime: Long
 ) : ValueFormatter() {
     override fun getFormattedValue(value: Float): String {
         // Format your label with a newline
         return ((value * totalTime) / 100).toLong().formatMillisecondsToSimple()
+    }
+}
+
+class CustomBarValueFormatter : ValueFormatter() {
+    override fun getFormattedValue(value: Float): String {
+        // Format your label with a newline
+        val hours = TimeUnit.MILLISECONDS.toHours(value.toLong())
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(value.toLong()) % 60
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(value.toLong()) % 60
+
+        return when {
+            hours > 0 -> "${hours}h${minutes}m${seconds}s"
+            minutes > 0 -> "${minutes}m${seconds}s"
+            else -> "${seconds}s"
+        }
     }
 }

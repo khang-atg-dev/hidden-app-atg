@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.github.mikephil.charting.components.XAxis
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.databinding.StatisticsFragmentBinding
@@ -36,6 +37,19 @@ class StatisticsFragment : Fragment() {
                         adapter.dataSource = state.listStatistics
                     } else {
                         binding.pieChartContainer.visibility = View.GONE
+                    }
+                    if (state.barData.dataSetCount != 0) {
+                        binding.barChartContainer.visibility = View.VISIBLE
+                        binding.barChart.let {
+                            it.xAxis.labelCount = state.barData.entryCount / 2
+                            it.axisLeft.axisMaximum =
+                                (30.takeIf { state.barData.maxEntryCountSet.yMax < 30 * 60 * 1000f }
+                                    ?: 60) * 60 * 1000f
+                            it.data = state.barData
+                            binding.barChart.invalidate()
+                        }
+                    } else {
+                        binding.barChartContainer.visibility = View.GONE
                     }
                 }
             }
@@ -74,6 +88,37 @@ class StatisticsFragment : Fragment() {
             it.setHoleColor(android.R.color.transparent)
         }
         binding.listStatistics.adapter = adapter
+
+        binding.barChart.setDrawValueAboveBar(false)
+        binding.barChart.legend.isEnabled = false
+        binding.barChart.description.isEnabled = false
+        binding.barChart.renderer = RoundedBarChartRenderer(
+            binding.barChart,
+            binding.barChart.animator,
+            binding.barChart.viewPortHandler
+        ).apply {
+            setRoundedPositiveDataSetRadius(20f)
+            setRoundedShadowRadius(0f)
+            setRoundedNegativeDataSetRadius(0f)
+        }
+        binding.barChart.setPinchZoom(false)
+        binding.barChart.isDoubleTapToZoomEnabled = false
+        binding.barChart.isScaleXEnabled = false
+        binding.barChart.isScaleYEnabled = false
+        binding.barChart.xAxis.let {
+            it.position = XAxis.XAxisPosition.BOTTOM
+            it.setDrawAxisLine(false)
+            it.setDrawGridLines(false)
+            it.axisMinimum = -1f
+        }
+        binding.barChart.axisRight.isEnabled = false
+        binding.barChart.axisLeft.let {
+            it.axisMinimum = 0f
+            it.labelCount = 6
+            it.axisMaximum = 60 * 60 * 1000f
+            it.setDrawAxisLine(false)
+            it.valueFormatter = CustomBarValueFormatter()
+        }
     }
 
     override fun onResume() {
