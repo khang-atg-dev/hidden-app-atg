@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.BaseEntry
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -18,10 +19,12 @@ import moe.shizuku.manager.AppConstants.FORMAT_YEAR_TIME
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.StatisticFocus
-import moe.shizuku.manager.statistics.SegmentTime.DAY
+import moe.shizuku.manager.utils.calculateDailyTotalRunningTime
 import moe.shizuku.manager.utils.calculateHourlyDurations
 import moe.shizuku.manager.utils.calculateRunningTimePerDay
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
+import moe.shizuku.manager.utils.getFirstDayOfMonth
+import moe.shizuku.manager.utils.getLastDayOfMonth
 import moe.shizuku.manager.utils.getMixColor
 import moe.shizuku.manager.utils.getTimeAsString
 import moe.shizuku.manager.utils.getWeekRange
@@ -43,59 +46,58 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
     private val mixColor = context.getMixColor()
 
     init {
-        refreshData()
+        refreshData(_state.value.dateIndicator, _state.value.segmentSelected)
     }
 
     override fun onChangeSegment(segmentId: Int) {
-        _state.update {
+        _state.value.let {
             val newSeg = SegmentTime.fromId(segmentId)
-            if (newSeg == it.segmentSelected) return@update it
+            if (newSeg == it.segmentSelected) return
             val date = Calendar.getInstance().time
-            it.copy(
-                segmentSelected = newSeg,
-                dateIndicator = date,
-            )
+            refreshData(date, newSeg)
         }
-        refreshData()
+
     }
 
     override fun onChangeDateIndicator(isIncrease: Boolean) {
-        _state.update {
+        _state.value.let {
             val newDate = Calendar.getInstance().apply {
                 time = it.dateIndicator
             }
             newDate.add(it.segmentSelected.typeOfTime, if (isIncrease) 1 else -1)
-            it.copy(
-                dateIndicator = newDate.time
-            )
+            refreshData(newDate.time, it.segmentSelected)
         }
-        refreshData()
+
     }
 
-    override fun refreshData() {
-        _state.value.let { state ->
-            allData = ShizukuSettings.getAllStatistics() ?: emptyList()
-            val filteredDate = allData.filter {
-                val startDate = it.startTime.toDate() ?: return@filter false
-                when (state.segmentSelected) {
-                    DAY -> isSameDay(startDate, state.dateIndicator)
-                    SegmentTime.WEEK -> isSameWeek(startDate, state.dateIndicator)
-                    SegmentTime.MONTH -> isSameMonth(startDate, state.dateIndicator)
-                    SegmentTime.YEAR -> isSameYear(startDate, state.dateIndicator)
-                }
+    override fun refreshData(dateIndicator: Date, segmentSelected: SegmentTime) {
+        allData = ShizukuSettings.getAllStatistics() ?: emptyList()
+        val filteredDate = allData.filter {
+            val startDate = it.startTime.toDate() ?: return@filter false
+            when (segmentSelected) {
+                SegmentTime.DAY -> isSameDay(startDate, dateIndicator)
+                SegmentTime.WEEK -> isSameWeek(startDate, dateIndicator)
+                SegmentTime.MONTH -> isSameMonth(startDate, dateIndicator)
+                SegmentTime.YEAR -> isSameYear(startDate, dateIndicator)
             }
-            val totalTime = filteredDate.sumOf { it.runningTime }
-            val groupedData = filteredDate.groupBy { it.focusId }
-            _state.update {
-                it.copy(
-                    totalTime = totalTime,
-                    numberOfFocuses = filteredDate.size,
-                    pieData = getPieData(groupedData, totalTime),
-                    listStatistics = getListStatistics(groupedData, totalTime),
-                    barData = getBarData(filteredDate),
-                    periodicBarData = getPeriodicBarData(filteredDate)
+        }
+        val totalTime = filteredDate.sumOf { it.runningTime }
+        val groupedData = filteredDate.groupBy { it.focusId }
+        _state.update {
+            it.copy(
+                dateIndicator = dateIndicator,
+                segmentSelected = segmentSelected,
+                totalTime = totalTime,
+                numberOfFocuses = filteredDate.size,
+                pieData = getPieData(groupedData, totalTime),
+                listStatistics = getListStatistics(groupedData, totalTime),
+                barData = getBarData(filteredDate),
+                periodicBarData = getPeriodicBarData(
+                    filteredDate,
+                    dateIndicator,
+                    segmentSelected
                 )
-            }
+            )
         }
     }
 
@@ -154,20 +156,44 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
     }
 
     private fun getPeriodicBarData(
-        data: List<StatisticFocus>
+        data: List<StatisticFocus>,
+        dateIndicator: Date,
+        segmentSelected: SegmentTime
     ): BarData {
-        val times = calculateRunningTimePerDay(data)
-        if (times.isEmpty()) return BarData()
-        val entries = (Calendar.SUNDAY..Calendar.SATURDAY).map {
-            val time = times.find { t -> t.first == it }?.second?.toFloat()
-            BarEntry(it.toFloat(), time ?: 0f)
+        val entries: List<BaseEntry>? = when (segmentSelected) {
+            SegmentTime.DAY -> null
+            SegmentTime.WEEK -> {
+                val times = calculateRunningTimePerDay(data)
+                if (times.isEmpty())
+                    null
+                else
+                    (Calendar.SUNDAY..Calendar.SATURDAY).map {
+                        val time = times.find { t -> t.first == it }?.second?.toFloat()
+                        BarEntry(it.toFloat(), time ?: 0f)
+                    }
+            }
+
+            SegmentTime.MONTH -> {
+                val times = calculateDailyTotalRunningTime(data)
+                if (times.isEmpty()) null
+                else {
+                    (dateIndicator.getFirstDayOfMonth()..dateIndicator.getLastDayOfMonth()).map {
+                        val time = times.find { t -> t.first == it }?.second?.toFloat()
+                        BarEntry(it.toFloat(), time ?: 0f)
+                    }
+                }
+            }
+
+            SegmentTime.YEAR -> null
         }
-        val barDataSet = BarDataSet(entries, "").apply {
-            setDrawValues(false)
-        }
-        return BarData(barDataSet).apply {
-            barWidth = 0.7f
-        }
+        entries?.map { i -> i as BarEntry }?.let {
+            val barDataSet = BarDataSet(it, "").apply {
+                setDrawValues(false)
+            }
+            return BarData(barDataSet).apply {
+                barWidth = 0.7f
+            }
+        } ?: return BarData()
     }
 }
 
@@ -178,14 +204,14 @@ data class StatisticState(
     val pieData: PieData = PieData(),
     val totalTime: Long = 0L,
     val numberOfFocuses: Int = 0,
-    val segmentSelected: SegmentTime = DAY,
+    val segmentSelected: SegmentTime = SegmentTime.DAY,
     val dateIndicator: Date = Calendar.getInstance().time,
 )
 
 interface StatisticCallback {
     fun onChangeSegment(segmentId: Int)
     fun onChangeDateIndicator(isIncrease: Boolean)
-    fun refreshData()
+    fun refreshData(dateIndicator: Date, segmentSelected: SegmentTime)
 }
 
 enum class SegmentTime(val id: Int, val typeOfTime: Int) {

@@ -8,11 +8,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.databinding.StatisticsFragmentBinding
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
+import moe.shizuku.manager.utils.getLastDayOfMonth
 import rikka.lifecycle.viewModels
 
 class StatisticsFragment : Fragment() {
@@ -30,6 +32,7 @@ class StatisticsFragment : Fragment() {
                         state.segmentSelected.getFormatTime(state.dateIndicator)
                     binding.totalTime.text = state.totalTime.formatMillisecondsToSimple()
                     binding.totalFocus.text = state.numberOfFocuses.toString()
+
                     if (state.pieData.dataSetCount != 0) {
                         binding.pieChartContainer.visibility = View.VISIBLE
                         binding.pieChart.data = state.pieData
@@ -38,6 +41,7 @@ class StatisticsFragment : Fragment() {
                     } else {
                         binding.pieChartContainer.visibility = View.GONE
                     }
+
                     if (state.barData.dataSetCount != 0) {
                         binding.barChartContainer.visibility = View.VISIBLE
                         binding.barChart.let {
@@ -51,12 +55,37 @@ class StatisticsFragment : Fragment() {
                     } else {
                         binding.barChartContainer.visibility = View.GONE
                     }
+
                     if (state.segmentSelected == SegmentTime.DAY || state.periodicBarData.dataSetCount == 0) {
                         binding.periodicBarChartContainer.visibility = View.GONE
                     } else {
+                        binding.dayOfWeekBarChart.clear()
                         binding.periodicBarChartContainer.visibility = View.VISIBLE
-                        binding.periodicBarChart.data = state.periodicBarData
-                        binding.periodicBarChart.invalidate()
+                        when (state.segmentSelected) {
+                            SegmentTime.WEEK -> {
+                                binding.dayOfWeekBarChart.visibility = View.VISIBLE
+                                binding.dailyBarChart.visibility = View.GONE
+                                binding.dayOfWeekBarChart.data = state.periodicBarData
+                                binding.dayOfWeekBarChart.xAxis.valueFormatter =
+                                    CustomDaysOfWeekValueFormatter()
+                                binding.dayOfWeekBarChart.xAxis.labelCount = 6
+                                binding.dayOfWeekBarChart.invalidate()
+                            }
+
+                            SegmentTime.MONTH -> {
+                                binding.dayOfWeekBarChart.visibility = View.GONE
+                                binding.dailyBarChart.visibility = View.VISIBLE
+                                binding.dailyBarChart.data = state.periodicBarData
+                                binding.dailyBarChart.xAxis.valueFormatter = null
+                                binding.dailyBarChart.xAxis.labelCount =
+                                    state.dateIndicator.getLastDayOfMonth() / 2
+                                binding.dailyBarChart.invalidate()
+                            }
+
+                            SegmentTime.YEAR -> {}
+                            else -> {}
+                        }
+
                     }
                 }
             }
@@ -128,39 +157,47 @@ class StatisticsFragment : Fragment() {
             it.valueFormatter = CustomBarValueFormatter()
         }
 
-        binding.periodicBarChart.setDrawValueAboveBar(false)
-        binding.periodicBarChart.legend.isEnabled = false
-        binding.periodicBarChart.description.isEnabled = false
-        binding.periodicBarChart.renderer = RoundedBarChartRenderer(
-            binding.periodicBarChart,
-            binding.periodicBarChart.animator,
-            binding.periodicBarChart.viewPortHandler
+        binding.dayOfWeekBarChart.setupBarChart()
+        binding.dailyBarChart.setupBarChart()
+        binding.monthlyBarChart.setupBarChart()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshData(
+            viewModel.state.value.dateIndicator,
+            viewModel.state.value.segmentSelected
+        )
+    }
+
+    private fun BarChart.setupBarChart() {
+        this.setDrawValueAboveBar(false)
+        this.legend.isEnabled = false
+        this.description.isEnabled = false
+        this.renderer = RoundedBarChartRenderer(
+            this,
+            this.animator,
+            this.viewPortHandler
         ).apply {
             setRoundedPositiveDataSetRadius(20f)
             setRoundedShadowRadius(0f)
             setRoundedNegativeDataSetRadius(0f)
         }
-        binding.periodicBarChart.setPinchZoom(false)
-        binding.periodicBarChart.isDoubleTapToZoomEnabled = false
-        binding.periodicBarChart.isScaleXEnabled = false
-        binding.periodicBarChart.isScaleYEnabled = false
-        binding.periodicBarChart.xAxis.let {
+        this.setPinchZoom(false)
+        this.isDoubleTapToZoomEnabled = false
+        this.isScaleXEnabled = false
+        this.isScaleYEnabled = false
+        this.xAxis.let {
             it.position = XAxis.XAxisPosition.BOTTOM
             it.setDrawAxisLine(false)
             it.setDrawGridLines(false)
             it.axisMinimum = 0.5f
-            it.valueFormatter = CustomDaysOfWeekValueFormatter()
         }
-        binding.periodicBarChart.axisRight.isEnabled = false
-        binding.periodicBarChart.axisLeft.let {
+        this.axisRight.isEnabled = false
+        this.axisLeft.let {
             it.axisMinimum = 0f
             it.setDrawAxisLine(false)
             it.valueFormatter = CustomBarValueFormatter()
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.refreshData()
     }
 }

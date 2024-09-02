@@ -226,6 +226,36 @@ fun String.toDate(): Date? {
     }
 }
 
+fun Date.getFirstDayOfMonth(): Int {
+    val firstDay = Calendar.getInstance().apply {
+        time = this@getFirstDayOfMonth
+    }
+    firstDay[Calendar.DAY_OF_MONTH] = 1
+    return firstDay.get(Calendar.DAY_OF_MONTH)
+}
+
+fun Date.getLastDayOfMonth(): Int {
+    val lastDay = Calendar.getInstance().apply {
+        time = this@getLastDayOfMonth
+    }
+    lastDay.add(Calendar.MONTH, 1)
+    lastDay[Calendar.DAY_OF_MONTH] = 1
+    lastDay.add(Calendar.DAY_OF_MONTH, -1)
+    return lastDay.get(Calendar.DAY_OF_MONTH)
+}
+
+
+fun calculateDailyTotalRunningTime(tasks: List<StatisticFocus>): List<Pair<Int, Long>> {
+    return tasks.groupBy {
+        val date = it.endTime.toDate() ?: Date()
+        Calendar.getInstance().apply {
+            time = date
+        }.get(Calendar.DAY_OF_MONTH)
+    }.mapValues { (_, entries) -> entries.sumOf { it.runningTime } }
+        .toList()
+        .sortedBy { it.first }
+}
+
 fun calculateRunningTimePerDay(tasks: List<StatisticFocus>): List<Pair<Int, Long>> {
     val dayRunningTimeMap = mutableMapOf<Int, Long>()
 
