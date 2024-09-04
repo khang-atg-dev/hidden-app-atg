@@ -21,6 +21,7 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
 import moe.shizuku.manager.model.StatisticFocus
+import moe.shizuku.manager.statistics.SegmentTime
 import rikka.shizuku.Shizuku
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -272,60 +273,176 @@ fun calculateRunningTimePerDay(tasks: List<StatisticFocus>): List<Pair<Int, Long
     return dayRunningTimeMap.map { Pair(it.key, it.value) }
 }
 
-fun calculateHourlyDurations(startTime: Date, endTime: Date, targetHour: Int): Long {
+fun getTotalTimeInDay(
+    startTime: String,
+    endTime: String,
+    targetDate: Date,
+    segmentTime: SegmentTime
+): Long {
+    val startDate = startTime.toDate() ?: return 0
+    val endDate = endTime.toDate() ?: return 0
+    val start = Calendar.getInstance().apply {
+        time = startDate
+    }.timeInMillis
+    val end = Calendar.getInstance().apply {
+        time = endDate
+    }.timeInMillis
+    val targetCal = Calendar.getInstance().apply {
+        time = targetDate
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    when (segmentTime) {
+        SegmentTime.DAY -> {}
+        SegmentTime.WEEK -> {
+            targetCal.set(Calendar.DAY_OF_WEEK, targetCal.firstDayOfWeek)
+        }
+        SegmentTime.MONTH -> {
+            targetCal.set(Calendar.DAY_OF_MONTH, 1)
+        }
+        SegmentTime.YEAR -> {
+            targetCal.set(Calendar.DAY_OF_YEAR, 1)
+        }
+    }
+    val target = targetCal.timeInMillis
+    val nextTarget = targetCal.apply {
+        when (segmentTime) {
+            SegmentTime.DAY -> add(Calendar.DAY_OF_MONTH, 1)
+            SegmentTime.WEEK -> add(Calendar.WEEK_OF_YEAR, 1)
+            SegmentTime.MONTH -> add(Calendar.MONTH, 1)
+            SegmentTime.YEAR -> add(Calendar.YEAR, 1)
+        }
+    }.timeInMillis
+    return when {
+        start in target..nextTarget && end in target..nextTarget -> {
+            end - start
+        }
+
+        start in target..nextTarget -> {
+            nextTarget - start
+        }
+
+        end in target..nextTarget -> {
+            end - target
+        }
+
+        else -> 0L
+    }
+}
+
+fun getDurationForTargetHour(
+    startTime: Date,
+    endTime: Date,
+    targetDate: Date,
+    targetHour: Int
+): Long {
+    val startCal = Calendar.getInstance().apply {
+        time = startTime
+    }.timeInMillis
+    val endCal = Calendar.getInstance().apply {
+        time = endTime
+    }.timeInMillis
+    val targetCal = Calendar.getInstance().apply {
+        time = targetDate
+        set(Calendar.HOUR_OF_DAY, targetHour)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+
+    return when {
+        targetCal in startCal..endCal -> {
+            val nextTarget = targetCal + 60 * 60 * 1000
+            if (nextTarget in startCal..endCal) {
+                60 * 60 * 1000
+            } else {
+                val distance1 = targetCal - startCal
+                val distance2 = endCal - targetCal
+                when {
+                    distance1 > 60 * 60 * 1000 && distance2 > 60 * 60 * 1000 -> 60 * 60 * 1000
+                    distance1 > 60 * 60 * 1000 -> distance2
+                    distance2 > 60 * 60 * 1000 -> distance1
+                    else -> 0
+                }
+            }
+        }
+
+        else -> 0
+    }
+}
+
+fun isSameDay(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
     val calendar = Calendar.getInstance()
 
-    // Set the calendar to the start time and align it to the target hour
-    calendar.time = startTime
-    calendar.set(Calendar.MINUTE, 0)
-    calendar.set(Calendar.SECOND, 0)
-    calendar.set(Calendar.MILLISECOND, 0)
+    calendar.time = startDate
+    val startDay = calendar.get(Calendar.DAY_OF_YEAR)
+    val startYear = calendar.get(Calendar.YEAR)
 
-    // Set the calendar to the target hour
-    calendar.set(Calendar.HOUR_OF_DAY, targetHour)
-    val targetHourStart = calendar.time
+    calendar.time = endDate
+    val endDay = calendar.get(Calendar.DAY_OF_YEAR)
+    val endYear = calendar.get(Calendar.YEAR)
 
-    // Move to the next hour
-    calendar.add(Calendar.HOUR_OF_DAY, 1)
-    val targetHourEnd = calendar.time
+    calendar.time = dateIndicator
+    val indicatorDay = calendar.get(Calendar.DAY_OF_YEAR)
+    val indicatorYear = calendar.get(Calendar.YEAR)
 
-    // Calculate the overlapping time in milliseconds for the target hour
-    val overlapStart = maxOf(startTime.time, targetHourStart.time)
-    val overlapEnd = minOf(endTime.time, targetHourEnd.time)
-    val durationMillis = if (overlapStart < overlapEnd) overlapEnd - overlapStart else 0L
-
-    return durationMillis
+    return (startDay == indicatorDay && startYear == indicatorYear) ||
+            (endDay == indicatorDay && endYear == indicatorYear)
 }
 
-fun isSameDay(date1: Date, date2: Date): Boolean {
-    val calendar1 = Calendar.getInstance().apply { time = date1 }
-    val calendar2 = Calendar.getInstance().apply { time = date2 }
+fun isSameWeek(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
+    val calendar = Calendar.getInstance()
 
-    return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR) &&
-            calendar1.get(Calendar.DAY_OF_YEAR) == calendar2.get(Calendar.DAY_OF_YEAR)
+    calendar.time = startDate
+    val startWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+    val startYear = calendar.get(Calendar.YEAR)
+
+    calendar.time = endDate
+    val endWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+    val endYear = calendar.get(Calendar.YEAR)
+
+    calendar.time = dateIndicator
+    val indicatorWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+    val indicatorYear = calendar.get(Calendar.YEAR)
+
+    return (startWeek == indicatorWeek && startYear == indicatorYear) ||
+            (endWeek == indicatorWeek && endYear == indicatorYear)
 }
 
-fun isSameWeek(date1: Date, date2: Date): Boolean {
-    val calendar1 = Calendar.getInstance().apply { time = date1 }
-    val calendar2 = Calendar.getInstance().apply { time = date2 }
+fun isSameMonth(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
+    val calendar = Calendar.getInstance()
 
-    return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR) &&
-            calendar1.get(Calendar.WEEK_OF_YEAR) == calendar2.get(Calendar.WEEK_OF_YEAR)
+    calendar.time = startDate
+    val startMonth = calendar.get(Calendar.MONTH)
+    val startYear = calendar.get(Calendar.YEAR)
+
+    calendar.time = endDate
+    val endMonth = calendar.get(Calendar.MONTH)
+    val endYear = calendar.get(Calendar.YEAR)
+
+    calendar.time = dateIndicator
+    val indicatorMonth = calendar.get(Calendar.MONTH)
+    val indicatorYear = calendar.get(Calendar.YEAR)
+
+    return (startMonth == indicatorMonth && startYear == indicatorYear) ||
+            (endMonth == indicatorMonth && endYear == indicatorYear)
 }
 
-fun isSameMonth(date1: Date, date2: Date): Boolean {
-    val calendar1 = Calendar.getInstance().apply { time = date1 }
-    val calendar2 = Calendar.getInstance().apply { time = date2 }
+fun isSameYear(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
+    val calendar = Calendar.getInstance()
 
-    return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR) &&
-            calendar1.get(Calendar.MONTH) == calendar2.get(Calendar.MONTH)
-}
+    calendar.time = startDate
+    val startYear = calendar.get(Calendar.YEAR)
 
-fun isSameYear(date1: Date, date2: Date): Boolean {
-    val calendar1 = Calendar.getInstance().apply { time = date1 }
-    val calendar2 = Calendar.getInstance().apply { time = date2 }
+    calendar.time = endDate
+    val endYear = calendar.get(Calendar.YEAR)
 
-    return calendar1.get(Calendar.YEAR) == calendar2.get(Calendar.YEAR)
+    calendar.time = dateIndicator
+    val indicatorYear = calendar.get(Calendar.YEAR)
+
+    return startYear == indicatorYear || endYear == indicatorYear
 }
 
 fun Context.getMixColor(): List<Int> {

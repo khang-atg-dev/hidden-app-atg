@@ -20,13 +20,14 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.StatisticFocus
 import moe.shizuku.manager.utils.calculateDailyTotalRunningTime
-import moe.shizuku.manager.utils.calculateHourlyDurations
 import moe.shizuku.manager.utils.calculateRunningTimePerDay
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
+import moe.shizuku.manager.utils.getDurationForTargetHour
 import moe.shizuku.manager.utils.getFirstDayOfMonth
 import moe.shizuku.manager.utils.getLastDayOfMonth
 import moe.shizuku.manager.utils.getMixColor
 import moe.shizuku.manager.utils.getTimeAsString
+import moe.shizuku.manager.utils.getTotalTimeInDay
 import moe.shizuku.manager.utils.getWeekRange
 import moe.shizuku.manager.utils.isSameDay
 import moe.shizuku.manager.utils.isSameMonth
@@ -63,6 +64,10 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
         _state.value.let {
             val newDate = Calendar.getInstance().apply {
                 time = it.dateIndicator
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
             }
             newDate.add(it.segmentSelected.typeOfTime, if (isIncrease) 1 else -1)
             refreshData(newDate.time, it.segmentSelected)
@@ -72,16 +77,24 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
 
     override fun refreshData(dateIndicator: Date, segmentSelected: SegmentTime) {
         allData = ShizukuSettings.getAllStatistics() ?: emptyList()
-        val filteredDate = allData.filter {
+        val filteredDate = allData.filterNotNull().filter {
             val startDate = it.startTime.toDate() ?: return@filter false
+            val endDate = it.endTime.toDate() ?: return@filter false
             when (segmentSelected) {
-                SegmentTime.DAY -> isSameDay(startDate, dateIndicator)
-                SegmentTime.WEEK -> isSameWeek(startDate, dateIndicator)
-                SegmentTime.MONTH -> isSameMonth(startDate, dateIndicator)
-                SegmentTime.YEAR -> isSameYear(startDate, dateIndicator)
+                SegmentTime.DAY -> isSameDay(startDate, endDate, dateIndicator)
+                SegmentTime.WEEK -> isSameWeek(startDate, endDate, dateIndicator)
+                SegmentTime.MONTH -> isSameMonth(startDate, endDate, dateIndicator)
+                SegmentTime.YEAR -> isSameYear(startDate, endDate, dateIndicator)
             }
         }
-        val totalTime = filteredDate.sumOf { it.runningTime }
+        val totalTime = filteredDate.sumOf {
+            getTotalTimeInDay(
+                it.startTime,
+                it.endTime,
+                dateIndicator,
+                segmentSelected
+            )
+        }
         val groupedData = filteredDate.groupBy { it.focusId }
         _state.update {
             it.copy(
@@ -90,8 +103,8 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                 totalTime = totalTime,
                 numberOfFocuses = filteredDate.size,
                 pieData = getPieData(groupedData, totalTime),
-                listStatistics = getListStatistics(groupedData, totalTime),
-                barData = getBarData(filteredDate),
+                listStatistics = getListStatistics(groupedData, totalTime, dateIndicator, segmentSelected),
+                barData = getBarData(filteredDate, dateIndicator),
                 periodicBarData = getPeriodicBarData(
                     filteredDate,
                     dateIndicator,
@@ -121,11 +134,18 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
 
     private fun getListStatistics(
         data: Map<String, List<StatisticFocus>>,
-        totalTime: Long
+        totalTime: Long,
+        dateIndicator: Date,
+        segmentSelected: SegmentTime,
     ): List<StatisticItem> {
         var index = 0
         return data.map { d ->
-            val sum = d.value.sumOf { i -> i.runningTime }
+            val sum = d.value.sumOf { i -> getTotalTimeInDay(
+                i.startTime,
+                i.endTime,
+                dateIndicator,
+                segmentSelected
+            ) }
             StatisticItem(
                 name = d.value[0].name,
                 time = sum,
@@ -137,7 +157,8 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
     }
 
     private fun getBarData(
-        data: List<StatisticFocus>
+        data: List<StatisticFocus>,
+        dateIndicator: Date
     ): BarData {
         if (data.isEmpty()) return BarData()
         val entries = (0 until 24).map {
@@ -145,7 +166,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
             data.forEach { d ->
                 val startDate = d.startTime.toDate() ?: return BarData()
                 val endDate = d.endTime.toDate() ?: return BarData()
-                value += calculateHourlyDurations(startDate, endDate, it)
+                value += getDurationForTargetHour(startDate, endDate, dateIndicator, it)
             }
             BarEntry(it.toFloat(), value)
         }
