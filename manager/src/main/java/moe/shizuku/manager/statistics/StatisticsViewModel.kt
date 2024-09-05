@@ -21,6 +21,7 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.StatisticFocus
 import moe.shizuku.manager.utils.calculateDailyTotalRunningTime
+import moe.shizuku.manager.utils.calculateMonthlyTotalRunningTime
 import moe.shizuku.manager.utils.calculateRunningTimePerDay
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
 import moe.shizuku.manager.utils.getDurationForTargetHour
@@ -215,7 +216,12 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                 }
             }
 
-            SegmentTime.YEAR -> null
+            SegmentTime.YEAR -> {
+                (0..11).map {
+                    val value = calculateMonthlyTotalRunningTime(data, dateIndicator, it)
+                    return@map BarEntry(it + 1f, value.toFloat())
+                }
+            }
         }
         entries?.map { i -> i as BarEntry }?.let {
             val barDataSet = BarDataSet(it, "").apply {

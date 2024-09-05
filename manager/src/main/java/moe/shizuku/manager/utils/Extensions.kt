@@ -245,6 +245,105 @@ fun Date.getLastDayOfMonth(): Int {
     return lastDay.get(Calendar.DAY_OF_MONTH)
 }
 
+fun calculateMonthlyTotalRunningTime(
+    tasks: List<StatisticFocus>,
+    targetDate: Date,
+    targetMonth: Int
+): Long {
+    var result = 0L
+    tasks.forEach {
+        val start = it.startTime.toDate() ?: return@forEach
+        val end = it.endTime.toDate() ?: return@forEach
+        val startCal = Calendar.getInstance().apply {
+            time = start
+        }
+        val endCal = Calendar.getInstance().apply {
+            time = end
+        }
+        val targetCal = Calendar.getInstance().apply {
+            time = targetDate
+            set(Calendar.MONTH, targetMonth)
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val targetYear = targetCal.get(Calendar.YEAR)
+        val startYear = startCal.get(Calendar.YEAR)
+        val endYear = endCal.get(Calendar.YEAR)
+        val startMonth = startCal.get(Calendar.MONTH)
+        val endMonth = endCal.get(Calendar.MONTH)
+        when {
+            startYear == targetYear && endYear == targetYear -> {
+                when {
+                    startMonth == targetMonth && endMonth == targetMonth -> {
+                        result += endCal.timeInMillis - startCal.timeInMillis
+                    }
+
+                    startMonth == targetMonth -> {
+                        val endDayOfMonth = Calendar.getInstance().apply {
+                            time = targetDate
+                            set(Calendar.MONTH, endMonth)
+                            set(Calendar.DAY_OF_MONTH, 1)
+                            set(Calendar.HOUR_OF_DAY, 0)
+                            set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
+                        result += endDayOfMonth.timeInMillis - startCal.timeInMillis
+                    }
+
+                    endMonth == targetMonth -> {
+                        val startDayOfMonth = Calendar.getInstance().apply {
+                            time = targetDate
+                            set(Calendar.MONTH, endMonth)
+                            set(Calendar.DAY_OF_MONTH, 1)
+                            set(Calendar.HOUR_OF_DAY, 0)
+                            set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }
+                        result += endCal.timeInMillis - startDayOfMonth.timeInMillis
+                    }
+                }
+            }
+
+            startYear == targetYear -> {
+                if (startMonth == targetMonth) {
+                    val endDayOfMonth = Calendar.getInstance().apply {
+                        time = targetDate
+                        set(Calendar.YEAR, endYear)
+                        set(Calendar.MONTH, endMonth)
+                        set(Calendar.DAY_OF_MONTH, 1)
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    result += endDayOfMonth.timeInMillis - startCal.timeInMillis
+                }
+            }
+
+            endYear == targetYear -> {
+                if (endMonth == targetMonth) {
+                    val startDayOfMonth = Calendar.getInstance().apply {
+                        time = targetDate
+                        set(Calendar.YEAR, endYear)
+                        set(Calendar.MONTH, endMonth)
+                        set(Calendar.DAY_OF_MONTH, 1)
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    result += endCal.timeInMillis - startDayOfMonth.timeInMillis
+                }
+            }
+        }
+    }
+    return result
+}
 
 fun calculateDailyTotalRunningTime(
     tasks: List<StatisticFocus>,
@@ -271,7 +370,10 @@ fun calculateDailyTotalRunningTime(
         when {
             startMonth == targetMonth && endMonth == targetMonth -> {
                 if (startDay == endDay) {
-                    result[startDay] = result.getOrDefault(startDay, 0) + it.runningTime
+                    result[startDay] = result.getOrDefault(
+                        startDay,
+                        0
+                    ) + endCal.timeInMillis - startCal.timeInMillis
                 } else {
                     val endDayOfStartDay = Calendar.getInstance().apply {
                         time = start
@@ -390,7 +492,10 @@ fun calculateRunningTimePerDay(
             val monthEnd = endCal.get(secondField)
             runningTime += when {
                 dayEnd == it && dayStart == it -> {
-                    dayRunningTimeMap.getOrDefault(it, 0L) + task.runningTime
+                    dayRunningTimeMap.getOrDefault(
+                        it,
+                        0L
+                    ) + endCal.timeInMillis - startCal.timeInMillis
                 }
 
                 dayStart == it && (monthStart == targetMonth || monthStart == nextTargetMonth) -> {
@@ -460,14 +565,16 @@ fun getTotalTimeInDay(
         }
     }
     val target = targetCal.timeInMillis
-    val nextTarget = targetCal.apply {
+    val nextTargetCal = Calendar.getInstance().apply {
+        time = targetCal.time
         when (segmentTime) {
             SegmentTime.DAY -> add(Calendar.DAY_OF_MONTH, 1)
             SegmentTime.WEEK -> add(Calendar.WEEK_OF_YEAR, 1)
             SegmentTime.MONTH -> add(Calendar.MONTH, 1)
             SegmentTime.YEAR -> add(Calendar.YEAR, 1)
         }
-    }.timeInMillis
+    }
+    val nextTarget = nextTargetCal.timeInMillis
     return when {
         start in target..nextTarget && end in target..nextTarget -> {
             end - start
