@@ -12,6 +12,7 @@ import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.StatisticsFragmentBinding
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
 import moe.shizuku.manager.utils.getLastDayOfMonth
@@ -45,16 +46,14 @@ class StatisticsFragment : Fragment() {
                     if (state.barData.dataSetCount != 0) {
                         binding.barChartContainer.visibility = View.VISIBLE
                         binding.barChart.let {
-                            it.xAxis.labelCount = state.barData.entryCount / 2
-                            it.axisLeft.axisMaximum =
-                                (30.takeIf { state.barData.maxEntryCountSet.yMax < 30 * 60 * 1000f }
-                                    ?: 60) * 60 * 1000f
                             it.data = state.barData
+                            it.xAxis.labelCount = state.barData.entryCount / 2
                             it.invalidate()
                         }
                     } else {
                         binding.barChartContainer.visibility = View.GONE
                     }
+
                     if (state.segmentSelected == SegmentTime.DAY || state.periodicBarData.dataSetCount == 0) {
                         binding.periodicBarChartContainer.visibility = View.GONE
                     } else {
@@ -62,8 +61,13 @@ class StatisticsFragment : Fragment() {
                         binding.periodicBarChartContainer.visibility = View.VISIBLE
                         when (state.segmentSelected) {
                             SegmentTime.WEEK -> {
+                                binding.periodicTitle.text =
+                                    context?.getString(R.string.daily_focus_statistics)
+
                                 binding.dayOfWeekBarChart.visibility = View.VISIBLE
+                                binding.monthlyBarChart.visibility = View.GONE
                                 binding.dailyBarChart.visibility = View.GONE
+
                                 binding.dayOfWeekBarChart.data = state.periodicBarData
                                 binding.dayOfWeekBarChart.xAxis.valueFormatter =
                                     CustomDaysOfWeekValueFormatter()
@@ -72,8 +76,13 @@ class StatisticsFragment : Fragment() {
                             }
 
                             SegmentTime.MONTH -> {
+                                binding.periodicTitle.text =
+                                    context?.getString(R.string.daily_focus_statistics)
+
                                 binding.dayOfWeekBarChart.visibility = View.GONE
+                                binding.monthlyBarChart.visibility = View.GONE
                                 binding.dailyBarChart.visibility = View.VISIBLE
+
                                 binding.dailyBarChart.data = state.periodicBarData
                                 binding.dailyBarChart.xAxis.valueFormatter = null
                                 binding.dailyBarChart.xAxis.labelCount =
@@ -81,10 +90,23 @@ class StatisticsFragment : Fragment() {
                                 binding.dailyBarChart.invalidate()
                             }
 
-                            SegmentTime.YEAR -> {}
+                            SegmentTime.YEAR -> {
+                                binding.periodicTitle.text =
+                                    context?.getString(R.string.monthly_focus_statistics)
+
+                                binding.dayOfWeekBarChart.visibility = View.GONE
+                                binding.monthlyBarChart.visibility = View.VISIBLE
+                                binding.dailyBarChart.visibility = View.GONE
+
+                                binding.monthlyBarChart.data = state.periodicBarData
+                                binding.monthlyBarChart.xAxis.valueFormatter = null
+                                binding.monthlyBarChart.xAxis.labelCount = 12
+                                binding.monthlyBarChart.xAxis.axisMinimum = 1f
+                                binding.monthlyBarChart.invalidate()
+                            }
+
                             else -> {}
                         }
-
                     }
                 }
             }
@@ -150,8 +172,6 @@ class StatisticsFragment : Fragment() {
         binding.barChart.axisRight.isEnabled = false
         binding.barChart.axisLeft.let {
             it.axisMinimum = 0f
-            it.labelCount = 6
-            it.axisMaximum = 60 * 60 * 1000f
             it.setDrawAxisLine(false)
             it.valueFormatter = CustomBarValueFormatter()
         }

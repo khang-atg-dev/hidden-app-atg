@@ -246,15 +246,90 @@ fun Date.getLastDayOfMonth(): Int {
 }
 
 
-fun calculateDailyTotalRunningTime(tasks: List<StatisticFocus>): List<Pair<Int, Long>> {
-    return tasks.groupBy {
-        val date = it.endTime.toDate() ?: Date()
-        Calendar.getInstance().apply {
-            time = date
-        }.get(Calendar.DAY_OF_MONTH)
-    }.mapValues { (_, entries) -> entries.sumOf { it.runningTime } }
-        .toList()
-        .sortedBy { it.first }
+fun calculateDailyTotalRunningTime(
+    tasks: List<StatisticFocus>,
+    targetDate: Date
+): List<Pair<Int, Long>> {
+    val result = mutableMapOf<Int, Long>()
+    tasks.forEach {
+        val start = it.startTime.toDate() ?: return@forEach
+        val end = it.endTime.toDate() ?: return@forEach
+        val startCal = Calendar.getInstance().apply {
+            time = start
+        }
+        val endCal = Calendar.getInstance().apply {
+            time = end
+        }
+        val targetCal = Calendar.getInstance().apply {
+            time = targetDate
+        }
+        val targetMonth = targetCal.get(Calendar.MONTH)
+        val startMonth = startCal.get(Calendar.MONTH)
+        val endMonth = endCal.get(Calendar.MONTH)
+        val startDay = startCal.get(Calendar.DAY_OF_MONTH)
+        val endDay = endCal.get(Calendar.DAY_OF_MONTH)
+        when {
+            startMonth == targetMonth && endMonth == targetMonth -> {
+                if (startDay == endDay) {
+                    result[startDay] = result.getOrDefault(startDay, 0) + it.runningTime
+                } else {
+                    val endDayOfStartDay = Calendar.getInstance().apply {
+                        time = start
+                        add(Calendar.DAY_OF_MONTH, 1)
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    result[startDay] = result.getOrDefault(
+                        startDay,
+                        0
+                    ) + endDayOfStartDay.timeInMillis - startCal.timeInMillis
+                    val startDayOfEndDay = Calendar.getInstance().apply {
+                        time = end
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    result[endDay] = result.getOrDefault(
+                        endDay,
+                        0
+                    ) + endCal.timeInMillis - startDayOfEndDay.timeInMillis
+                }
+            }
+
+            startMonth == targetMonth -> {
+                val endDayOfStartDay = Calendar.getInstance().apply {
+                    time = start
+                    add(Calendar.DAY_OF_MONTH, 1)
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                result[startDay] = result.getOrDefault(
+                    startDay,
+                    0
+                ) + endDayOfStartDay.timeInMillis - startCal.timeInMillis
+            }
+
+            endMonth == targetMonth -> {
+                val startDayOfEndDay = Calendar.getInstance().apply {
+                    time = end
+                    set(Calendar.HOUR_OF_DAY, 0)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                result[endDay] = result.getOrDefault(
+                    endDay,
+                    0
+                ) + endCal.timeInMillis - startDayOfEndDay.timeInMillis
+            }
+        }
+    }
+    return result.toList().sortedBy { it.first }
 }
 
 fun calculateRunningTimePerDay(
@@ -414,37 +489,73 @@ fun getDurationForTargetHour(
     startTime: Date,
     endTime: Date,
     targetDate: Date,
-    targetHour: Int
+    targetHour: Int,
+    segmentTime: SegmentTime
 ): Long {
     val startCal = Calendar.getInstance().apply {
         time = startTime
-    }.timeInMillis
+    }
+    val startTimeInMillis = startCal.timeInMillis
     val endCal = Calendar.getInstance().apply {
         time = endTime
-    }.timeInMillis
+    }
+    val endTimeInMillis = endCal.timeInMillis
     val targetCal = Calendar.getInstance().apply {
         time = targetDate
+    }
+    targetCal.time = when (segmentTime) {
+        SegmentTime.DAY -> targetDate
+        SegmentTime.WEEK,
+        SegmentTime.MONTH,
+        SegmentTime.YEAR -> {
+            val field = when (segmentTime) {
+                SegmentTime.WEEK -> Calendar.WEEK_OF_YEAR
+                SegmentTime.MONTH -> Calendar.MONTH
+                else -> Calendar.YEAR
+            }
+            if (startCal.get(Calendar.DAY_OF_YEAR) == endCal.get(Calendar.DAY_OF_YEAR)) {
+                startTime
+            } else {
+                if (startCal.get(field) == endCal.get(field)) {
+                    if (targetHour < 12) {
+                        endTime
+                    } else {
+                        startTime
+                    }
+                } else {
+                    if (startCal.get(field) == targetCal.get(field)) {
+                        startTime
+                    } else {
+                        endTime
+                    }
+                }
+
+            }
+        }
+    }
+    targetCal.apply {
         set(Calendar.HOUR_OF_DAY, targetHour)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
         set(Calendar.MILLISECOND, 0)
-    }.timeInMillis
-
+    }
+    val targetTimeInMillis = targetCal.timeInMillis
+    val nextTargetTimeInMillis = targetCal.timeInMillis + 60 * 60 * 1000
     return when {
-        targetCal in startCal..endCal -> {
-            val nextTarget = targetCal + 60 * 60 * 1000
-            if (nextTarget in startCal..endCal) {
-                60 * 60 * 1000
-            } else {
-                val distance1 = targetCal - startCal
-                val distance2 = endCal - targetCal
-                when {
-                    distance1 > 60 * 60 * 1000 && distance2 > 60 * 60 * 1000 -> 60 * 60 * 1000
-                    distance1 > 60 * 60 * 1000 -> distance2
-                    distance2 > 60 * 60 * 1000 -> distance1
-                    else -> 0
-                }
-            }
+        startTimeInMillis <= targetTimeInMillis && endTimeInMillis >= nextTargetTimeInMillis -> {
+            60 * 60 * 1000
+        }
+
+        startTimeInMillis in targetTimeInMillis..nextTargetTimeInMillis && endTimeInMillis in targetTimeInMillis..nextTargetTimeInMillis -> {
+            endTimeInMillis - startTimeInMillis
+        }
+
+        startTimeInMillis in targetTimeInMillis..nextTargetTimeInMillis -> {
+            nextTargetTimeInMillis - startTimeInMillis
+        }
+
+        endTimeInMillis in targetTimeInMillis..nextTargetTimeInMillis -> {
+            endTimeInMillis - targetTimeInMillis
         }
 
         else -> 0

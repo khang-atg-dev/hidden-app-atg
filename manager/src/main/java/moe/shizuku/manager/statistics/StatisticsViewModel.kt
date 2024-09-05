@@ -110,7 +110,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                     dateIndicator,
                     segmentSelected
                 ),
-                barData = getBarData(filteredDate, dateIndicator),
+                barData = getBarData(filteredDate, dateIndicator, segmentSelected),
                 periodicBarData = getPeriodicBarData(
                     filteredDate,
                     dateIndicator,
@@ -166,7 +166,8 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
 
     private fun getBarData(
         data: List<StatisticFocus>,
-        dateIndicator: Date
+        dateIndicator: Date,
+        segmentSelected: SegmentTime
     ): BarData {
         if (data.isEmpty()) return BarData()
         val entries = (0 until 24).map {
@@ -174,7 +175,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
             data.forEach { d ->
                 val startDate = d.startTime.toDate() ?: return BarData()
                 val endDate = d.endTime.toDate() ?: return BarData()
-                value += getDurationForTargetHour(startDate, endDate, dateIndicator, it)
+                value += getDurationForTargetHour(startDate, endDate, dateIndicator, it, segmentSelected)
             }
             BarEntry(it.toFloat(), value)
         }
@@ -189,6 +190,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
         dateIndicator: Date,
         segmentSelected: SegmentTime
     ): BarData {
+        if (data.isEmpty()) return BarData()
         val entries: List<BaseEntry>? = when (segmentSelected) {
             SegmentTime.DAY -> null
             SegmentTime.WEEK -> {
@@ -203,7 +205,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
             }
 
             SegmentTime.MONTH -> {
-                val times = calculateDailyTotalRunningTime(data)
+                val times = calculateDailyTotalRunningTime(data, dateIndicator)
                 if (times.isEmpty()) null
                 else {
                     (dateIndicator.getFirstDayOfMonth()..dateIndicator.getLastDayOfMonth()).map {
