@@ -257,19 +257,95 @@ fun calculateDailyTotalRunningTime(tasks: List<StatisticFocus>): List<Pair<Int, 
         .sortedBy { it.first }
 }
 
-fun calculateRunningTimePerDay(tasks: List<StatisticFocus>): List<Pair<Int, Long>> {
+fun calculateRunningTimePerDay(
+    tasks: List<StatisticFocus>,
+    targetDate: Date,
+    segmentTime: SegmentTime
+): List<Pair<Int, Long>> {
+    if (tasks.isEmpty()) return emptyList()
+    val firstField =
+        Calendar.DAY_OF_MONTH.takeIf { segmentTime == SegmentTime.MONTH } ?: Calendar.DAY_OF_WEEK
+    val secondField =
+        Calendar.MONTH.takeIf { segmentTime == SegmentTime.MONTH } ?: Calendar.WEEK_OF_YEAR
     val dayRunningTimeMap = mutableMapOf<Int, Long>()
-
-    tasks.forEach { task ->
-        val calendar = Calendar.getInstance()
-        task.startTime.toDate()?.let {
-            calendar.time = it
-            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-            val runningTime = dayRunningTimeMap.getOrDefault(dayOfWeek, 0L) + task.runningTime
-            dayRunningTimeMap[dayOfWeek] = runningTime
-        }
+    val targetCal = Calendar.getInstance().apply {
+        time = targetDate
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
     }
+    when (segmentTime) {
+        SegmentTime.WEEK -> {
+            targetCal.set(Calendar.DAY_OF_WEEK, targetCal.firstDayOfWeek)
+        }
 
+        SegmentTime.MONTH -> {
+            targetCal.set(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        else -> {}
+    }
+    val target = targetCal.get(firstField)
+    val targetMonth = targetCal.get(secondField)
+    val nextTargetCal = targetCal.apply {
+        when (segmentTime) {
+            SegmentTime.WEEK -> add(Calendar.WEEK_OF_YEAR, 1)
+            SegmentTime.MONTH -> add(Calendar.MONTH, 1)
+            else -> {}
+        }
+        add(Calendar.DAY_OF_MONTH, -1)
+    }
+    val nextTarget = nextTargetCal.get(firstField)
+    val nextTargetMonth = nextTargetCal.get(secondField)
+    (target..nextTarget).forEach {
+        var runningTime = 0L
+        tasks.forEach inner@{ task ->
+            val start = task.startTime.toDate() ?: return@inner
+            val end = task.endTime.toDate() ?: return@inner
+            val startCal = Calendar.getInstance().apply {
+                time = start
+            }
+            val endCal = Calendar.getInstance().apply {
+                time = end
+            }
+            val dayStart = startCal.get(firstField)
+            val monthStart = startCal.get(secondField)
+            val dayEnd = endCal.get(firstField)
+            val monthEnd = endCal.get(secondField)
+            runningTime += when {
+                dayEnd == it && dayStart == it -> {
+                    dayRunningTimeMap.getOrDefault(it, 0L) + task.runningTime
+                }
+
+                dayStart == it && (monthStart == targetMonth || monthStart == nextTargetMonth) -> {
+                    val midnight = Calendar.getInstance().apply {
+                        time = start
+                    }
+                    midnight.add(Calendar.DAY_OF_YEAR, 1)
+                    midnight[Calendar.HOUR_OF_DAY] = 0
+                    midnight[Calendar.MINUTE] = 0
+                    midnight[Calendar.SECOND] = 0
+                    midnight[Calendar.MILLISECOND] = 0
+                    midnight.timeInMillis - startCal.timeInMillis
+                }
+
+                dayEnd == it && (monthEnd == targetMonth || monthEnd == nextTargetMonth) -> {
+                    val midnight = Calendar.getInstance().apply {
+                        time = end
+                    }
+                    midnight[Calendar.HOUR_OF_DAY] = 0
+                    midnight[Calendar.MINUTE] = 0
+                    midnight[Calendar.SECOND] = 0
+                    midnight[Calendar.MILLISECOND] = 0
+                    endCal.timeInMillis - midnight.timeInMillis
+                }
+
+                else -> 0
+            }
+        }
+        dayRunningTimeMap[it] = runningTime
+    }
     return dayRunningTimeMap.map { Pair(it.key, it.value) }
 }
 
@@ -299,9 +375,11 @@ fun getTotalTimeInDay(
         SegmentTime.WEEK -> {
             targetCal.set(Calendar.DAY_OF_WEEK, targetCal.firstDayOfWeek)
         }
+
         SegmentTime.MONTH -> {
             targetCal.set(Calendar.DAY_OF_MONTH, 1)
         }
+
         SegmentTime.YEAR -> {
             targetCal.set(Calendar.DAY_OF_YEAR, 1)
         }
@@ -328,7 +406,7 @@ fun getTotalTimeInDay(
             end - target
         }
 
-        else -> 0L
+        else -> 0
     }
 }
 

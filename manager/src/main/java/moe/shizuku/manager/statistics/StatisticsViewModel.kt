@@ -1,5 +1,6 @@
 package moe.shizuku.manager.statistics
 
+import android.annotation.SuppressLint
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.github.mikephil.charting.data.BarData
@@ -103,7 +104,12 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                 totalTime = totalTime,
                 numberOfFocuses = filteredDate.size,
                 pieData = getPieData(groupedData, totalTime),
-                listStatistics = getListStatistics(groupedData, totalTime, dateIndicator, segmentSelected),
+                listStatistics = getListStatistics(
+                    groupedData,
+                    totalTime,
+                    dateIndicator,
+                    segmentSelected
+                ),
                 barData = getBarData(filteredDate, dateIndicator),
                 periodicBarData = getPeriodicBarData(
                     filteredDate,
@@ -140,12 +146,14 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
     ): List<StatisticItem> {
         var index = 0
         return data.map { d ->
-            val sum = d.value.sumOf { i -> getTotalTimeInDay(
-                i.startTime,
-                i.endTime,
-                dateIndicator,
-                segmentSelected
-            ) }
+            val sum = d.value.sumOf { i ->
+                getTotalTimeInDay(
+                    i.startTime,
+                    i.endTime,
+                    dateIndicator,
+                    segmentSelected
+                )
+            }
             StatisticItem(
                 name = d.value[0].name,
                 time = sum,
@@ -184,13 +192,13 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
         val entries: List<BaseEntry>? = when (segmentSelected) {
             SegmentTime.DAY -> null
             SegmentTime.WEEK -> {
-                val times = calculateRunningTimePerDay(data)
+                val times = calculateRunningTimePerDay(data, dateIndicator, segmentSelected)
                 if (times.isEmpty())
                     null
                 else
                     (Calendar.SUNDAY..Calendar.SATURDAY).map {
-                        val time = times.find { t -> t.first == it }?.second?.toFloat()
-                        BarEntry(it.toFloat(), time ?: 0f)
+                        val time = times.find { t -> t.first == it }?.second?.toFloat() ?: 0f
+                        BarEntry(it.toFloat(), time)
                     }
             }
 
@@ -264,14 +272,14 @@ class CustomPieValueFormatter(
 }
 
 class CustomBarValueFormatter : ValueFormatter() {
+    @SuppressLint("DefaultLocale")
     override fun getFormattedValue(value: Float): String {
         // Format your label with a newline
         val hours = TimeUnit.MILLISECONDS.toHours(value.toLong())
         val minutes = TimeUnit.MILLISECONDS.toMinutes(value.toLong()) % 60
         val seconds = TimeUnit.MILLISECONDS.toSeconds(value.toLong()) % 60
-
         return when {
-            hours > 0 -> "${hours}h"
+            hours > 0 -> String.format("%.1f h", value / (60 * 60 * 1000))
             minutes > 0 -> "${minutes}m"
             else -> "${seconds}s"
         }

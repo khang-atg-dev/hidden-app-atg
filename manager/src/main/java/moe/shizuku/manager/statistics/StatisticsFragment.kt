@@ -55,7 +55,6 @@ class StatisticsFragment : Fragment() {
                     } else {
                         binding.barChartContainer.visibility = View.GONE
                     }
-
                     if (state.segmentSelected == SegmentTime.DAY || state.periodicBarData.dataSetCount == 0) {
                         binding.periodicBarChartContainer.visibility = View.GONE
                     } else {
