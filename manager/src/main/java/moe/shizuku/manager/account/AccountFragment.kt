@@ -1,15 +1,18 @@
 package moe.shizuku.manager.account
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import moe.shizuku.manager.R
+import moe.shizuku.manager.app.BaseFragment
 import moe.shizuku.manager.databinding.AccountFragmentBinding
-import moe.shizuku.manager.ktx.logd
 
-class AccountFragment: Fragment() {
+class AccountFragment: BaseFragment() {
     private lateinit var binding: AccountFragmentBinding
+
+    override fun getTitle(context: Context): String = context.getString(R.string.account)
 
     override fun onCreateView(
         inflater: LayoutInflater,

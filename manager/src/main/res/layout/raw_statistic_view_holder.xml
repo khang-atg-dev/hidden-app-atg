@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:animateLayoutChanges="true"
-    android:backgroundTint="@color/material_white_1000"
+    android:backgroundTint="@color/statistic_bg_card_view"
     android:checkable="false"
     android:clickable="false"
     android:focusable="false"

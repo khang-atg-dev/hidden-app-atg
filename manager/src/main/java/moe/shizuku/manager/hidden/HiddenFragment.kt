@@ -1,5 +1,6 @@
 package moe.shizuku.manager.hidden
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
@@ -9,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +22,7 @@ import moe.shizuku.manager.AppConstants.GROUP_PKG_PREFIX
 import moe.shizuku.manager.AppConstants.RELOAD_PACKAGES_FOR_LOCK
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
+import moe.shizuku.manager.app.BaseFragment
 import moe.shizuku.manager.databinding.HiddenFragmentBinding
 import moe.shizuku.manager.management.appsViewModel
 import moe.shizuku.manager.shizuku.ShizukuActivity
@@ -36,13 +37,15 @@ import rikka.recyclerview.addEdgeSpacing
 import rikka.recyclerview.addItemSpacing
 import rikka.recyclerview.fixEdgeEffect
 
-class HiddenFragment : Fragment(), HiddenCallback {
+class HiddenFragment : BaseFragment(), HiddenCallback {
     private lateinit var binding: HiddenFragmentBinding
     private val homeModel by viewModels { HiddenViewModel() }
     private val appsModel by appsViewModel()
     private val adapter by unsafeLazy { HiddenAdapter() }
     private val apps = mutableListOf<AppGroupBottomSheet>()
     private val lockPermissionDialogFragment = LockPermissionDialogFragment()
+
+    override fun getTitle(context: Context): String = context.getString(R.string.hidden)
 
     override fun onResume() {
         super.onResume()

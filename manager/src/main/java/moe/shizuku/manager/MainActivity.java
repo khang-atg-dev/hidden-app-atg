@@ -7,6 +7,7 @@ import static moe.shizuku.manager.utils.ExtensionsKt.isDialogFragmentShowing;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -21,6 +22,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import moe.shizuku.manager.account.AccountFragment;
 import moe.shizuku.manager.app.AppBarActivity;
+import moe.shizuku.manager.app.BaseFragment;
 import moe.shizuku.manager.databinding.ActivityMainBinding;
 import moe.shizuku.manager.focus.FocusFragment;
 import moe.shizuku.manager.focus.details.CountdownService;
@@ -44,17 +46,56 @@ public class MainActivity extends AppBarActivity {
     private final FocusFragment focusFragment = new FocusFragment();
     private final FragmentManager fm = getSupportFragmentManager();
     private ActivityMainBinding binding;
-    private Fragment activeFragment = focusFragment;
+    private BaseFragment activeFragment = focusFragment;
     private boolean showMenu = true;
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        int id = 0;
+        if (activeFragment instanceof AccountFragment) {
+            id = 1;
+        } else if (activeFragment instanceof HiddenFragment) {
+            id = 2;
+        } else if (activeFragment instanceof StatisticsFragment) {
+            id = 3;
+        } else if (activeFragment instanceof FocusFragment) {
+            id = 4;
+        }
+        outState.putInt("fragmentId", id);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        int id = savedInstanceState.getInt("fragmentId");
+        switch (id) {
+            case 1 -> activeFragment = accountFragment;
+            case 2 -> activeFragment = hiddenFragment;
+            case 3 -> activeFragment = statisticsFragment;
+            case 4 -> activeFragment = focusFragment;
+        }
+    }
 
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            FragmentTransaction fragmentTransaction = fm.beginTransaction();
+            for (Fragment fragment : fm.getFragments()) {
+                if (fragment != null) {
+                    // Remove each fragment
+                    fragmentTransaction.remove(fragment);
+                }
+            }
+            fragmentTransaction.commit();
+        }
         BottomNavigationView bottomNavigationView = binding.bottomNavigation;
         fm.beginTransaction().add(R.id.fragment_container_view, accountFragment, "4").hide(accountFragment).commit();
         fm.beginTransaction().add(R.id.fragment_container_view, hiddenFragment, "3").hide(hiddenFragment).commit();
         fm.beginTransaction().add(R.id.fragment_container_view, statisticsFragment, "2").hide(statisticsFragment).commit();
-        fm.beginTransaction().add(R.id.fragment_container_view, focusFragment, "1").commit();
+        fm.beginTransaction().add(R.id.fragment_container_view, focusFragment, "1").hide(focusFragment).commit();
+        fm.beginTransaction().show(activeFragment).commit();
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (getSupportActionBar() != null) {
@@ -70,7 +111,7 @@ public class MainActivity extends AppBarActivity {
             boolean backward = true;
             FragmentTransaction transaction = fm.beginTransaction();
             @SuppressLint("NonConstantResourceId")
-            Fragment nextFragment = switch (item.getItemId()) {
+            BaseFragment nextFragment = switch (item.getItemId()) {
                 case R.id.accountFragment -> {
                     backward = false;
                     yield accountFragment;
@@ -99,7 +140,14 @@ public class MainActivity extends AppBarActivity {
         });
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(this.getString(R.string.focus));
+            if (!(activeFragment instanceof StatisticsFragment)) {
+                getSupportActionBar().show();
+                getSupportActionBar().setTitle(activeFragment.getTitle(this));
+            } else {
+                getSupportActionBar().hide();
+            }
+            showMenu = activeFragment instanceof FocusFragment || activeFragment instanceof HiddenFragment;
+            invalidateOptionsMenu();
         }
     }
 

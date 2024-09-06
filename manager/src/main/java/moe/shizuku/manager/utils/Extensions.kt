@@ -204,6 +204,7 @@ fun Date.getWeekRange(): String {
     val calendar = Calendar.getInstance().apply {
         time = this@getWeekRange
         // Set to the start of the week
+        setFirstDayOfWeek(Calendar.SUNDAY)
         set(Calendar.DAY_OF_WEEK, firstDayOfWeek)
     }
     val startOfWeek = calendar.time
@@ -230,6 +231,7 @@ fun String.toDate(): Date? {
 fun Date.getFirstDayOfMonth(): Int {
     val firstDay = Calendar.getInstance().apply {
         time = this@getFirstDayOfMonth
+        setFirstDayOfWeek(Calendar.SUNDAY)
     }
     firstDay[Calendar.DAY_OF_MONTH] = 1
     return firstDay.get(Calendar.DAY_OF_MONTH)
@@ -238,6 +240,7 @@ fun Date.getFirstDayOfMonth(): Int {
 fun Date.getLastDayOfMonth(): Int {
     val lastDay = Calendar.getInstance().apply {
         time = this@getLastDayOfMonth
+        setFirstDayOfWeek(Calendar.SUNDAY)
     }
     lastDay.add(Calendar.MONTH, 1)
     lastDay[Calendar.DAY_OF_MONTH] = 1
@@ -256,12 +259,15 @@ fun calculateMonthlyTotalRunningTime(
         val end = it.endTime.toDate() ?: return@forEach
         val startCal = Calendar.getInstance().apply {
             time = start
+            setFirstDayOfWeek(Calendar.SUNDAY)
         }
         val endCal = Calendar.getInstance().apply {
             time = end
+            setFirstDayOfWeek(Calendar.SUNDAY)
         }
         val targetCal = Calendar.getInstance().apply {
             time = targetDate
+            setFirstDayOfWeek(Calendar.SUNDAY)
             set(Calendar.MONTH, targetMonth)
             set(Calendar.DAY_OF_MONTH, 1)
             set(Calendar.HOUR_OF_DAY, 0)
@@ -283,6 +289,7 @@ fun calculateMonthlyTotalRunningTime(
 
                     startMonth == targetMonth -> {
                         val endDayOfMonth = Calendar.getInstance().apply {
+                            setFirstDayOfWeek(Calendar.SUNDAY)
                             time = targetDate
                             set(Calendar.MONTH, endMonth)
                             set(Calendar.DAY_OF_MONTH, 1)
@@ -296,6 +303,7 @@ fun calculateMonthlyTotalRunningTime(
 
                     endMonth == targetMonth -> {
                         val startDayOfMonth = Calendar.getInstance().apply {
+                            setFirstDayOfWeek(Calendar.SUNDAY)
                             time = targetDate
                             set(Calendar.MONTH, endMonth)
                             set(Calendar.DAY_OF_MONTH, 1)
@@ -312,6 +320,7 @@ fun calculateMonthlyTotalRunningTime(
             startYear == targetYear -> {
                 if (startMonth == targetMonth) {
                     val endDayOfMonth = Calendar.getInstance().apply {
+                        setFirstDayOfWeek(Calendar.SUNDAY)
                         time = targetDate
                         set(Calendar.YEAR, endYear)
                         set(Calendar.MONTH, endMonth)
@@ -328,6 +337,7 @@ fun calculateMonthlyTotalRunningTime(
             endYear == targetYear -> {
                 if (endMonth == targetMonth) {
                     val startDayOfMonth = Calendar.getInstance().apply {
+                        setFirstDayOfWeek(Calendar.SUNDAY)
                         time = targetDate
                         set(Calendar.YEAR, endYear)
                         set(Calendar.MONTH, endMonth)
@@ -355,12 +365,15 @@ fun calculateDailyTotalRunningTime(
         val end = it.endTime.toDate() ?: return@forEach
         val startCal = Calendar.getInstance().apply {
             time = start
+            setFirstDayOfWeek(Calendar.SUNDAY)
         }
         val endCal = Calendar.getInstance().apply {
             time = end
+            setFirstDayOfWeek(Calendar.SUNDAY)
         }
         val targetCal = Calendar.getInstance().apply {
             time = targetDate
+            setFirstDayOfWeek(Calendar.SUNDAY)
         }
         val targetMonth = targetCal.get(Calendar.MONTH)
         val startMonth = startCal.get(Calendar.MONTH)
@@ -377,6 +390,7 @@ fun calculateDailyTotalRunningTime(
                 } else {
                     val endDayOfStartDay = Calendar.getInstance().apply {
                         time = start
+                        setFirstDayOfWeek(Calendar.SUNDAY)
                         add(Calendar.DAY_OF_MONTH, 1)
                         set(Calendar.HOUR_OF_DAY, 0)
                         set(Calendar.MINUTE, 0)
@@ -389,6 +403,7 @@ fun calculateDailyTotalRunningTime(
                     ) + endDayOfStartDay.timeInMillis - startCal.timeInMillis
                     val startDayOfEndDay = Calendar.getInstance().apply {
                         time = end
+                        setFirstDayOfWeek(Calendar.SUNDAY)
                         set(Calendar.HOUR_OF_DAY, 0)
                         set(Calendar.MINUTE, 0)
                         set(Calendar.SECOND, 0)
@@ -404,6 +419,7 @@ fun calculateDailyTotalRunningTime(
             startMonth == targetMonth -> {
                 val endDayOfStartDay = Calendar.getInstance().apply {
                     time = start
+                    setFirstDayOfWeek(Calendar.SUNDAY)
                     add(Calendar.DAY_OF_MONTH, 1)
                     set(Calendar.HOUR_OF_DAY, 0)
                     set(Calendar.MINUTE, 0)
@@ -419,6 +435,7 @@ fun calculateDailyTotalRunningTime(
             endMonth == targetMonth -> {
                 val startDayOfEndDay = Calendar.getInstance().apply {
                     time = end
+                    setFirstDayOfWeek(Calendar.SUNDAY)
                     set(Calendar.HOUR_OF_DAY, 0)
                     set(Calendar.MINUTE, 0)
                     set(Calendar.SECOND, 0)
@@ -447,6 +464,7 @@ fun calculateRunningTimePerDay(
     val dayRunningTimeMap = mutableMapOf<Int, Long>()
     val targetCal = Calendar.getInstance().apply {
         time = targetDate
+        setFirstDayOfWeek(Calendar.SUNDAY)
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
@@ -454,6 +472,7 @@ fun calculateRunningTimePerDay(
     }
     when (segmentTime) {
         SegmentTime.WEEK -> {
+            targetCal.setFirstDayOfWeek(Calendar.SUNDAY)
             targetCal.set(Calendar.DAY_OF_WEEK, targetCal.firstDayOfWeek)
         }
 
@@ -482,9 +501,11 @@ fun calculateRunningTimePerDay(
             val end = task.endTime.toDate() ?: return@inner
             val startCal = Calendar.getInstance().apply {
                 time = start
+                setFirstDayOfWeek(Calendar.SUNDAY)
             }
             val endCal = Calendar.getInstance().apply {
                 time = end
+                setFirstDayOfWeek(Calendar.SUNDAY)
             }
             val dayStart = startCal.get(firstField)
             val monthStart = startCal.get(secondField)
@@ -501,6 +522,7 @@ fun calculateRunningTimePerDay(
                 dayStart == it && (monthStart == targetMonth || monthStart == nextTargetMonth) -> {
                     val midnight = Calendar.getInstance().apply {
                         time = start
+                        setFirstDayOfWeek(Calendar.SUNDAY)
                     }
                     midnight.add(Calendar.DAY_OF_YEAR, 1)
                     midnight[Calendar.HOUR_OF_DAY] = 0
@@ -513,6 +535,7 @@ fun calculateRunningTimePerDay(
                 dayEnd == it && (monthEnd == targetMonth || monthEnd == nextTargetMonth) -> {
                     val midnight = Calendar.getInstance().apply {
                         time = end
+                        setFirstDayOfWeek(Calendar.SUNDAY)
                     }
                     midnight[Calendar.HOUR_OF_DAY] = 0
                     midnight[Calendar.MINUTE] = 0
@@ -538,12 +561,15 @@ fun getTotalTimeInDay(
     val startDate = startTime.toDate() ?: return 0
     val endDate = endTime.toDate() ?: return 0
     val start = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
         time = startDate
     }.timeInMillis
     val end = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
         time = endDate
     }.timeInMillis
     val targetCal = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
         time = targetDate
         set(Calendar.HOUR_OF_DAY, 0)
         set(Calendar.MINUTE, 0)
@@ -553,6 +579,7 @@ fun getTotalTimeInDay(
     when (segmentTime) {
         SegmentTime.DAY -> {}
         SegmentTime.WEEK -> {
+            targetCal.setFirstDayOfWeek(Calendar.SUNDAY)
             targetCal.set(Calendar.DAY_OF_WEEK, targetCal.firstDayOfWeek)
         }
 
@@ -567,6 +594,7 @@ fun getTotalTimeInDay(
     val target = targetCal.timeInMillis
     val nextTargetCal = Calendar.getInstance().apply {
         time = targetCal.time
+        setFirstDayOfWeek(Calendar.SUNDAY)
         when (segmentTime) {
             SegmentTime.DAY -> add(Calendar.DAY_OF_MONTH, 1)
             SegmentTime.WEEK -> add(Calendar.WEEK_OF_YEAR, 1)
@@ -600,15 +628,18 @@ fun getDurationForTargetHour(
     segmentTime: SegmentTime
 ): Long {
     val startCal = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
         time = startTime
     }
     val startTimeInMillis = startCal.timeInMillis
     val endCal = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
         time = endTime
     }
     val endTimeInMillis = endCal.timeInMillis
     val targetCal = Calendar.getInstance().apply {
         time = targetDate
+        setFirstDayOfWeek(Calendar.SUNDAY)
     }
     targetCal.time = when (segmentTime) {
         SegmentTime.DAY -> targetDate
@@ -670,7 +701,9 @@ fun getDurationForTargetHour(
 }
 
 fun isSameDay(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
-    val calendar = Calendar.getInstance()
+    val calendar = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
+    }
 
     calendar.time = startDate
     val startDay = calendar.get(Calendar.DAY_OF_YEAR)
@@ -690,6 +723,7 @@ fun isSameDay(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
 
 fun isSameWeek(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
     val calendar = Calendar.getInstance()
+    calendar.setFirstDayOfWeek(Calendar.SUNDAY)
 
     calendar.time = startDate
     val startWeek = calendar.get(Calendar.WEEK_OF_YEAR)
@@ -708,7 +742,9 @@ fun isSameWeek(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
 }
 
 fun isSameMonth(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
-    val calendar = Calendar.getInstance()
+    val calendar = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
+    }
 
     calendar.time = startDate
     val startMonth = calendar.get(Calendar.MONTH)
@@ -727,7 +763,9 @@ fun isSameMonth(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
 }
 
 fun isSameYear(startDate: Date, endDate: Date, dateIndicator: Date): Boolean {
-    val calendar = Calendar.getInstance()
+    val calendar = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
+    }
 
     calendar.time = startDate
     val startYear = calendar.get(Calendar.YEAR)

@@ -1,12 +1,12 @@
 package moe.shizuku.manager.focus
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
+import moe.shizuku.manager.app.BaseFragment
 import moe.shizuku.manager.databinding.FocusFragmentBinding
 import moe.shizuku.manager.focus.details.FocusDetailsActivity
 import moe.shizuku.manager.model.CurrentFocus
@@ -30,11 +31,13 @@ import java.util.Calendar
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-class FocusFragment : Fragment(), FocusCallback {
+class FocusFragment : BaseFragment(), FocusCallback {
     private lateinit var binding: FocusFragmentBinding
     private val viewModel by viewModels { FocusViewModel() }
     private val adapter by unsafeLazy { FocusAdapter() }
     private var itemTouchHelper: SwipeCallback<FocusAdapter>? = null
+
+    override fun getTitle(context: Context): String = context.getString(R.string.focus)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

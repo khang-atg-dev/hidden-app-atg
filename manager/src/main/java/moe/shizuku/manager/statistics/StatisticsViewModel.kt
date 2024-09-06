@@ -66,6 +66,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
         _state.value.let {
             val newDate = Calendar.getInstance().apply {
                 time = it.dateIndicator
+                setFirstDayOfWeek(Calendar.SUNDAY)
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
                 set(Calendar.SECOND, 0)

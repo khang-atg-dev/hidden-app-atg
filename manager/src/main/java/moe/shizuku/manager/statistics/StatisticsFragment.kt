@@ -1,11 +1,11 @@
 package moe.shizuku.manager.statistics
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -14,6 +14,7 @@ import com.github.mikephil.charting.components.XAxis
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.R
+import moe.shizuku.manager.app.BaseFragment
 import moe.shizuku.manager.databinding.StatisticsFragmentBinding
 import moe.shizuku.manager.statistics.raw.RawStatisticsActivity
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
@@ -21,10 +22,12 @@ import moe.shizuku.manager.utils.getLastDayOfMonth
 import moe.shizuku.manager.utils.getTimeAsString
 import rikka.lifecycle.viewModels
 
-class StatisticsFragment : Fragment(), StaticsListener {
+class StatisticsFragment : BaseFragment(), StaticsListener {
     private lateinit var binding: StatisticsFragmentBinding
     private lateinit var adapter: StatisticAdapter
     private val viewModel by viewModels { StatisticsViewModel(requireContext()) }
+
+    override fun getTitle(context: Context): String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,12 +41,15 @@ class StatisticsFragment : Fragment(), StaticsListener {
                     binding.totalFocus.text = state.numberOfFocuses.toString()
 
                     if (state.pieData.dataSetCount != 0) {
+                        state.pieData.dataSet.valueTextColor = binding.totalTime.textColors.defaultColor
+                        binding.viewRawData.visibility = View.VISIBLE
                         binding.pieChartContainer.visibility = View.VISIBLE
                         binding.pieChart.data = state.pieData
                         binding.pieChart.invalidate()
                         adapter.dataSource = state.listStatistics
                     } else {
                         binding.pieChartContainer.visibility = View.GONE
+                        binding.viewRawData.visibility = View.INVISIBLE
                     }
 
                     if (state.barData.dataSetCount != 0) {
@@ -190,12 +196,14 @@ class StatisticsFragment : Fragment(), StaticsListener {
             it.setDrawAxisLine(false)
             it.setDrawGridLines(false)
             it.axisMinimum = -1f
+            it.textColor = binding.totalTime.textColors.defaultColor
         }
         binding.barChart.axisRight.isEnabled = false
         binding.barChart.axisLeft.let {
             it.axisMinimum = 0f
             it.setDrawAxisLine(false)
             it.valueFormatter = CustomBarValueFormatter()
+            it.textColor = binding.totalTime.textColors.defaultColor
         }
 
         binding.dayOfWeekBarChart.setupBarChart()
@@ -249,12 +257,14 @@ class StatisticsFragment : Fragment(), StaticsListener {
             it.setDrawAxisLine(false)
             it.setDrawGridLines(false)
             it.axisMinimum = 0.5f
+            it.textColor = binding.totalTime.textColors.defaultColor
         }
         this.axisRight.isEnabled = false
         this.axisLeft.let {
             it.axisMinimum = 0f
             it.setDrawAxisLine(false)
             it.valueFormatter = CustomBarValueFormatter()
+            it.textColor = binding.totalTime.textColors.defaultColor
         }
     }
 }
