@@ -128,7 +128,6 @@ class StatisticsFragment : BaseFragment(), StaticsListener {
                                 binding.monthlyBarChart.data = state.periodicBarData
                                 binding.monthlyBarChart.xAxis.valueFormatter = null
                                 binding.monthlyBarChart.xAxis.labelCount = 12
-                                binding.monthlyBarChart.xAxis.axisMinimum = 1f
                                 binding.monthlyBarChart.invalidate()
                             }
 
