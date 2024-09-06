@@ -22,4 +22,5 @@ public class AppConstants {
     public static final String FORMAT_MONTH_DAY_TIME = "MM-dd";
     public static final String FORMAT_YEAR_MONTH_TIME = "yyyy-MM";
     public static final String FORMAT_YEAR_TIME = "yyyy";
+    public static final String FORMAT_HMS = "HH:mm:ss";
 }

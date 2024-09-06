@@ -265,5 +265,6 @@ With %1$s, in any terminal app, you can connect to and interact with the shell r
     <string name="focus_duration_statistics">Focus Duration Statistics</string>
     <string name="daily_focus_statistics">Daily Focus Statistics</string>
     <string name="monthly_focus_statistics">Monthly Focus Statistics</string>
+    <string name="data_details">Data Details</string>
 
 </resources>

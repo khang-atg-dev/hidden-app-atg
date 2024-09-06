@@ -156,6 +156,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                 )
             }
             StatisticItem(
+                id = d.value[0].focusId,
                 name = d.value[0].name,
                 time = sum,
                 color = mixColor[index++],

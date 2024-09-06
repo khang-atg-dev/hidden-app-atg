@@ -1,5 +1,6 @@
 package moe.shizuku.manager.statistics
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,11 +15,13 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import moe.shizuku.manager.R
 import moe.shizuku.manager.databinding.StatisticsFragmentBinding
+import moe.shizuku.manager.statistics.raw.RawStatisticsActivity
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
 import moe.shizuku.manager.utils.getLastDayOfMonth
+import moe.shizuku.manager.utils.getTimeAsString
 import rikka.lifecycle.viewModels
 
-class StatisticsFragment : Fragment() {
+class StatisticsFragment : Fragment(), StaticsListener {
     private lateinit var binding: StatisticsFragmentBinding
     private lateinit var adapter: StatisticAdapter
     private val viewModel by viewModels { StatisticsViewModel(requireContext()) }
@@ -136,7 +139,7 @@ class StatisticsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        adapter = StatisticAdapter(inflater)
+        adapter = StatisticAdapter(inflater, this)
         binding = StatisticsFragmentBinding.inflate(inflater)
         return binding.root
     }
@@ -198,6 +201,13 @@ class StatisticsFragment : Fragment() {
         binding.dayOfWeekBarChart.setupBarChart()
         binding.dailyBarChart.setupBarChart()
         binding.monthlyBarChart.setupBarChart()
+
+        binding.viewRawData.setOnClickListener {
+            val intent = Intent(context, RawStatisticsActivity::class.java)
+            intent.putExtra("SEGMENT_ENUM_ID", viewModel.state.value.segmentSelected.id)
+            intent.putExtra("DATE_INDICATOR", viewModel.state.value.dateIndicator.getTimeAsString())
+            startActivity(intent)
+        }
     }
 
     override fun onResume() {
@@ -206,6 +216,14 @@ class StatisticsFragment : Fragment() {
             viewModel.state.value.dateIndicator,
             viewModel.state.value.segmentSelected
         )
+    }
+
+    override fun onClick(item: StatisticItem) {
+        val intent = Intent(context, RawStatisticsActivity::class.java)
+        intent.putExtra("RAW_STATISTICS_ID", item.id)
+        intent.putExtra("SEGMENT_ENUM_ID", viewModel.state.value.segmentSelected.id)
+        intent.putExtra("DATE_INDICATOR", viewModel.state.value.dateIndicator.getTimeAsString())
+        startActivity(intent)
     }
 
     private fun BarChart.setupBarChart() {

@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import moe.shizuku.manager.R
 import moe.shizuku.manager.utils.BaseAdapter
@@ -11,7 +12,8 @@ import moe.shizuku.manager.utils.BaseHolder
 import moe.shizuku.manager.utils.formatMillisecondsToSimple
 
 class StatisticAdapter(
-    inflater: LayoutInflater
+    inflater: LayoutInflater,
+    private val listener: StaticsListener,
 ) : BaseAdapter<StatisticItem, BaseHolder<StatisticItem>>(inflater) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StatisticViewHolder {
@@ -35,15 +37,23 @@ class StatisticAdapter(
                     progress = it.percentage.toInt()
                     setIndicatorColor(it.color)
                 }
+                itemView.findViewById<ConstraintLayout>(R.id.parent_view).setOnClickListener {
+                    listener.onClick(data)
+                }
             }
         }
     }
 }
 
 data class StatisticItem(
+    val id: String,
     val name: String,
     val time: Long,
     val percentage: Float,
     val numberOfFocuses: Int,
     val color: Int,
 )
+
+interface StaticsListener {
+    fun onClick(item: StatisticItem)
+}

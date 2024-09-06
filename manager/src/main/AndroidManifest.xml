@@ -97,6 +97,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".focus.details.FocusDetailsActivity" />
+        <activity android:name=".statistics.raw.RawStatisticsActivity" />
         <activity
             android:name=".starter.StarterActivity"
             android:label="@string/starter" />
