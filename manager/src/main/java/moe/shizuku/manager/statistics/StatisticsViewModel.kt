@@ -124,8 +124,8 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
     private fun getPieData(data: Map<String, List<StatisticFocus>>, totalTime: Long): PieData {
         if (data.isEmpty()) return PieData()
         val entries = data.map { d ->
-            PieEntry(d.value.sumOf { i -> i.runningTime }.toFloat() / totalTime, d.value[0].name)
-        }
+            PieEntry( d.value.sumOf { i -> i.runningTime }.toFloat() / totalTime, d.value[0].name)
+        }.sortedBy { it.value }.reversed()
         val pieSet = PieDataSet(entries, "").apply {
             xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
             yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
@@ -162,7 +162,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                 percentage = (sum.toFloat() / totalTime) * 100,
                 numberOfFocuses = d.value.size
             )
-        }
+        }.sortedBy { it.time }.reversed()
     }
 
     private fun getBarData(

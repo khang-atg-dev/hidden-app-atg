@@ -46,6 +46,9 @@ class StatisticsFragment : Fragment() {
                     if (state.barData.dataSetCount != 0) {
                         binding.barChartContainer.visibility = View.VISIBLE
                         binding.barChart.let {
+                            context?.let { c ->
+                                it.marker = CustomMarkerView(c, SegmentTime.DAY)
+                            }
                             it.data = state.barData
                             it.xAxis.labelCount = state.barData.entryCount / 2
                             it.invalidate()
@@ -61,6 +64,11 @@ class StatisticsFragment : Fragment() {
                         binding.periodicBarChartContainer.visibility = View.VISIBLE
                         when (state.segmentSelected) {
                             SegmentTime.WEEK -> {
+                                context?.let {
+                                    binding.dayOfWeekBarChart.marker =
+                                        CustomMarkerView(it, state.segmentSelected)
+                                }
+
                                 binding.periodicTitle.text =
                                     context?.getString(R.string.daily_focus_statistics)
 
@@ -76,6 +84,11 @@ class StatisticsFragment : Fragment() {
                             }
 
                             SegmentTime.MONTH -> {
+                                context?.let {
+                                    binding.dailyBarChart.marker =
+                                        CustomMarkerView(it, state.segmentSelected)
+                                }
+
                                 binding.periodicTitle.text =
                                     context?.getString(R.string.daily_focus_statistics)
 
@@ -91,6 +104,11 @@ class StatisticsFragment : Fragment() {
                             }
 
                             SegmentTime.YEAR -> {
+                                context?.let {
+                                    binding.monthlyBarChart.marker =
+                                        CustomMarkerView(it, state.segmentSelected)
+                                }
+
                                 binding.periodicTitle.text =
                                     context?.getString(R.string.monthly_focus_statistics)
 
@@ -160,6 +178,7 @@ class StatisticsFragment : Fragment() {
             setRoundedNegativeDataSetRadius(0f)
         }
         binding.barChart.setPinchZoom(false)
+        binding.barChart.extraRightOffset = 20f
         binding.barChart.isDoubleTapToZoomEnabled = false
         binding.barChart.isScaleXEnabled = false
         binding.barChart.isScaleYEnabled = false
@@ -191,6 +210,7 @@ class StatisticsFragment : Fragment() {
 
     private fun BarChart.setupBarChart() {
         this.setDrawValueAboveBar(false)
+        this.extraRightOffset = 20f
         this.legend.isEnabled = false
         this.description.isEnabled = false
         this.renderer = RoundedBarChartRenderer(
