@@ -214,4 +214,17 @@
     <string name="custom">自定义</string>
     <string name="title_focus_notification">专注任务正在进行</string>
     <string name="msg_focus_notification">时间正在倒计时：</string>
+    <string name="day">日</string>
+    <string name="week">周</string>
+    <string name="month">月</string>
+    <string name="year">年</string>
+    <string name="total_number_of_focues">专注总数</string>
+    <string name="total_focus_time">总专注时间</string>
+    <string name="number_focus">%1$d 次</string>
+    <string name="focus_task_statistics">专注任务统计</string>
+    <string name="focus_duration_statistics">专注时长统计</string>
+    <string name="daily_focus_statistics">每日专注统计</string>
+    <string name="monthly_focus_statistics">每月专注统计</string>
+    <string name="data_details">数据详情</string>
+    <string name="view_raw_data">查看原始数据</string>
 </resources>
