@@ -90,7 +90,7 @@ public class ShizukuSettings {
 
     public static void initialize(Context context) {
         if (sPreferences == null) {
-            sPreferences = context
+            sPreferences = getSettingsStorageContext(context)
                     .getSharedPreferences(NAME, Context.MODE_PRIVATE);
         }
     }
