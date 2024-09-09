@@ -13,6 +13,7 @@ import rikka.recyclerview.BaseViewHolder
 import rikka.recyclerview.BaseViewHolder.Creator
 import rikka.recyclerview.IdBasedRecyclerViewAdapter
 import rikka.recyclerview.IndexCreatorPool
+import java.util.Calendar
 
 class RawStatisticAdapter : IdBasedRecyclerViewAdapter(ArrayList()) {
     init {
@@ -62,8 +63,25 @@ class RawStatisticViewHolder(
     override fun onBind() {
         super.onBind()
         binding.name.text = data.name
-        binding.duration.text = data.runningTime.formatMilliseconds(itemView.context)
-        binding.time.text = data.startTime.toDate()?.getTimeAsString(FORMAT_HMS) + "~" + data.endTime.toDate()?.getTimeAsString(FORMAT_HMS)
+        var sum = 0L
+        data.timeline.forEach {
+            val calender = Calendar.getInstance().apply {
+                setFirstDayOfWeek(Calendar.SUNDAY)
+            }
+            val start = it.startTime.toDate() ?: return@forEach
+            val end = it.endTime.toDate() ?: return@forEach
+            val startTimeInMillis = calender.apply {
+                time = start
+            }.timeInMillis
+            val endInTimeInMills = calender.apply {
+                time = end
+            }.timeInMillis
+            sum += endInTimeInMills - startTimeInMillis
+        }
+        binding.duration.text = sum.formatMilliseconds(itemView.context)
+        binding.time.text =
+            data.startTime.toDate()?.getTimeAsString(FORMAT_HMS) + "~" + data.endTime.toDate()
+                ?.getTimeAsString(FORMAT_HMS)
     }
 }
 

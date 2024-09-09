@@ -94,6 +94,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
             getTotalTimeInDay(
                 it.startTime,
                 it.endTime,
+                it.timeline,
                 dateIndicator,
                 segmentSelected
             )
@@ -105,7 +106,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                 segmentSelected = segmentSelected,
                 totalTime = totalTime,
                 numberOfFocuses = filteredDate.size,
-                pieData = getPieData(groupedData, totalTime),
+                pieData = getPieData(groupedData, totalTime, dateIndicator, segmentSelected),
                 listStatistics = getListStatistics(
                     groupedData,
                     totalTime,
@@ -122,11 +123,32 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
         }
     }
 
-    private fun getPieData(data: Map<String, List<StatisticFocus>>, totalTime: Long): PieData {
+    private fun getPieData(
+        data: Map<String, List<StatisticFocus>>,
+        totalTime: Long,
+        dateIndicator: Date,
+        segmentSelected: SegmentTime
+    ): PieData {
         if (data.isEmpty()) return PieData()
+        val mapA = mutableMapOf<String, Long>()
+        data.forEach { d ->
+            var sum = 0L
+            d.value.forEach {
+                sum += getTotalTimeInDay(
+                    it.startTime,
+                    it.endTime,
+                    it.timeline,
+                    dateIndicator,
+                    segmentSelected
+                )
+            }
+            mapA[d.key] = sum
+        }
+
         val entries = data.map { d ->
-            PieEntry( d.value.sumOf { i -> i.runningTime }.toFloat() / totalTime, d.value[0].name)
+            PieEntry(mapA.getOrDefault(d.key, 0).toFloat() / totalTime, d.value[0].name)
         }.sortedBy { it.value }.reversed()
+
         val pieSet = PieDataSet(entries, "").apply {
             xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
             yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
@@ -152,6 +174,7 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
                 getTotalTimeInDay(
                     i.startTime,
                     i.endTime,
+                    i.timeline,
                     dateIndicator,
                     segmentSelected
                 )
@@ -178,7 +201,14 @@ class StatisticsViewModel(context: Context) : ViewModel(), StatisticCallback {
             data.forEach { d ->
                 val startDate = d.startTime.toDate() ?: return BarData()
                 val endDate = d.endTime.toDate() ?: return BarData()
-                value += getDurationForTargetHour(startDate, endDate, dateIndicator, it, segmentSelected)
+                value += getDurationForTargetHour(
+                    startDate,
+                    endDate,
+                    d.timeline,
+                    dateIndicator,
+                    it,
+                    segmentSelected
+                )
             }
             BarEntry(it.toFloat(), value)
         }

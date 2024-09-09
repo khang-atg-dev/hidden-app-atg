@@ -21,6 +21,7 @@ import moe.shizuku.manager.databinding.FocusFragmentBinding
 import moe.shizuku.manager.focus.details.FocusDetailsActivity
 import moe.shizuku.manager.model.CurrentFocus
 import moe.shizuku.manager.model.StatisticFocus
+import moe.shizuku.manager.model.TimelineFocus
 import moe.shizuku.manager.utils.getTimeAsString
 import rikka.core.ktx.unsafeLazy
 import rikka.lifecycle.viewModels
@@ -128,6 +129,7 @@ class FocusFragment : BaseFragment(), FocusCallback {
     override fun onStart(id: String, time: Long, name: String) {
         context?.let {
             val statisticFocusId = UUID.randomUUID().toString()
+            val currentTime = Calendar.getInstance().time.getTimeAsString()
             ShizukuSettings.saveCurrentFocusTask(
                 CurrentFocus(
                     id = id,
@@ -135,10 +137,9 @@ class FocusFragment : BaseFragment(), FocusCallback {
                     time = time,
                     remainingTime = time,
                     isPaused = false,
-                    statisticFocusId = statisticFocusId
+                    statisticFocusId = statisticFocusId,
                 )
             )
-            val currentTime = Calendar.getInstance().time.getTimeAsString()
             ShizukuSettings.saveStatisticsOfCurrentFocus(
                 StatisticFocus(
                     id = statisticFocusId,
@@ -148,7 +149,13 @@ class FocusFragment : BaseFragment(), FocusCallback {
                     runningTime = 0,
                     pauseTime = 0,
                     startTime = currentTime,
-                    endTime = currentTime
+                    endTime = currentTime,
+                    timeline = listOf(
+                        TimelineFocus(
+                            startTime = currentTime,
+                            endTime = currentTime
+                        )
+                    )
                 )
             )
             startActivity(Intent(it, FocusDetailsActivity::class.java))

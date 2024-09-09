@@ -34,7 +34,7 @@ class CustomMarkerView(
                 val seconds = TimeUnit.MILLISECONDS.toSeconds(it.y.toLong()) % 60
                 txtInfo.text = when {
                     hours > 0 -> String.format("%.1f h", it.y / (60 * 60 * 1000))
-                    minutes > 0 -> "${minutes}m"
+                    minutes > 0 -> "${minutes}m${seconds}s"
                     else -> "${seconds}s"
                 }
             } else {

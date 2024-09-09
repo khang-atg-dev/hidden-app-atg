@@ -21,6 +21,7 @@ import moe.shizuku.manager.R
 import moe.shizuku.manager.ShizukuSettings
 import moe.shizuku.manager.model.GroupApps
 import moe.shizuku.manager.model.StatisticFocus
+import moe.shizuku.manager.model.TimelineFocus
 import moe.shizuku.manager.statistics.SegmentTime
 import rikka.shizuku.Shizuku
 import java.text.SimpleDateFormat
@@ -280,11 +281,23 @@ fun calculateMonthlyTotalRunningTime(
         val endYear = endCal.get(Calendar.YEAR)
         val startMonth = startCal.get(Calendar.MONTH)
         val endMonth = endCal.get(Calendar.MONTH)
+        val calendarStart = Calendar.getInstance().apply {
+            setFirstDayOfWeek(Calendar.SUNDAY)
+        }
+        val calendarEnd = Calendar.getInstance().apply {
+            setFirstDayOfWeek(Calendar.SUNDAY)
+        }
+        var sum = 0L
         when {
             startYear == targetYear && endYear == targetYear -> {
                 when {
                     startMonth == targetMonth && endMonth == targetMonth -> {
-                        result += endCal.timeInMillis - startCal.timeInMillis
+                        it.timeline.forEach inner0@{ t ->
+                            calendarStart.time = t.startTime.toDate() ?: return@inner0
+                            calendarEnd.time = t.endTime.toDate() ?: return@inner0
+                            sum += calendarEnd.timeInMillis - calendarStart.timeInMillis
+                        }
+                        result += sum
                     }
 
                     startMonth == targetMonth -> {
@@ -298,7 +311,25 @@ fun calculateMonthlyTotalRunningTime(
                             set(Calendar.SECOND, 0)
                             set(Calendar.MILLISECOND, 0)
                         }
-                        result += endDayOfMonth.timeInMillis - startCal.timeInMillis
+                        it.timeline.forEach inner1@{ t ->
+                            calendarStart.time = t.startTime.toDate() ?: return@inner1
+                            calendarEnd.time = t.endTime.toDate() ?: return@inner1
+                            sum += when {
+                                calendarStart.timeInMillis in startCal.timeInMillis..endDayOfMonth.timeInMillis &&
+                                        calendarEnd.timeInMillis in startCal.timeInMillis..endDayOfMonth.timeInMillis -> {
+                                    calendarEnd.timeInMillis - calendarStart.timeInMillis
+                                }
+
+                                calendarStart.timeInMillis in startCal.timeInMillis..endDayOfMonth.timeInMillis ->
+                                    endDayOfMonth.timeInMillis - calendarStart.timeInMillis
+
+                                calendarEnd.timeInMillis in startCal.timeInMillis..endDayOfMonth.timeInMillis ->
+                                    calendarEnd.timeInMillis - startCal.timeInMillis
+
+                                else -> 0L
+                            }
+                        }
+                        result += sum
                     }
 
                     endMonth == targetMonth -> {
@@ -311,6 +342,19 @@ fun calculateMonthlyTotalRunningTime(
                             set(Calendar.MINUTE, 0)
                             set(Calendar.SECOND, 0)
                             set(Calendar.MILLISECOND, 0)
+                        }
+                        it.timeline.forEach inner2@{ t ->
+                            calendarStart.time = t.startTime.toDate() ?: return@inner2
+                            calendarEnd.time = t.endTime.toDate() ?: return@inner2
+                            sum += when {
+                                calendarStart.timeInMillis in startDayOfMonth.timeInMillis..endCal.timeInMillis ->
+                                    calendarEnd.timeInMillis - calendarStart.timeInMillis
+
+                                calendarEnd.timeInMillis in startDayOfMonth.timeInMillis..endCal.timeInMillis ->
+                                    calendarEnd.timeInMillis - startDayOfMonth.timeInMillis
+
+                                else -> 0
+                            }
                         }
                         result += endCal.timeInMillis - startDayOfMonth.timeInMillis
                     }
@@ -330,7 +374,25 @@ fun calculateMonthlyTotalRunningTime(
                         set(Calendar.SECOND, 0)
                         set(Calendar.MILLISECOND, 0)
                     }
-                    result += endDayOfMonth.timeInMillis - startCal.timeInMillis
+                    it.timeline.forEach inner1@{ t ->
+                        calendarStart.time = t.startTime.toDate() ?: return@inner1
+                        calendarEnd.time = t.endTime.toDate() ?: return@inner1
+                        sum += when {
+                            calendarStart.timeInMillis in startCal.timeInMillis..endDayOfMonth.timeInMillis &&
+                                    calendarEnd.timeInMillis in startCal.timeInMillis..endDayOfMonth.timeInMillis -> {
+                                calendarEnd.timeInMillis - calendarStart.timeInMillis
+                            }
+
+                            calendarStart.timeInMillis in startCal.timeInMillis..endDayOfMonth.timeInMillis ->
+                                endDayOfMonth.timeInMillis - calendarStart.timeInMillis
+
+                            calendarEnd.timeInMillis in startCal.timeInMillis..endDayOfMonth.timeInMillis ->
+                                calendarEnd.timeInMillis - startCal.timeInMillis
+
+                            else -> 0L
+                        }
+                    }
+                    result += sum
                 }
             }
 
@@ -347,7 +409,20 @@ fun calculateMonthlyTotalRunningTime(
                         set(Calendar.SECOND, 0)
                         set(Calendar.MILLISECOND, 0)
                     }
-                    result += endCal.timeInMillis - startDayOfMonth.timeInMillis
+                    it.timeline.forEach inner2@{ t ->
+                        calendarStart.time = t.startTime.toDate() ?: return@inner2
+                        calendarEnd.time = t.endTime.toDate() ?: return@inner2
+                        sum += when {
+                            calendarStart.timeInMillis in startDayOfMonth.timeInMillis..endCal.timeInMillis ->
+                                calendarEnd.timeInMillis - calendarStart.timeInMillis
+
+                            calendarEnd.timeInMillis in startDayOfMonth.timeInMillis..endCal.timeInMillis ->
+                                calendarEnd.timeInMillis - startDayOfMonth.timeInMillis
+
+                            else -> 0
+                        }
+                    }
+                    result += sum
                 }
             }
         }
@@ -380,13 +455,25 @@ fun calculateDailyTotalRunningTime(
         val endMonth = endCal.get(Calendar.MONTH)
         val startDay = startCal.get(Calendar.DAY_OF_MONTH)
         val endDay = endCal.get(Calendar.DAY_OF_MONTH)
+        val calendarStart = Calendar.getInstance().apply {
+            setFirstDayOfWeek(Calendar.SUNDAY)
+        }
+        val calendarEnd = Calendar.getInstance().apply {
+            setFirstDayOfWeek(Calendar.SUNDAY)
+        }
+        var sum = 0L
         when {
             startMonth == targetMonth && endMonth == targetMonth -> {
                 if (startDay == endDay) {
+                    it.timeline.forEach inner0@{ t ->
+                        calendarStart.time = t.startTime.toDate() ?: return@inner0
+                        calendarEnd.time = t.endTime.toDate() ?: return@inner0
+                        sum += calendarEnd.timeInMillis - calendarStart.timeInMillis
+                    }
                     result[startDay] = result.getOrDefault(
                         startDay,
                         0
-                    ) + endCal.timeInMillis - startCal.timeInMillis
+                    ) + sum
                 } else {
                     val endDayOfStartDay = Calendar.getInstance().apply {
                         time = start
@@ -397,10 +484,28 @@ fun calculateDailyTotalRunningTime(
                         set(Calendar.SECOND, 0)
                         set(Calendar.MILLISECOND, 0)
                     }
+                    it.timeline.forEach inner1@{ t ->
+                        calendarStart.time = t.startTime.toDate() ?: return@inner1
+                        calendarEnd.time = t.endTime.toDate() ?: return@inner1
+                        sum += when {
+                            calendarStart.timeInMillis in startCal.timeInMillis..endDayOfStartDay.timeInMillis &&
+                                    calendarEnd.timeInMillis in startCal.timeInMillis..endDayOfStartDay.timeInMillis -> {
+                                calendarEnd.timeInMillis - calendarStart.timeInMillis
+                            }
+
+                            calendarStart.timeInMillis in startCal.timeInMillis..endDayOfStartDay.timeInMillis ->
+                                endDayOfStartDay.timeInMillis - calendarStart.timeInMillis
+
+                            calendarEnd.timeInMillis in startCal.timeInMillis..endDayOfStartDay.timeInMillis ->
+                                calendarEnd.timeInMillis - startCal.timeInMillis
+
+                            else -> 0L
+                        }
+                    }
                     result[startDay] = result.getOrDefault(
                         startDay,
                         0
-                    ) + endDayOfStartDay.timeInMillis - startCal.timeInMillis
+                    ) + sum
                     val startDayOfEndDay = Calendar.getInstance().apply {
                         time = end
                         setFirstDayOfWeek(Calendar.SUNDAY)
@@ -409,10 +514,20 @@ fun calculateDailyTotalRunningTime(
                         set(Calendar.SECOND, 0)
                         set(Calendar.MILLISECOND, 0)
                     }
+                    sum = 0
+                    it.timeline.forEach inner2@{ t ->
+                        calendarStart.time = t.startTime.toDate() ?: return@inner2
+                        calendarEnd.time = t.endTime.toDate() ?: return@inner2
+                        sum += when {
+                            calendarStart.timeInMillis in startDayOfEndDay.timeInMillis..endCal.timeInMillis -> calendarEnd.timeInMillis - calendarStart.timeInMillis
+                            calendarEnd.timeInMillis in startDayOfEndDay.timeInMillis..endCal.timeInMillis -> calendarEnd.timeInMillis - startDayOfEndDay.timeInMillis
+                            else -> 0
+                        }
+                    }
                     result[endDay] = result.getOrDefault(
                         endDay,
                         0
-                    ) + endCal.timeInMillis - startDayOfEndDay.timeInMillis
+                    ) + sum
                 }
             }
 
@@ -426,10 +541,28 @@ fun calculateDailyTotalRunningTime(
                     set(Calendar.SECOND, 0)
                     set(Calendar.MILLISECOND, 0)
                 }
+                it.timeline.forEach inner1@{ t ->
+                    calendarStart.time = t.startTime.toDate() ?: return@inner1
+                    calendarEnd.time = t.endTime.toDate() ?: return@inner1
+                    sum += when {
+                        calendarStart.timeInMillis in startCal.timeInMillis..endDayOfStartDay.timeInMillis &&
+                                calendarEnd.timeInMillis in startCal.timeInMillis..endDayOfStartDay.timeInMillis -> {
+                            calendarEnd.timeInMillis - calendarStart.timeInMillis
+                        }
+
+                        calendarStart.timeInMillis in startCal.timeInMillis..endDayOfStartDay.timeInMillis ->
+                            endDayOfStartDay.timeInMillis - calendarStart.timeInMillis
+
+                        calendarEnd.timeInMillis in startCal.timeInMillis..endDayOfStartDay.timeInMillis ->
+                            calendarEnd.timeInMillis - startCal.timeInMillis
+
+                        else -> 0L
+                    }
+                }
                 result[startDay] = result.getOrDefault(
                     startDay,
                     0
-                ) + endDayOfStartDay.timeInMillis - startCal.timeInMillis
+                ) + sum
             }
 
             endMonth == targetMonth -> {
@@ -441,10 +574,19 @@ fun calculateDailyTotalRunningTime(
                     set(Calendar.SECOND, 0)
                     set(Calendar.MILLISECOND, 0)
                 }
+                it.timeline.forEach inner2@{ t ->
+                    calendarStart.time = t.startTime.toDate() ?: return@inner2
+                    calendarEnd.time = t.endTime.toDate() ?: return@inner2
+                    sum += when {
+                        calendarStart.timeInMillis in startDayOfEndDay.timeInMillis..endCal.timeInMillis -> calendarEnd.timeInMillis - calendarStart.timeInMillis
+                        calendarEnd.timeInMillis in startDayOfEndDay.timeInMillis..endCal.timeInMillis -> calendarEnd.timeInMillis - startDayOfEndDay.timeInMillis
+                        else -> 0
+                    }
+                }
                 result[endDay] = result.getOrDefault(
                     endDay,
                     0
-                ) + endCal.timeInMillis - startDayOfEndDay.timeInMillis
+                ) + sum
             }
         }
     }
@@ -511,12 +653,24 @@ fun calculateRunningTimePerDay(
             val monthStart = startCal.get(secondField)
             val dayEnd = endCal.get(firstField)
             val monthEnd = endCal.get(secondField)
+            val calendarStart = Calendar.getInstance().apply {
+                setFirstDayOfWeek(Calendar.SUNDAY)
+            }
+            val calendarEnd = Calendar.getInstance().apply {
+                setFirstDayOfWeek(Calendar.SUNDAY)
+            }
+            var sum = 0L
             runningTime += when {
                 dayEnd == it && dayStart == it -> {
+                    task.timeline.forEach inner0@{ t ->
+                        calendarStart.time = t.startTime.toDate() ?: return@inner0
+                        calendarEnd.time = t.endTime.toDate() ?: return@inner0
+                        sum += calendarEnd.timeInMillis - calendarStart.timeInMillis
+                    }
                     dayRunningTimeMap.getOrDefault(
                         it,
                         0L
-                    ) + endCal.timeInMillis - startCal.timeInMillis
+                    ) + sum
                 }
 
                 dayStart == it && (monthStart == targetMonth || monthStart == nextTargetMonth) -> {
@@ -529,7 +683,25 @@ fun calculateRunningTimePerDay(
                     midnight[Calendar.MINUTE] = 0
                     midnight[Calendar.SECOND] = 0
                     midnight[Calendar.MILLISECOND] = 0
-                    midnight.timeInMillis - startCal.timeInMillis
+                    task.timeline.forEach inner1@{ t ->
+                        calendarStart.time = t.startTime.toDate() ?: return@inner1
+                        calendarEnd.time = t.endTime.toDate() ?: return@inner1
+                        sum += when {
+                            calendarStart.timeInMillis in startCal.timeInMillis..midnight.timeInMillis &&
+                                    calendarEnd.timeInMillis in startCal.timeInMillis..midnight.timeInMillis -> {
+                                calendarEnd.timeInMillis - calendarStart.timeInMillis
+                            }
+
+                            calendarStart.timeInMillis in startCal.timeInMillis..midnight.timeInMillis ->
+                                midnight.timeInMillis - calendarStart.timeInMillis
+
+                            calendarEnd.timeInMillis in startCal.timeInMillis..midnight.timeInMillis ->
+                                calendarEnd.timeInMillis - startCal.timeInMillis
+
+                            else -> 0L
+                        }
+                    }
+                    sum
                 }
 
                 dayEnd == it && (monthEnd == targetMonth || monthEnd == nextTargetMonth) -> {
@@ -541,7 +713,16 @@ fun calculateRunningTimePerDay(
                     midnight[Calendar.MINUTE] = 0
                     midnight[Calendar.SECOND] = 0
                     midnight[Calendar.MILLISECOND] = 0
-                    endCal.timeInMillis - midnight.timeInMillis
+                    task.timeline.forEach inner2@{ t ->
+                        calendarStart.time = t.startTime.toDate() ?: return@inner2
+                        calendarEnd.time = t.endTime.toDate() ?: return@inner2
+                        sum += when {
+                            calendarStart.timeInMillis in midnight.timeInMillis..endCal.timeInMillis -> calendarEnd.timeInMillis - calendarStart.timeInMillis
+                            calendarEnd.timeInMillis in midnight.timeInMillis..endCal.timeInMillis -> calendarEnd.timeInMillis - midnight.timeInMillis
+                            else -> 0
+                        }
+                    }
+                    sum
                 }
 
                 else -> 0
@@ -555,6 +736,7 @@ fun calculateRunningTimePerDay(
 fun getTotalTimeInDay(
     startTime: String,
     endTime: String,
+    timeline: List<TimelineFocus>,
     targetDate: Date,
     segmentTime: SegmentTime
 ): Long {
@@ -603,17 +785,54 @@ fun getTotalTimeInDay(
         }
     }
     val nextTarget = nextTargetCal.timeInMillis
+    val calendarStart = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
+    }
+    val calendarEnd = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
+    }
+    var sum = 0L
     return when {
         start in target..nextTarget && end in target..nextTarget -> {
-            end - start
+            timeline.sumOf {
+                calendarStart.time = it.startTime.toDate() ?: return@sumOf 0
+                calendarEnd.time = it.endTime.toDate() ?: return@sumOf 0
+                calendarEnd.timeInMillis - calendarStart.timeInMillis
+            }
         }
 
         start in target..nextTarget -> {
-            nextTarget - start
+            timeline.forEach {
+                calendarStart.time = it.startTime.toDate() ?: return@forEach
+                calendarEnd.time = it.endTime.toDate() ?: return@forEach
+                sum += when {
+                    calendarStart.timeInMillis in start..nextTarget && calendarEnd.timeInMillis in start..nextTarget -> {
+                        calendarEnd.timeInMillis - calendarStart.timeInMillis
+                    }
+
+                    calendarStart.timeInMillis in start..nextTarget ->
+                        nextTarget - calendarStart.timeInMillis
+
+                    calendarEnd.timeInMillis in start..nextTarget ->
+                        calendarEnd.timeInMillis - start
+
+                    else -> 0L
+                }
+            }
+            sum
         }
 
         end in target..nextTarget -> {
-            end - target
+            timeline.forEach {
+                calendarStart.time = it.startTime.toDate() ?: return@forEach
+                calendarEnd.time = it.endTime.toDate() ?: return@forEach
+                sum += when {
+                    calendarStart.timeInMillis in target..end -> calendarEnd.timeInMillis - calendarStart.timeInMillis
+                    calendarEnd.timeInMillis in target..nextTarget -> calendarEnd.timeInMillis - target
+                    else -> 0
+                }
+            }
+            sum
         }
 
         else -> 0
@@ -623,6 +842,7 @@ fun getTotalTimeInDay(
 fun getDurationForTargetHour(
     startTime: Date,
     endTime: Date,
+    timeline: List<TimelineFocus>,
     targetDate: Date,
     targetHour: Int,
     segmentTime: SegmentTime
@@ -679,21 +899,88 @@ fun getDurationForTargetHour(
     }
     val targetTimeInMillis = targetCal.timeInMillis
     val nextTargetTimeInMillis = targetCal.timeInMillis + 60 * 60 * 1000
+    val calendarStart = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
+    }
+    val calendarEnd = Calendar.getInstance().apply {
+        setFirstDayOfWeek(Calendar.SUNDAY)
+    }
+    var sum = 0L
     return when {
         startTimeInMillis <= targetTimeInMillis && endTimeInMillis >= nextTargetTimeInMillis -> {
-            60 * 60 * 1000
+            timeline.forEach {
+                calendarStart.time = it.startTime.toDate() ?: return@forEach
+                calendarEnd.time = it.endTime.toDate() ?: return@forEach
+                sum += when {
+                    calendarStart.timeInMillis <= targetTimeInMillis && calendarEnd.timeInMillis >= nextTargetTimeInMillis -> {
+                        60 * 60 * 1000
+                    }
+
+                    calendarStart.timeInMillis in targetTimeInMillis..nextTargetTimeInMillis &&
+                            calendarEnd.timeInMillis in targetTimeInMillis..nextTargetTimeInMillis -> {
+                        calendarEnd.timeInMillis - calendarStart.timeInMillis
+                    }
+
+                    calendarStart.timeInMillis in targetTimeInMillis..nextTargetTimeInMillis ->
+                        nextTargetTimeInMillis - calendarStart.timeInMillis
+
+                    calendarEnd.timeInMillis in targetTimeInMillis..nextTargetTimeInMillis ->
+                        calendarEnd.timeInMillis - targetTimeInMillis
+
+                    else -> 0L
+                }
+            }
+            sum
         }
 
         startTimeInMillis in targetTimeInMillis..nextTargetTimeInMillis && endTimeInMillis in targetTimeInMillis..nextTargetTimeInMillis -> {
-            endTimeInMillis - startTimeInMillis
+            timeline.forEach {
+                calendarStart.time = it.startTime.toDate() ?: return@forEach
+                calendarEnd.time = it.endTime.toDate() ?: return@forEach
+                sum += calendarEnd.timeInMillis - calendarStart.timeInMillis
+            }
+            sum
         }
 
         startTimeInMillis in targetTimeInMillis..nextTargetTimeInMillis -> {
-            nextTargetTimeInMillis - startTimeInMillis
+            timeline.forEach {
+                calendarStart.time = it.startTime.toDate() ?: return@forEach
+                calendarEnd.time = it.endTime.toDate() ?: return@forEach
+                sum += when {
+                    calendarStart.timeInMillis in startTimeInMillis..nextTargetTimeInMillis &&
+                            calendarEnd.timeInMillis in startTimeInMillis..nextTargetTimeInMillis -> {
+                        calendarEnd.timeInMillis - calendarStart.timeInMillis
+                    }
+
+                    calendarStart.timeInMillis in startTimeInMillis..nextTargetTimeInMillis ->
+                        nextTargetTimeInMillis - calendarStart.timeInMillis
+
+                    else -> 0L
+                }
+            }
+            sum
         }
 
         endTimeInMillis in targetTimeInMillis..nextTargetTimeInMillis -> {
-            endTimeInMillis - targetTimeInMillis
+            timeline.forEach {
+                calendarStart.time = it.startTime.toDate() ?: return@forEach
+                calendarEnd.time = it.endTime.toDate() ?: return@forEach
+                sum += when {
+                    calendarStart.timeInMillis in targetTimeInMillis..endTimeInMillis &&
+                            calendarEnd.timeInMillis in targetTimeInMillis..endTimeInMillis -> {
+                        calendarEnd.timeInMillis - calendarStart.timeInMillis
+                    }
+
+                    calendarStart.timeInMillis in targetTimeInMillis..endTimeInMillis ->
+                        endTimeInMillis - calendarStart.timeInMillis
+
+                    calendarEnd.timeInMillis in targetTimeInMillis..endTimeInMillis ->
+                        calendarEnd.timeInMillis - targetTimeInMillis
+
+                    else -> 0L
+                }
+            }
+            sum
         }
 
         else -> 0

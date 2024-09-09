@@ -21,6 +21,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -33,8 +34,10 @@ import moe.shizuku.manager.model.CurrentFocus;
 import moe.shizuku.manager.model.Focus;
 import moe.shizuku.manager.model.GroupApps;
 import moe.shizuku.manager.model.StatisticFocus;
+import moe.shizuku.manager.model.TimelineFocus;
 import moe.shizuku.manager.utils.EmptySharedPreferencesImpl;
 import moe.shizuku.manager.utils.EnvironmentUtils;
+import moe.shizuku.manager.utils.ExtensionsKt;
 
 public class ShizukuSettings {
 
@@ -90,7 +93,7 @@ public class ShizukuSettings {
 
     public static void initialize(Context context) {
         if (sPreferences == null) {
-            sPreferences = getSettingsStorageContext(context)
+            sPreferences = context
                     .getSharedPreferences(NAME, Context.MODE_PRIVATE);
         }
     }
@@ -392,7 +395,7 @@ public class ShizukuSettings {
     @Nullable
     public static List<StatisticFocus> getAllStatistics() {
         try {
-            String objStr = getPreferences().getString(STATISTICS_OF_FOCUS, "");
+            String objStr = "[{\"endTime\":\"2024-09-09T01:00:00Z\",\"focusId\":\"9af66d7d-5177-493a-b0c7-83db5b41cb0d\",\"id\":\"e60db20e-b263-40d8-b2c1-31afc59aeada\",\"name\":\"新任务\",\"pauseTime\":2,\"runningTime\":4800000,\"startTime\":\"2024-09-08T23:00:00Z\",\"time\":1500000,\"timeline\":[{\"startTime\":\"2024-09-08T23:00:00Z\",\"endTime\":\"2024-09-08T23:30:00Z\"},{\"startTime\":\"2024-09-08T23:40:00Z\",\"endTime\":\"2024-09-09T00:20:00Z\"},{\"startTime\":\"2024-09-09T00:40:00Z\",\"endTime\":\"2024-09-09T00:45:00Z\"},{\"startTime\":\"2024-09-09T00:55:00Z\",\"endTime\":\"2024-09-09T01:00:00Z\"}]},{\"endTime\":\"2024-09-09T02:00:00Z\",\"focusId\":\"9af66d7d-5177-493a-b0c7-83db5b41cb1d\",\"id\":\"e60db20e-b263-40d8-b2c1-31afc59aeadb\",\"name\":\"新任务1\",\"pauseTime\":2,\"runningTime\":1200000,\"startTime\":\"2024-09-09T01:30:00Z\",\"time\":1500000,\"timeline\":[{\"startTime\":\"2024-09-09T01:40:00Z\",\"endTime\":\"2024-09-09T01:45:00Z\"},{\"startTime\":\"2024-09-09T01:30:00Z\",\"endTime\":\"2024-09-09T01:35:00Z\"},{\"startTime\":\"2024-09-09T01:50:00Z\",\"endTime\":\"2024-09-09T02:00:00Z\"}]},{\"endTime\":\"2024-09-01T02:00:00Z\",\"focusId\":\"9af66d7d-5177-493a-b0c7-83db5b41cb2d\",\"id\":\"e60db20e-b263-40d8-b2c1-31afc59aeade\",\"name\":\"新任务2\",\"pauseTime\":2,\"runningTime\":12900000,\"startTime\":\"2024-08-31T22:00:00Z\",\"time\":1500000,\"timeline\":[{\"startTime\":\"2024-08-31T22:00:00Z\",\"endTime\":\"2024-08-31T23:45:00Z\"},{\"startTime\":\"2024-08-31T23:55:00Z\",\"endTime\":\"2024-09-01T01:35:00Z\"},{\"startTime\":\"2024-09-01T01:50:00Z\",\"endTime\":\"2024-09-01T02:00:00Z\"}]}]";
             if (objStr.isEmpty()) return null;
             return gson.fromJson(
                     objStr,
@@ -400,6 +403,7 @@ public class ShizukuSettings {
                     }.getType()
             );
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -424,7 +428,8 @@ public class ShizukuSettings {
                     current.getRunningTime() + time,
                     current.getPauseTime(),
                     current.getStartTime(),
-                    current.getEndTime()
+                    current.getEndTime(),
+                    current.getTimeline()
             );
             saveStatisticsOfCurrentFocus(newStatistics);
         } catch (Exception ignored) {
@@ -443,7 +448,8 @@ public class ShizukuSettings {
                     current.getRunningTime(),
                     current.getPauseTime(),
                     current.getStartTime(),
-                    endTime
+                    endTime,
+                    current.getTimeline()
             );
             saveStatisticsOfCurrentFocus(newStatistics);
         } catch (Exception ignored) {
@@ -462,7 +468,44 @@ public class ShizukuSettings {
                     current.getRunningTime(),
                     current.getPauseTime() + 1,
                     current.getStartTime(),
-                    current.getEndTime()
+                    current.getEndTime(),
+                    current.getTimeline()
+            );
+            saveStatisticsOfCurrentFocus(newStatistics);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public static void updateTimelineStatisticCurrentFocus(boolean isPaused) {
+        try {
+            StatisticFocus current = getStatisticsOfCurrentFocus();
+            if (current == null) return;
+            List<TimelineFocus> timeline = current.getTimeline();
+            if (!timeline.isEmpty()) {
+                if (isPaused) {
+                    TimelineFocus lastTimeline = timeline.get(timeline.size() - 1);
+                    if (lastTimeline != null) {
+                        lastTimeline = new TimelineFocus(
+                                lastTimeline.getStartTime(),
+                                ExtensionsKt.getTimeAsString(Calendar.getInstance().getTime())
+                        );
+                        timeline.set(timeline.size() - 1, lastTimeline);
+                    }
+                } else {
+                    String time = ExtensionsKt.getTimeAsString(Calendar.getInstance().getTime());
+                    timeline.add(new TimelineFocus(time, time));
+                }
+            }
+            StatisticFocus newStatistics = current.copy(
+                    current.getId(),
+                    current.getFocusId(),
+                    current.getName(),
+                    current.getTime(),
+                    current.getRunningTime(),
+                    current.getPauseTime(),
+                    current.getStartTime(),
+                    current.getEndTime(),
+                    timeline
             );
             saveStatisticsOfCurrentFocus(newStatistics);
         } catch (Exception ignored) {

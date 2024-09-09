@@ -12,4 +12,5 @@ data class StatisticFocus(
     val pauseTime: Int,
     val startTime: String,
     val endTime: String,
+    val timeline: List<TimelineFocus>,
 )

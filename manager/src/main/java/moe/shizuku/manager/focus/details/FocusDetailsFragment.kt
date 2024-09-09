@@ -250,6 +250,7 @@ class FocusDetailsFragment : Fragment() {
         }
         ShizukuSettings.updateIsPausedCurrentFocusTask(true)
         ShizukuSettings.updatePauseTimeStatisticCurrentFocus()
+        ShizukuSettings.updateTimelineStatisticCurrentFocus(true)
     }
 
     private fun resumeTimer() {
@@ -260,19 +261,23 @@ class FocusDetailsFragment : Fragment() {
             startTimer()
             isPaused = false
             ShizukuSettings.updateIsPausedCurrentFocusTask(false)
+            ShizukuSettings.updateTimelineStatisticCurrentFocus(false)
         }
     }
 
     private fun endTimer() {
         stopCountdownService()
-        isPaused = false
         workRequest?.let {
             workManager?.cancelWorkById(it.id)
             workInfoLiveData?.removeObserver(observer)
         }
         val currentTime = Calendar.getInstance().time.getTimeAsString()
         ShizukuSettings.updateEndTimeStatisticCurrentFocus(currentTime)
+        if (!isPaused) {
+            ShizukuSettings.updateTimelineStatisticCurrentFocus(true)
+        }
         ShizukuSettings.removeCurrentFocusTask()
+        isPaused = false
     }
 
     private fun startCountdownService() {
